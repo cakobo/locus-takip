@@ -6,8 +6,8 @@
 <title>Locus Şirket Takip Sistemi</title>
 <meta name="theme-color" content="#004085">
 <link rel="manifest" href="manifest.json">
-<link rel="icon" href="img/ikon-32.png">
-<link rel="apple-touch-icon" href="img/ikon-180.png">
+<link rel="icon" href="ikon-32.png">
+<link rel="apple-touch-icon" href="ikon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Locus Takip">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -237,20 +237,20 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 </head>
 <body>
 
-<div id="acilis"><img src="img/sembol-beyaz.png" alt=""></div>
+<div id="acilis"><img src="sembol-beyaz.png" alt=""></div>
 
 <!-- ================= GİRİŞ ================= -->
 <div id="giris" hidden>
   <section class="marka">
-    <img src="img/sembol-beyaz.png" alt="">
+    <img src="sembol-beyaz.png" alt="">
     <h2>Locus Şirket Takip Sistemi</h2>
     <p>Müşteriler, Servis, Stok ve Finans Tek Yerde.</p>
   </section>
   <section class="gform-alan">
     <button class="tema-btn" type="button" onclick="temaDegistir()" aria-label="Temayı değiştir"><span class="g">☀️</span><span class="k">🌙</span></button>
     <form class="gform" id="girisForm" autocomplete="on">
-      <img class="logo lg-light" src="img/logo-renkli.png" alt="Locus Engineering">
-      <img class="logo lg-dark" src="img/logo-beyaz.png" alt="Locus Engineering">
+      <img class="logo lg-light" src="logo-renkli.png" alt="Locus Engineering">
+      <img class="logo lg-dark" src="logo-beyaz.png" alt="Locus Engineering">
       <label class="et" for="gKadi">Kullanıcı adı</label>
       <input class="girdi" id="gKadi" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
       <label class="et" for="gSifre">Şifre</label>
@@ -265,9 +265,9 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 <div id="uygulama" hidden>
   <header class="ust">
     <div class="ust-ic">
-      <img class="logo lg-light" src="img/logo-renkli.png" alt="Locus" onclick="git('anasayfa')">
-      <img class="logo lg-dark" src="img/logo-beyaz.png" alt="Locus" onclick="git('anasayfa')">
-      <img class="sembol" src="img/sembol-beyaz.png" alt="Locus" onclick="git('anasayfa')">
+      <img class="logo lg-light" src="logo-renkli.png" alt="Locus" onclick="git('anasayfa')">
+      <img class="logo lg-dark" src="logo-beyaz.png" alt="Locus" onclick="git('anasayfa')">
+      <img class="sembol" src="sembol-beyaz.png" alt="Locus" onclick="git('anasayfa')">
       <span class="ayrac"></span>
       <h1 id="sayfaBaslik">Ana Sayfa</h1>
       <div class="ust-sag">
@@ -496,7 +496,7 @@ const SAYFA_CIZ = {
     const acik = D.sayfalar.filter(s => s.kod !== 'anasayfa' && yetki(s.kod) !== 'yok');
     ic.innerHTML = `
       <div class="kart karsilama"><div><h2>Hoş geldin, ${esc(ad)}</h2><p>${esc(tarih)}</p></div>
-        <img src="img/sembol-beyaz.png" alt=""></div>
+        <img src="sembol-beyaz.png" alt=""></div>
       <h3 class="bolum-bas">Sayfaların</h3>
       ${acik.length ? `<div class="hizli">${acik.map(s => `
         <button type="button" class="kart" onclick="git('${s.kod}')"><span class="hi">${s.ikon}</span>

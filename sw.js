@@ -1,10 +1,10 @@
 // Locus Şirket Takip Sistemi - Service Worker
 // Yeni sürüm yayınladığında SURUM değerini artır (v2, v3...) ki telefonlar güncellemeyi alsın.
-const SURUM = 'locus-v1';
+const SURUM = 'locus-v2';
 const DOSYALAR = [
   './', './index.html', './manifest.json',
-  './img/logo-renkli.png', './img/logo-beyaz.png', './img/sembol-beyaz.png',
-  './img/ikon-32.png', './img/ikon-180.png', './img/ikon-192.png', './img/ikon-512.png'
+  './logo-renkli.png', './logo-beyaz.png', './sembol-beyaz.png',
+  './ikon-32.png', './ikon-180.png', './ikon-192.png', './ikon-512.png'
 ];
 
 self.addEventListener('install', e => {
