@@ -257,10 +257,6 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 :root[data-theme="dark"] .kisi a{color:#6FA8EC}
 .kucuk-bos{padding:36px 16px}
 .kucuk-bos .b-ikon{font-size:32px;margin-bottom:10px}
-.zaman{list-style:none;border-left:2px solid var(--line);margin-left:6px}
-.zaman li{position:relative;padding:0 0 18px 20px;display:flex;gap:16px;cursor:pointer}
-.zaman li::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--acc);border:2px solid var(--sf)}
-.zaman .z-tarih{font-size:13px;color:var(--mute);width:96px;flex:none;padding-top:2px}
 
 
 .widget-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
@@ -320,7 +316,19 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .firma-link{color:var(--acc);cursor:pointer;font-weight:500;text-decoration:none}
 :root[data-theme="dark"] .firma-link{color:#6FA8EC}
 .durum-sec{height:36px;margin:0;padding:0 10px;width:auto;max-width:100%}
-.zaman .z-ic .rozet{font-size:12px;padding:2px 8px}
+
+
+.zaman{list-style:none;border-left:2px solid var(--line);margin-left:6px}
+.zaman li{position:relative;display:flex;align-items:center;gap:16px;padding:10px 12px 10px 22px;border-radius:8px;cursor:pointer}
+.zaman li:hover{background:color-mix(in srgb,var(--sel) 60%,transparent)}
+.zaman li::before{content:"";position:absolute;left:-7px;top:50%;margin-top:-6px;width:12px;height:12px;border-radius:50%;background:var(--acc);border:2px solid var(--sf)}
+.zaman .z-tarih{font-size:13px;color:var(--mute);width:84px;flex:none;font-variant-numeric:tabular-nums}
+.zaman .z-ic{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.zaman .z-ust{display:flex;align-items:center;gap:8px}
+.zaman .z-ust .rozet{font-size:12px;padding:2px 8px}
+.zaman .z-alt{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zaman .z-tutar{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.zaman .z-durum{width:118px;justify-content:center;flex:none}
 
 /* ---------- mobil ---------- */
 @media (max-width:820px){
@@ -382,7 +390,11 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .d-bas-sag .btn{flex:1}
   .panel{padding:18px 16px}
   .bilgi-grid{grid-template-columns:1fr 1fr}
-  .zaman li{flex-direction:column;gap:2px}
+  .zaman li{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 8px 10px 18px}
+  .zaman .z-tarih{grid-column:1;width:auto}
+  .zaman .z-durum{grid-column:2;grid-row:1;width:auto}
+  .zaman .z-ic{grid-column:1/-1}
+  .zaman .z-tutar{grid-column:1/-1}
   .s-satir{display:grid;grid-template-columns:1fr auto;gap:6px 10px}
   .s-satir .s-no{order:1;width:auto;flex-direction:row;gap:8px;align-items:baseline}
   .s-satir .rozet{order:2}
@@ -942,7 +954,8 @@ const FIRMA = {
     // Projeler sayfası yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
     kaynaklar: ['musteriSiparis'],
     islemler: m => (VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: para(x.Toplam, x.ParaBirimi), durum: x.Durum, rota: 'siparisler/ms.' + x.Id
+      tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      durum: x.Durum, durumSinif: durumSinif('musteriSiparis', x.Durum), rota: 'siparisler/ms.' + x.Id
     }))
   },
   tedarikciler: {
@@ -951,7 +964,8 @@ const FIRMA = {
     islemBos: 'Bu tedarikçiden yapılan satın almalar burada tarih sırasına göre listelenecek.',
     kaynaklar: ['satinalma'],
     islemler: m => (VERI.satinalma || []).filter(x => x.FirmaId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: para(x.Toplam, x.ParaBirimi), durum: x.Durum, rota: 'siparisler/sa.' + x.Id
+      tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      durum: x.Durum, durumSinif: durumSinif('satinalma', x.Durum), rota: 'siparisler/sa.' + x.Id
     }))
   }
 };
@@ -1094,11 +1108,14 @@ function islemlerHTML(liste, bosMetin) {
     return `<div class="bos kucuk-bos"><div class="b-ikon">🗂️</div><h3>Henüz kayıt yok</h3><p>${esc(bosMetin)}</p></div>`;
   }
   return `<ol class="zaman">${liste.map(x => `
-    <li onclick="${x.rota ? `git('${x.rota}')` : ''}">
+    <li ${x.rota ? `onclick="git('${x.rota}')" tabindex="0"` : ''}>
       <span class="z-tarih">${esc(tarihKisa(x.tarih))}</span>
-      <span class="z-ic"><span class="rozet">${esc(x.tur)}</span> <b>${esc(x.baslik)}</b>
-        ${x.aciklama ? `<span class="soluk"> ${esc(x.aciklama)}</span>` : ''}
-        ${x.durum ? `<span class="rozet pasif" style="margin-left:6px">${esc(x.durum)}</span>` : ''}</span>
+      <span class="z-ic">
+        <span class="z-ust"><b>${esc(x.baslik)}</b><span class="rozet">${esc(x.tur)}</span></span>
+        ${x.aciklama ? `<span class="z-alt">${esc(x.aciklama)}</span>` : ''}
+      </span>
+      ${x.tutar ? `<span class="z-tutar">${esc(x.tutar)}</span>` : ''}
+      ${x.durum ? `<span class="rozet ${x.durumSinif || ''} z-durum">${esc(x.durum)}</span>` : ''}
     </li>`).join('')}</ol>`;
 }
 
@@ -1233,6 +1250,11 @@ function sayiOku(s) {
   return Number(s);
 }
 const sayiYaz = n => (n === '' || n == null || isNaN(n)) ? '' : String(n).replace('.', ',');
+const kalemOzet = x => {
+  const k = x.Kalemler || [];
+  if (!k.length) return '';
+  return k[0].aciklama + (k.length > 1 ? ` ve ${k.length - 1} kalem daha` : '');
+};
 const siraNo = no => parseInt(String(no).split('-').pop(), 10) || 0; // LCS261001-12 → 12
 const siparisAcik = (t, s) => s.Durum !== SIP[t].tamam && s.Durum !== 'İptal';
 const durumSinif = (t, d) => d === SIP[t].tamam ? 'ok' : d === 'İptal' ? 'pasif' : d === 'Taslak' ? 'uyari' : '';
