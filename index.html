@@ -262,6 +262,31 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .zaman li::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--acc);border:2px solid var(--sf)}
 .zaman .z-tarih{font-size:13px;color:var(--mute);width:96px;flex:none;padding-top:2px}
 
+
+.widget-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px}
+.widget-grid .panel{margin:0}
+.w-bas{display:flex;align-items:baseline;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.w-bas h3{font-size:16px;font-weight:600}
+.w-bas .soluk{font-size:13px}
+.w-bas .sag{margin-left:auto}
+.link-btn{color:var(--acc);font-size:13px;font-weight:500}
+:root[data-theme="dark"] .link-btn{color:#6FA8EC}
+.hava-ana{display:flex;align-items:center;gap:16px}
+.hava-ikon{font-size:50px;line-height:1}
+.hava-derece{font-size:44px;font-weight:600;line-height:1}
+.hava-bilgi{font-size:15px;margin-left:6px}
+.hava-bilgi .soluk{font-size:13px}
+.hava-gunler{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:18px;padding-top:14px;border-top:1px solid var(--line)}
+.hg{text-align:center;font-size:13px}
+.hg .i{font-size:22px;display:block;margin:3px 0}
+.kur-tablo{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.kur-tablo th{font-size:12px;color:var(--mute);font-weight:500;text-align:right;padding:0 0 8px}
+.kur-tablo td{padding:9px 0;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+.kur-tablo td:first-child{text-align:left}
+.kur-tablo td+td{padding-left:14px}
+.kod{display:inline-block;min-width:46px;text-align:center;font-weight:600;font-size:13px;padding:3px 8px;border-radius:6px;background:var(--sel);color:var(--sel-ink);margin-right:10px}
+.kur-ad{color:var(--mute);font-size:14px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -297,6 +322,10 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .karsilama{padding:20px}
   .karsilama img{display:none}
   .hizli{grid-template-columns:repeat(2,1fr)}
+  .widget-grid{grid-template-columns:1fr;gap:14px;margin-bottom:22px}
+  .kur-ad{display:none}
+  .hava-ikon{font-size:42px}
+  .hava-derece{font-size:38px}
   .liste .satir.bas{display:none}
   .liste .satir{grid-template-columns:1fr auto;gap:8px 12px}
   .liste .satir .c-yetki,.liste .satir .c-son{grid-column:1/-1;padding-left:46px}
@@ -590,11 +619,17 @@ const SAYFA_CIZ = {
     ic.innerHTML = `
       <div class="kart karsilama"><div><h2>Hoş geldin, ${esc(ad)}</h2><p>${esc(tarih)}</p></div>
         <img src="sembol-beyaz.png" alt=""></div>
+      <div class="widget-grid">
+        <section class="kart panel" id="havaKart"><div class="bos kucuk-bos"><p>Hava durumu yükleniyor…</p></div></section>
+        <section class="kart panel" id="kurKart"><div class="bos kucuk-bos"><p>Kurlar yükleniyor…</p></div></section>
+      </div>
       <h3 class="bolum-bas">Sayfaların</h3>
       ${acik.length ? `<div class="hizli">${acik.map(s => `
         <button type="button" class="kart" onclick="git('${s.kod}')"><span class="hi">${s.ikon}</span>
           <span><span class="ha">${esc(s.ad)}</span><br><span class="hs">${esc(ACIKLAMA[s.kod] || '')}</span></span></button>`).join('')}</div>`
         : `<div class="kart bos"><div class="b-ikon">🔒</div><h3>Henüz açık sayfanız yok</h3><p>Yöneticiniz size sayfa yetkisi verdiğinde burada görünecek.</p></div>`}`;
+    havaYukle();
+    kurYukle();
   },
 
   async yonetim(ic, s) {
@@ -721,6 +756,111 @@ async function kullaniciSil(kadi) {
   }
 }
 
+
+
+// ==================== HAVA DURUMU (Open-Meteo) ====================
+const VARSAYILAN_KONUM = { lat: 40.1828, lon: 29.0667, ad: 'Bursa', cihaz: false };
+const HAVA_KOD = {
+  0: ['☀️', 'Açık'], 1: ['🌤️', 'Az bulutlu'], 2: ['⛅', 'Parçalı bulutlu'], 3: ['☁️', 'Kapalı'],
+  45: ['🌫️', 'Sisli'], 48: ['🌫️', 'Kırağılı sis'],
+  51: ['🌦️', 'Hafif çisenti'], 53: ['🌦️', 'Çisenti'], 55: ['🌦️', 'Yoğun çisenti'],
+  56: ['🌧️', 'Dondurucu çisenti'], 57: ['🌧️', 'Dondurucu çisenti'],
+  61: ['🌧️', 'Hafif yağmur'], 63: ['🌧️', 'Yağmurlu'], 65: ['🌧️', 'Şiddetli yağmur'],
+  66: ['🌧️', 'Dondurucu yağmur'], 67: ['🌧️', 'Dondurucu yağmur'],
+  71: ['🌨️', 'Hafif kar'], 73: ['🌨️', 'Karlı'], 75: ['❄️', 'Yoğun kar'], 77: ['🌨️', 'Kar taneleri'],
+  80: ['🌦️', 'Hafif sağanak'], 81: ['🌧️', 'Sağanak'], 82: ['⛈️', 'Şiddetli sağanak'],
+  85: ['🌨️', 'Kar sağanağı'], 86: ['❄️', 'Yoğun kar sağanağı'],
+  95: ['⛈️', 'Gök gürültülü fırtına'], 96: ['⛈️', 'Dolulu fırtına'], 99: ['⛈️', 'Dolulu fırtına']
+};
+const havaKod = (k, gunduz = 1) => {
+  const h = HAVA_KOD[k] || ['🌡️', 'Bilinmiyor'];
+  return (!gunduz && (k === 0 || k === 1)) ? ['🌙', h[1]] : h;
+};
+const konumAl = () => ls.al('locus_konum') || VARSAYILAN_KONUM;
+
+async function havaYukle(zorla) {
+  const kart = $('havaKart'); if (!kart) return;
+  const konum = konumAl();
+  const kayit = ls.al('locus_hava');
+  const taze = kayit && kayit.lat === konum.lat && kayit.lon === konum.lon && Date.now() - kayit.zaman < 30 * 60 * 1000;
+  if (kayit && kayit.lat === konum.lat && kayit.lon === konum.lon) havaCiz(kayit.veri, konum);
+  if (taze && !zorla) return;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${konum.lat}&longitude=${konum.lon}` +
+      `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=4`;
+    const veri = await (await fetch(url)).json();
+    if (!veri.current) throw new Error();
+    ls.koy('locus_hava', { lat: konum.lat, lon: konum.lon, zaman: Date.now(), veri });
+    if ($('havaKart')) havaCiz(veri, konum);
+  } catch (e) {
+    if (!kayit && $('havaKart')) $('havaKart').innerHTML = havaBasHTML(konum) + '<p class="soluk">Hava durumu alınamadı.</p>';
+  }
+}
+
+function havaBasHTML(konum) {
+  return `<div class="w-bas"><h3>Hava Durumu</h3><span class="soluk">${esc(konum.ad)}</span>
+    <button class="link-btn sag" type="button" onclick="${konum.cihaz ? 'konumSifirla()' : 'konumKullan()'}">
+      ${konum.cihaz ? 'Bursa\'ya dön' : '📍 Konumumu kullan'}</button></div>`;
+}
+
+function havaCiz(v, konum) {
+  const c = v.current, d = v.daily;
+  const [ikon, durum] = havaKod(c.weather_code, c.is_day);
+  const gunler = [1, 2, 3].map(i => {
+    const g = new Date(d.time[i] + 'T12:00:00').toLocaleDateString('tr-TR', { weekday: 'short' });
+    return `<div class="hg"><span>${esc(g)}</span><span class="i">${havaKod(d.weather_code[i])[0]}</span>
+      <b>${Math.round(d.temperature_2m_max[i])}°</b> <span class="soluk">${Math.round(d.temperature_2m_min[i])}°</span></div>`;
+  }).join('');
+  $('havaKart').innerHTML = havaBasHTML(konum) + `
+    <div class="hava-ana"><span class="hava-ikon">${ikon}</span>
+      <div><div class="hava-derece">${Math.round(c.temperature_2m)}°</div></div>
+      <div class="hava-bilgi"><div>${esc(durum)}</div>
+        <div class="soluk">En yüksek ${Math.round(d.temperature_2m_max[0])}°, en düşük ${Math.round(d.temperature_2m_min[0])}°</div>
+        <div class="soluk">Hissedilen ${Math.round(c.apparent_temperature)}°, rüzgâr ${Math.round(c.wind_speed_10m)} km/sa</div></div>
+    </div>
+    <div class="hava-gunler">${gunler}</div>`;
+}
+
+function konumKullan() {
+  if (!navigator.geolocation) return toast('Bu cihaz konum paylaşımını desteklemiyor.', true);
+  toast('Konum alınıyor…');
+  navigator.geolocation.getCurrentPosition(async p => {
+    const lat = +p.coords.latitude.toFixed(3), lon = +p.coords.longitude.toFixed(3);
+    let ad = 'Konumum';
+    try {
+      const r = await (await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=tr`)).json();
+      ad = r.city || r.locality || r.principalSubdivision || ad;
+    } catch (e) {}
+    ls.koy('locus_konum', { lat, lon, ad, cihaz: true });
+    havaYukle(true);
+  }, () => toast('Konum izni verilmedi. Tarayıcı ayarlarından izin verebilirsiniz.', true), { timeout: 10000 });
+}
+function konumSifirla() { ls.sil('locus_konum'); havaYukle(true); }
+
+// ==================== DÖVİZ KURLARI (TCMB) ====================
+async function kurYukle() {
+  const kayit = ls.al('locus_kur');
+  if (kayit) kurCiz(kayit);
+  try {
+    const v = await api('kurlar');
+    ls.koy('locus_kur', v);
+    kurCiz(v);
+  } catch (e) {
+    if (!kayit && $('kurKart')) $('kurKart').innerHTML = `<div class="w-bas"><h3>Döviz Kurları</h3></div><p class="soluk">Kurlar alınamadı. ${esc(e.message)}</p>`;
+  }
+}
+
+function kurCiz(v) {
+  const kart = $('kurKart'); if (!kart) return;
+  const f = n => Number(n).toLocaleString('tr-TR', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
+  kart.innerHTML = `<div class="w-bas"><h3>Döviz Kurları</h3><span class="soluk">TCMB, ${esc(v.tarih)}</span></div>
+    <table class="kur-tablo"><thead><tr><th></th><th>Alış</th><th>Satış</th></tr></thead><tbody>
+    ${v.kurlar.map(k => `<tr><td><span class="kod">${esc(k.kod)}</span><span class="kur-ad">${esc(k.ad)}${k.birim > 1 ? ` (${k.birim})` : ''}</span></td>
+      <td>${f(k.alis)}</td><td><b>${f(k.satis)}</b></td></tr>`).join('')}
+    </tbody></table>
+    ${v.eski ? '<p class="soluk" style="font-size:13px;margin-top:10px">TCMB\'ye şu an ulaşılamadı, son alınan kurlar gösteriliyor.</p>' : ''}`;
+}
 
 // ==================== GENEL VERİ ====================
 const VERI = {};
