@@ -188,6 +188,80 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 #toast{position:fixed;left:50%;bottom:calc(24px + var(--bot));transform:translateX(-50%);background:var(--ink);color:var(--sf);padding:12px 18px;border-radius:8px;font-size:14px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
 #toast.hata{background:var(--danger);color:#fff}
 
+
+/* ---------- liste sayfaları (müşteriler vb.) ---------- */
+.arac{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.arama{flex:1;min-width:220px;display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border:1px solid var(--line);border-radius:8px;background:var(--sf)}
+.arama:focus-within{border-color:var(--acc)}
+.arama input{flex:1;border:0;outline:0;background:none;height:100%;min-width:0;font-size:15px}
+.arama span{opacity:.6}
+.cips{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--sf)}
+.cips button{height:44px;padding:0 16px;font-size:14px;border-left:1px solid var(--line);color:var(--mute)}
+.cips button:first-child{border-left:0}
+.cips button.on{background:var(--sel);color:var(--sel-ink);font-weight:600}
+.sayac{font-size:13px;color:var(--mute);margin:0 2px 10px}
+.m-satir{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 18px;border-top:1px solid var(--line)}
+.m-satir:first-child{border-top:0}
+.m-satir:hover{background:color-mix(in srgb,var(--sel) 55%,transparent)}
+.m-satir .av{width:40px;height:40px;border-radius:8px;font-size:14px}
+.m-satir.pasif .av{background:var(--mute)}
+.m-satir .ms-ic{flex:1;min-width:0}
+.m-satir .ms-ad{font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-satir .ms-alt{font-size:13px;color:var(--mute);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-satir .ms-tel{font-size:14px;color:var(--mute);white-space:nowrap}
+.m-satir .ok-ic{color:var(--mute);font-size:18px}
+.girdi.alan{height:auto;min-height:100px;padding:10px 14px;resize:vertical;line-height:1.5}
+.bolum-et{font-weight:600;margin:4px 0 10px;display:flex;align-items:center}
+.bolum-et .btn{margin-left:auto}
+.yk{border:1px solid var(--line);border-radius:8px;padding:14px 14px 0;margin-bottom:12px;background:var(--inbg)}
+.yk-bas{display:flex;align-items:center;margin-bottom:10px;font-size:14px;color:var(--mute)}
+.yk-bas button{margin-left:auto;color:var(--danger);font-size:13px;padding:4px 6px}
+.yk .girdi{background:var(--sf);margin-bottom:14px}
+.d-alan{margin-bottom:18px}
+.d-alan .de{font-size:13px;color:var(--mute);margin-bottom:4px}
+.d-kisi{padding:12px 0;border-top:1px solid var(--line)}
+.d-kisi:first-child{border-top:0;padding-top:0}
+.d-kisi b{display:block}
+.d-kisi .poz{color:var(--mute);font-size:14px}
+.d-kisi .baglanti{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px}
+.d-kisi a{color:var(--acc);text-decoration:none;font-size:14px}
+:root[data-theme="dark"] .d-kisi a{color:#6FA8EC}
+.d-not{white-space:pre-wrap;background:var(--inbg);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.d-meta{font-size:12px;color:var(--mute);margin-top:6px}
+.modal-alt .sol{margin-right:auto}
+
+
+.m-satir{cursor:pointer}
+.m-btn{display:flex;gap:8px;flex:none}
+.geri{color:var(--acc);font-size:15px;padding:4px 0;margin-bottom:14px;font-weight:500}
+:root[data-theme="dark"] .geri{color:#6FA8EC}
+.d-bas{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.av.buyuk{width:56px;height:56px;border-radius:12px;font-size:20px}
+.d-bas-ic{min-width:0;flex:1}
+.d-bas-ic h2{font-size:24px;font-weight:600;line-height:1.2}
+.d-rozetler{display:flex;gap:8px;margin-top:6px;flex-wrap:wrap}
+.d-bas-sag{display:flex;gap:10px}
+.panel{padding:22px 24px;margin-bottom:18px}
+.panel-bas{font-size:17px;font-weight:600;margin-bottom:16px}
+.panel-alt{font-size:15px;font-weight:600;margin:22px 0 10px}
+.bilgi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.bilgi-grid .de{font-size:13px;color:var(--mute);margin-bottom:3px}
+.soluk{color:var(--mute)}
+.kisi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.kisi{display:flex;gap:12px;padding:14px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
+.kisi .av{width:36px;height:36px;font-size:13px}
+.kisi b{display:block}
+.kisi .poz{color:var(--mute);font-size:14px;display:block}
+.kisi .baglanti{display:flex;flex-direction:column;gap:3px;margin-top:6px}
+.kisi a{color:var(--acc);text-decoration:none;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root[data-theme="dark"] .kisi a{color:#6FA8EC}
+.kucuk-bos{padding:36px 16px}
+.kucuk-bos .b-ikon{font-size:32px;margin-bottom:10px}
+.zaman{list-style:none;border-left:2px solid var(--line);margin-left:6px}
+.zaman li{position:relative;padding:0 0 18px 20px;display:flex;gap:16px;cursor:pointer}
+.zaman li::before{content:"";position:absolute;left:-7px;top:5px;width:12px;height:12px;border-radius:50%;background:var(--acc);border:2px solid var(--sf)}
+.zaman .z-tarih{font-size:13px;color:var(--mute);width:96px;flex:none;padding-top:2px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -232,6 +306,19 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .modal-ic{max-width:none;max-height:92vh;border-radius:14px 14px 0 0}
   .modal-alt{padding-bottom:calc(14px + var(--bot))}
   .iki{grid-template-columns:1fr}
+  .arac{gap:8px}
+  .arama{min-width:100%}
+  .cips{width:100%}
+  .cips button{flex:1}
+  .m-satir{padding:12px 14px}
+  .m-satir .ms-tel{display:none}
+  .m-satir{flex-wrap:wrap}
+  .m-btn{flex-basis:100%;padding-left:54px}
+  .d-bas-sag{width:100%}
+  .d-bas-sag .btn{flex:1}
+  .panel{padding:18px 16px}
+  .bilgi-grid{grid-template-columns:1fr 1fr}
+  .zaman li{flex-direction:column;gap:2px}
 }
 </style>
 </head>
@@ -397,6 +484,8 @@ function girisGoster(mesaj) {
 
 function oturumBitti(mesaj) {
   D.token = null; D.kul = null; ls.sil('locus_oturum');
+  Object.keys(localStorage).filter(k => k.startsWith('locus_c_')).forEach(k => ls.sil(k));
+  Object.keys(VERI).forEach(k => delete VERI[k]);
   modalKapat(); girisGoster(mesaj);
 }
 
@@ -456,7 +545,10 @@ function git(kod) {
 window.addEventListener('hashchange', () => { if (D.kul) rotaUygula(); });
 
 function rotaUygula() {
-  let kod = (location.hash.match(/^#\/(\w+)/) || [])[1] || 'anasayfa';
+  const eslesme = location.hash.match(/^#\/(\w+)(?:\/([\w-]+))?/) || [];
+  let kod = eslesme[1] || 'anasayfa';
+  D.param = eslesme[2] || null;
+  modalKapat(); dahaKapat();
   const s = D.sayfalar.find(x => x.kod === kod) || D.sayfalar[0];
   D.aktif = s.kod;
   $('sayfaBaslik').textContent = s.ad;
@@ -624,6 +716,272 @@ async function kullaniciSil(kadi) {
     await api('kullanicilar.sil', { kullaniciAdi: kadi });
     YONETIM.liste = YONETIM.liste.filter(x => x.kullaniciAdi !== kadi);
     modalKapat(); kullaniciListesiCiz(); toast('Kullanıcı silindi.');
+  } catch (e) {
+    $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
+  }
+}
+
+
+// ==================== GENEL VERİ ====================
+const VERI = {};
+const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
+const trSirala = (a, b) => String(a).localeCompare(String(b), 'tr', { sensitivity: 'base' });
+const tarihYaz = s => s ? new Date(s).toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+
+async function veriYukle(varlik) {
+  const r = await api('kayit.liste', { varlik });
+  VERI[varlik] = r; ls.koy('locus_c_' + varlik, r);
+  return r;
+}
+function veriGuncelle(varlik, kayit) {
+  const l = VERI[varlik] || (VERI[varlik] = []);
+  const i = l.findIndex(x => x.Id === kayit.Id);
+  if (i >= 0) l[i] = kayit; else l.push(kayit);
+  ls.koy('locus_c_' + varlik, l);
+}
+function veriCikar(varlik, id) {
+  VERI[varlik] = (VERI[varlik] || []).filter(x => x.Id !== id);
+  ls.koy('locus_c_' + varlik, VERI[varlik]);
+}
+
+// ==================== MÜŞTERİLER ====================
+const MUS = { arama: '', filtre: 'tumu', form: null };
+const musBul = id => (VERI.musteriler || []).find(x => x.Id === id);
+
+SAYFA_CIZ.musteriler = function (ic, s, y) {
+  if (D.param) return musteriSayfa(ic, s, y, D.param);
+
+  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `<button class="btn" type="button" onclick="musteriForm()">+ Müşteri Ekle</button>` : '') + `
+    <div class="arac">
+      <label class="arama"><span>🔍</span><input id="musAra" type="search" placeholder="Müşteri adı ara" autocomplete="off" value="${esc(MUS.arama)}" oninput="MUS.arama=this.value;musteriListeCiz()"></label>
+      <div class="cips">${[['tumu', 'Tümü'], ['aktif', 'Aktif'], ['pasif', 'Pasif']].map(([k, a]) =>
+        `<button type="button" data-f="${k}" onclick="MUS.filtre='${k}';musteriListeCiz()">${a}</button>`).join('')}</div>
+    </div>
+    <div class="sayac" id="musSayac"></div>
+    <div class="kart" id="musListe"></div>`;
+
+  const onbellek = VERI.musteriler || ls.al('locus_c_musteriler');
+  if (onbellek) { VERI.musteriler = onbellek; musteriListeCiz(); }
+  else $('musListe').innerHTML = '<div class="bos"><p>Müşteriler yükleniyor…</p></div>';
+
+  veriYukle('musteriler')
+    .then(() => { if (D.aktif === 'musteriler' && !D.param) musteriListeCiz(); })
+    .catch(e => { if (!onbellek && $('musListe')) $('musListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function musteriListeCiz() {
+  const kutu = $('musListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === MUS.filtre));
+  const tam = yetki('musteriler') === 'tam';
+  const tum = VERI.musteriler || [];
+  const q = trKucuk(MUS.arama);
+  const l = tum
+    .filter(m => MUS.filtre === 'tumu' || (MUS.filtre === 'aktif') === m.Aktif)
+    .filter(m => !q || trKucuk(m.Ad).includes(q))
+    .sort((a, b) => trSirala(a.Ad, b.Ad));
+
+  $('musSayac').textContent = l.length === tum.length ? `${tum.length} müşteri` : `${l.length} / ${tum.length} müşteri`;
+
+  if (!tum.length) {
+    kutu.innerHTML = `<div class="bos"><div class="b-ikon">🤝</div><h3>Henüz müşteri yok</h3>
+      <p>${tam ? 'İlk müşteriyi eklemek için Müşteri Ekle\'ye dokunun.' : 'Müşteri eklendiğinde burada listelenecek.'}</p></div>`;
+    return;
+  }
+  if (!l.length) {
+    kutu.innerHTML = `<div class="bos"><h3>Sonuç yok</h3><p>${q ? `"${esc(MUS.arama.trim())}" ile eşleşen müşteri bulunamadı.` : 'Bu filtrede müşteri yok.'}</p></div>`;
+    return;
+  }
+  kutu.innerHTML = l.map(m => {
+    const y1 = (m.Yetkililer || [])[0];
+    const alt = y1 ? [y1.adSoyad, y1.pozisyon].filter(Boolean).join(', ') : (m.VergiNo ? 'Vergi No: ' + m.VergiNo : 'Yetkili eklenmemiş');
+    const ek = (m.Yetkililer || []).length > 1 ? ` +${m.Yetkililer.length - 1} kişi` : '';
+    return `<div class="m-satir ${m.Aktif ? '' : 'pasif'}" onclick="git('musteriler/${m.Id}')">
+      <span class="av">${esc(basHarf(m.Ad))}</span>
+      <span class="ms-ic"><span class="ms-ad">${esc(m.Ad)}</span><span class="ms-alt">${esc(alt)}${ek}</span></span>
+      ${y1 && y1.telefon ? `<span class="ms-tel">${esc(y1.telefon)}</span>` : ''}
+      ${m.Aktif ? '<span class="rozet ok">Aktif</span>' : '<span class="rozet pasif">Pasif</span>'}
+      <span class="m-btn">
+        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('musteriler/${m.Id}')">Görüntüle</button>
+        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();musteriForm('${m.Id}')">Düzenle</button>` : ''}
+      </span></div>`;
+  }).join('');
+}
+
+// ---------- Müşteri görüntüleme sayfası ----------
+function musteriSayfa(ic, s, y, id) {
+  const ciz = () => {
+    const m = musBul(id);
+    const geri = `<button class="geri" type="button" onclick="git('musteriler')">‹ Müşteriler</button>`;
+    if (!m) {
+      ic.innerHTML = geri + `<div class="kart bos"><div class="b-ikon">🔍</div><h3>Müşteri bulunamadı</h3><p>Silinmiş olabilir.</p></div>`;
+      return;
+    }
+    const tam = y === 'tam';
+    const kisiler = (m.Yetkililer || []).map(k => `
+      <div class="kisi">
+        <span class="av">${esc(basHarf(k.adSoyad || '?'))}</span>
+        <div style="min-width:0"><b>${esc(k.adSoyad || 'İsimsiz')}</b>
+          ${k.pozisyon ? `<span class="poz">${esc(k.pozisyon)}</span>` : ''}
+          <div class="baglanti">
+            ${k.telefon ? `<a href="tel:${esc(k.telefon.replace(/[^\d+]/g, ''))}">📞 ${esc(k.telefon)}</a>` : ''}
+            ${k.eposta ? `<a href="mailto:${esc(k.eposta)}">✉️ ${esc(k.eposta)}</a>` : ''}
+          </div></div></div>`).join('');
+
+    ic.innerHTML = geri + `
+      <div class="d-bas">
+        <span class="av buyuk">${esc(basHarf(m.Ad))}</span>
+        <div class="d-bas-ic"><h2>${esc(m.Ad)}</h2>
+          <div class="d-rozetler">${m.Aktif ? '<span class="rozet ok">Aktif</span>' : '<span class="rozet pasif">Pasif</span>'}
+          ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
+        ${tam ? `<div class="d-bas-sag">
+          <button class="btn ikincil" type="button" style="color:var(--danger)" onclick="musteriSilOnay('${m.Id}')">Sil</button>
+          <button class="btn" type="button" onclick="musteriForm('${m.Id}')">Düzenle</button></div>` : ''}
+      </div>
+
+      <section class="kart panel">
+        <h3 class="panel-bas">Müşteri Bilgileri</h3>
+        <div class="bilgi-grid">
+          <div><div class="de">Vergi No</div>${m.VergiNo ? esc(m.VergiNo) : '<span class="soluk">Girilmemiş</span>'}</div>
+          <div><div class="de">Durum</div>${m.Aktif ? 'Aktif' : 'Pasif'}</div>
+          <div><div class="de">Kayıt tarihi</div>${m.Olusturma ? esc(tarihYaz(m.Olusturma)) : '<span class="soluk">Bilinmiyor</span>'}</div>
+          <div><div class="de">Son güncelleme</div>${esc(tarihYaz(m.Guncelleme))}${m.Guncelleyen ? `<span class="soluk">, @${esc(m.Guncelleyen)}</span>` : ''}</div>
+        </div>
+        <h4 class="panel-alt">Yetkililer${(m.Yetkililer || []).length ? ` <span class="soluk">(${m.Yetkililer.length})</span>` : ''}</h4>
+        ${kisiler ? `<div class="kisi-grid">${kisiler}</div>` : '<p class="soluk">Yetkili eklenmemiş.</p>'}
+        <h4 class="panel-alt">Notlar</h4>
+        ${m.Notlar ? `<div class="d-not">${esc(m.Notlar)}</div>` : '<p class="soluk">Not yok.</p>'}
+      </section>
+
+      <section class="kart panel">
+        <h3 class="panel-bas">Yapılan İşlemler</h3>
+        ${islemlerHTML(musteriIslemleri(m))}
+      </section>`;
+  };
+
+  const onbellek = VERI.musteriler || ls.al('locus_c_musteriler');
+  if (onbellek) { VERI.musteriler = onbellek; ciz(); }
+  else ic.innerHTML = `<div class="kart bos"><p>Yükleniyor…</p></div>`;
+  veriYukle('musteriler')
+    .then(() => { if (D.aktif === 'musteriler' && D.param === id && $('modal').hidden) ciz(); })
+    .catch(e => { if (!onbellek) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+/**
+ * Müşterinin işlem geçmişi. Projeler ve müşteri siparişleri sayfaları yapıldığında
+ * buradan eklenecek. Her öğe: { tarih, tur, baslik, aciklama, durum, rota }
+ */
+function musteriIslemleri(m) {
+  const liste = [];
+  // Örn: (VERI.siparisler || []).filter(x => x.MusteriId === m.Id).forEach(x => liste.push({...}))
+  return liste.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+}
+
+function islemlerHTML(liste) {
+  if (!liste.length) {
+    return `<div class="bos kucuk-bos"><div class="b-ikon">🗂️</div><h3>Henüz işlem yok</h3>
+      <p>Bu müşteriye ait projeler ve siparişler burada tarih sırasına göre listelenecek.</p></div>`;
+  }
+  return `<ol class="zaman">${liste.map(x => `
+    <li onclick="${x.rota ? `git('${x.rota}')` : ''}">
+      <span class="z-tarih">${esc(new Date(x.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }))}</span>
+      <span class="z-ic"><span class="rozet">${esc(x.tur)}</span> <b>${esc(x.baslik)}</b>
+        ${x.aciklama ? `<span class="soluk"> ${esc(x.aciklama)}</span>` : ''}
+        ${x.durum ? `<span class="rozet pasif" style="margin-left:6px">${esc(x.durum)}</span>` : ''}</span>
+    </li>`).join('')}</ol>`;
+}
+
+// ---------- Ekle / Düzenle ----------
+function musteriForm(id) {
+  const m = id ? musBul(id) : null;
+  MUS.form = {
+    Id: m ? m.Id : null,
+    yetkililer: m && m.Yetkililer && m.Yetkililer.length ? m.Yetkililer.map(y => Object.assign({}, y)) : [{ adSoyad: '', pozisyon: '', eposta: '', telefon: '' }]
+  };
+  modalAc(m ? 'Müşteriyi Düzenle' : 'Yeni Müşteri', `
+    <label class="et" for="fAd">Müşteri adı *</label>
+    <input class="girdi" id="fAd" value="${m ? esc(m.Ad) : ''}" placeholder="Firma adı">
+    <div class="iki">
+      <div><label class="et" for="fVn">Vergi No</label>
+        <input class="girdi" id="fVn" inputmode="numeric" maxlength="11" value="${m ? esc(m.VergiNo) : ''}" placeholder="10 haneli"></div>
+      <div><label class="et">Durum</label>
+        <div class="cips" style="width:100%;margin-bottom:18px"><button type="button" id="fAktif1" style="flex:1" onclick="durumSec(true)">Aktif</button><button type="button" id="fAktif0" style="flex:1" onclick="durumSec(false)">Pasif</button></div></div>
+    </div>
+    <div class="bolum-et">Yetkililer<button class="btn ikincil kucuk" type="button" onclick="yetkiliEkle()">+ Yetkili Ekle</button></div>
+    <div id="fYetkililer"></div>
+    <label class="et" for="fNot" style="margin-top:6px">Notlar</label>
+    <textarea class="girdi alan" id="fNot" placeholder="Müşteriyle ilgili notlar">${m ? esc(m.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="fKaydet" onclick="musteriKaydet()">Kaydet</button>`);
+  durumSec(m ? m.Aktif : true);
+  yetkililerCiz();
+  if (!m) setTimeout(() => $('fAd').focus(), 50);
+}
+
+function durumSec(aktif) {
+  MUS.form.aktif = aktif;
+  $('fAktif1').classList.toggle('on', aktif);
+  $('fAktif0').classList.toggle('on', !aktif);
+}
+
+function yetkililerCiz() {
+  $('fYetkililer').innerHTML = MUS.form.yetkililer.map((y, i) => `
+    <div class="yk"><div class="yk-bas">Yetkili ${i + 1}<button type="button" onclick="yetkiliKaldir(${i})">Kaldır</button></div>
+      <div class="iki">
+        <input class="girdi" placeholder="Ad Soyad" value="${esc(y.adSoyad)}" oninput="MUS.form.yetkililer[${i}].adSoyad=this.value">
+        <input class="girdi" placeholder="Şirketteki pozisyonu" value="${esc(y.pozisyon)}" oninput="MUS.form.yetkililer[${i}].pozisyon=this.value">
+        <input class="girdi" type="email" inputmode="email" autocapitalize="none" placeholder="E-posta" value="${esc(y.eposta)}" oninput="MUS.form.yetkililer[${i}].eposta=this.value">
+        <input class="girdi" type="tel" inputmode="tel" placeholder="Telefon" value="${esc(y.telefon)}" oninput="MUS.form.yetkililer[${i}].telefon=this.value">
+      </div></div>`).join('') || '<p style="color:var(--mute);font-size:14px;margin-bottom:14px">Yetkili eklenmemiş.</p>';
+}
+function yetkiliEkle() { MUS.form.yetkililer.push({ adSoyad: '', pozisyon: '', eposta: '', telefon: '' }); yetkililerCiz(); }
+function yetkiliKaldir(i) { MUS.form.yetkililer.splice(i, 1); yetkililerCiz(); }
+
+async function musteriKaydet() {
+  const hata = t => ($('mHata').textContent = t);
+  const kayit = {
+    Id: MUS.form.Id,
+    Ad: $('fAd').value.trim(),
+    VergiNo: $('fVn').value.replace(/\s/g, ''),
+    Aktif: MUS.form.aktif,
+    Yetkililer: MUS.form.yetkililer.map(y => ({ adSoyad: y.adSoyad.trim(), pozisyon: y.pozisyon.trim(), eposta: y.eposta.trim(), telefon: y.telefon.trim() }))
+      .filter(y => y.adSoyad || y.pozisyon || y.eposta || y.telefon),
+    Notlar: $('fNot').value.trim()
+  };
+  if (!kayit.Ad) return hata('Müşteri adı gerekli.');
+  if (kayit.VergiNo && !/^\d{10,11}$/.test(kayit.VergiNo)) return hata('Vergi no 10 haneli (şahıs firmasında TC kimlik no, 11 haneli) olmalı.');
+  const kotuMail = kayit.Yetkililer.find(y => y.eposta && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(y.eposta));
+  if (kotuMail) return hata('Geçersiz e-posta adresi: ' + kotuMail.eposta);
+  if ((VERI.musteriler || []).some(m => m.Id !== kayit.Id && trKucuk(m.Ad) === trKucuk(kayit.Ad))) return hata('Bu isimde bir müşteri zaten var.');
+
+  const btn = $('fKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const sonuc = await api('kayit.kaydet', { varlik: 'musteriler', kayit });
+    veriGuncelle('musteriler', sonuc);
+    modalKapat();
+    if (D.aktif === 'musteriler' && D.param) rotaUygula(); else musteriListeCiz();
+    toast(kayit.Id ? 'Müşteri güncellendi.' : 'Müşteri eklendi.');
+  } catch (e) {
+    hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet';
+  }
+}
+
+function musteriSilOnay(id) {
+  const m = musBul(id);
+  modalAc('Müşteriyi Sil', `<p><b>${esc(m.Ad)}</b> ve tüm yetkili bilgileri kalıcı olarak silinecek.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Artık çalışmadığınız bir müşteriyse silmek yerine Pasif yapmanız geçmiş kayıtlar için daha iyi olur.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn tehlike" type="button" id="mSil" onclick="musteriSil('${id}')">Sil</button>`);
+}
+
+async function musteriSil(id) {
+  const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
+  try {
+    await api('kayit.sil', { varlik: 'musteriler', id });
+    veriCikar('musteriler', id);
+    modalKapat(); toast('Müşteri silindi.');
+    if (D.param) git('musteriler'); else musteriListeCiz();
   } catch (e) {
     $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
   }
