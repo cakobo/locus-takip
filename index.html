@@ -313,6 +313,7 @@ const VARSAYILAN_SAYFALAR = [
   { kod: 'anasayfa', ad: 'Ana Sayfa', ikon: '🏠' },
   { kod: 'musteriler', ad: 'Müşteriler', ikon: '🤝' },
   { kod: 'tedarikciler', ad: 'Tedarikçiler', ikon: '🚚' },
+  { kod: 'siparisler', ad: 'Siparişler', ikon: '🛒' },
   { kod: 'oxyweld', ad: 'Oxyweld Servis', ikon: '🔧' },
   { kod: 'ajanda', ad: 'Ajanda', ikon: '📅' },
   { kod: 'ekip', ad: 'Ekip', ikon: '👥' },
@@ -325,7 +326,7 @@ const VARSAYILAN_SAYFALAR = [
 const ALT_MENU = ['anasayfa', 'ajanda', 'oxyweld', 'stok'];
 const KISA_AD = { oxyweld: 'Servis' };
 const ACIKLAMA = {
-  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve alımlar',
+  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve alımlar', siparisler: 'Satın alma ve sipariş takibi',
   oxyweld: 'Makine bakım ve servis kayıtları', ajanda: 'Takvim, görev ve aktiviteler',
   ekip: 'Personel bilgileri ve takibi', stok: 'Malzeme giriş ve çıkışları', finans: 'Gelir, gider ve cari hesaplar',
   raporlar: 'Özetler ve analizler', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
@@ -377,7 +378,7 @@ $('girisForm').addEventListener('submit', async e => {
   btn.disabled = true; btn.textContent = 'Giriş yapılıyor…';
   try {
     const v = await api('giris', { kullaniciAdi: $('gKadi').value, sifre: $('gSifre').value });
-    D.token = v.token; D.kul = v.kullanici; D.sayfalar = v.sayfalar || VARSAYILAN_SAYFALAR;
+    D.token = v.token; D.kul = v.kullanici; D.sayfalar = VARSAYILAN_SAYFALAR;
     ls.koy('locus_oturum', { token: D.token, kul: D.kul, sayfalar: D.sayfalar });
     $('gSifre').value = '';
     uygulamayiAc();
@@ -685,7 +686,7 @@ if ('serviceWorker' in navigator) window.addEventListener('load', () => navigato
   const kayit = ls.al('locus_oturum');
   if (!kayit || !kayit.token) return girisGoster();
   // Hızlı açılış: önce kayıtlı bilgiyle aç, arka planda oturumu doğrula
-  D.token = kayit.token; D.kul = kayit.kul; D.sayfalar = kayit.sayfalar || VARSAYILAN_SAYFALAR;
+  D.token = kayit.token; D.kul = kayit.kul; D.sayfalar = VARSAYILAN_SAYFALAR;
   uygulamayiAc();
   try {
     const guncel = await api('ben');
