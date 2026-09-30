@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Locus Şirket Takip Sistemi</title>
+<meta name="theme-color" content="#004085">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="img/ikon-32.png">
+<link rel="apple-touch-icon" href="img/ikon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Locus Takip">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>
+  // Tema, sayfa çizilmeden önce uygulanır (beyaz ekran yanıp sönmesin)
+  (function () {
+    var t = null;
+    try { t = localStorage.getItem('locus_tema'); } catch (e) {}
+    if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', t);
+  })();
+</script>
+<style>
+:root{
+  --navy:#004085; --acc:#004085; --acc-ink:#fff;
+  --bg:#F2F5F9; --sf:#FFFFFF; --ink:#15233B; --mute:#6A7890; --line:#E1E6EE;
+  --sel:#E6EEF8; --sel-ink:#004085; --inbg:#FAFBFD;
+  --danger:#C0392B; --ok:#1E8E5A; --warn:#A5680E;
+  --shadow:0 10px 30px rgba(15,35,70,.14);
+  --font:'IBM Plex Sans', 'Segoe UI', Roboto, Arial, sans-serif;
+  --top:env(safe-area-inset-top,0px); --bot:env(safe-area-inset-bottom,0px);
+}
+:root[data-theme="dark"]{
+  --acc:#2F6FC0; --bg:#0E141D; --sf:#161F2C; --ink:#E4EAF3; --mute:#8C9AB0; --line:#263247;
+  --sel:#223754; --sel-ink:#fff; --inbg:#0F1722; --shadow:0 10px 30px rgba(0,0,0,.45);
+  --danger:#E26A5C; --ok:#4CC38A; --warn:#E0A84A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+[hidden]{display:none!important}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+
+/* logo tema geçişi */
+.lg-dark{display:none}
+:root[data-theme="dark"] .lg-light{display:none}
+:root[data-theme="dark"] .lg-dark{display:inline-block}
+
+/* ---------- açılış ---------- */
+#acilis{position:fixed;inset:0;background:var(--navy);display:flex;align-items:center;justify-content:center;z-index:100}
+#acilis img{width:90px;animation:nabiz 1.4s ease-in-out infinite}
+@keyframes nabiz{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){#acilis img{animation:none}}
+
+/* ---------- giriş ---------- */
+#giris{min-height:100%;display:flex}
+.marka{width:46%;background:var(--navy);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:48px 40px calc(48px + var(--bot))}
+.marka img{width:min(300px,55%);opacity:.92;margin-bottom:56px}
+.marka h2{font-size:28px;font-weight:500;line-height:1.2}
+.marka p{margin-top:12px;font-size:15px;opacity:.72}
+.gform-alan{flex:1;display:flex;align-items:center;justify-content:center;padding:48px 24px;position:relative;background:var(--sf)}
+.gform{width:100%;max-width:360px}
+.gform .logo{display:block;width:240px;margin:0 auto 44px}
+.gform .logo.lg-dark{display:none}
+:root[data-theme="dark"] .gform .logo.lg-light{display:none}
+:root[data-theme="dark"] .gform .logo.lg-dark{display:block}
+.gform-alan .tema-btn{position:absolute;top:calc(20px + var(--top));right:20px}
+
+label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
+.girdi{width:100%;height:46px;border:1px solid var(--line);border-radius:6px;background:var(--inbg);padding:0 14px;margin-bottom:18px;outline:none}
+.girdi:focus{border-color:var(--acc)}
+.btn{height:44px;padding:0 18px;border-radius:6px;background:var(--acc);color:var(--acc-ink);font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.tam{width:100%;height:48px;font-size:16px;margin-top:6px}
+.btn.ikincil{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn.tehlike{background:var(--danger);color:#fff}
+.btn.kucuk{height:34px;padding:0 12px;font-size:14px;font-weight:500}
+.hata-kutu{color:var(--danger);font-size:14px;margin-top:14px;min-height:20px}
+
+/* tema düğmesi */
+.tema-btn{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:20px;background:var(--sf)}
+.tema-btn span{width:30px;height:26px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-size:14px;opacity:.55}
+:root[data-theme="light"] .tema-btn .g,:root[data-theme="dark"] .tema-btn .k{background:var(--sel);opacity:1}
+
+/* ---------- uygulama ---------- */
+#uygulama{min-height:100%;display:flex;flex-direction:column}
+.ust{position:sticky;top:0;z-index:20;background:var(--sf);border-bottom:1px solid var(--line);padding-top:var(--top)}
+.ust-ic{height:64px;display:flex;align-items:center;gap:18px;padding:0 24px}
+.ust .logo{height:32px;cursor:pointer}
+.ust .sembol{display:none;height:26px}
+.ust .ayrac{width:1px;height:26px;background:var(--line)}
+.ust h1{font-size:19px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ust-sag{margin-left:auto;display:flex;align-items:center;gap:14px}
+.kul-btn{display:flex;align-items:center;gap:10px;color:var(--mute);font-size:15px;padding:4px;border-radius:24px}
+.av{width:34px;height:34px;border-radius:50%;background:var(--acc);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;flex:none}
+.menu-acilir{position:absolute;right:16px;top:calc(62px + var(--top));background:var(--sf);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);min-width:220px;padding:6px;z-index:30}
+.menu-acilir .bas{padding:10px 12px;border-bottom:1px solid var(--line);margin-bottom:6px}
+.menu-acilir .bas b{display:block}
+.menu-acilir .bas small{color:var(--mute)}
+.menu-acilir button{display:flex;width:100%;text-align:left;padding:10px 12px;border-radius:6px;gap:10px}
+.menu-acilir button:hover{background:var(--sel)}
+
+.govde{flex:1;display:flex;min-height:0}
+.yan{width:224px;flex:none;background:var(--sf);border-right:1px solid var(--line);padding:14px 10px;position:sticky;top:calc(65px + var(--top));height:calc(100vh - 65px - var(--top));overflow-y:auto}
+.nav-oge{display:flex;align-items:center;gap:10px;width:100%;padding:9px 12px;border-radius:6px;color:var(--ink);opacity:.85;font-size:15px;text-align:left}
+.nav-oge:hover{background:var(--sel);opacity:1}
+.nav-oge.on{background:var(--sel);color:var(--sel-ink);font-weight:600;opacity:1;box-shadow:inset 3px 0 0 var(--acc)}
+.nav-oge .kilit{margin-left:auto;font-size:12px;opacity:.7}
+.nav-oge.kapali{opacity:.5}
+.ic{flex:1;min-width:0;padding:28px 32px calc(40px + var(--bot))}
+
+.alt{display:none}
+.daha{position:fixed;inset:0;z-index:40;background:rgba(5,15,30,.45);display:flex;align-items:flex-end}
+.daha-ic{width:100%;background:var(--sf);border-radius:14px 14px 0 0;padding:10px 12px calc(16px + var(--bot))}
+.daha-ic .tutamac{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
+.daha-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.daha-grid button{display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 4px;border-radius:10px;font-size:13px;position:relative}
+.daha-grid button span:first-child{font-size:22px}
+.daha-grid button.on{background:var(--sel);color:var(--sel-ink);font-weight:600}
+.daha-grid .kilit{position:absolute;top:8px;right:14px;font-size:11px}
+
+/* ---------- sayfa içerikleri ---------- */
+.sayfa-bas{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:22px}
+.sayfa-bas h2{font-size:24px;font-weight:600}
+.sayfa-bas .sag{margin-left:auto;display:flex;gap:10px}
+.rozet{display:inline-flex;align-items:center;gap:6px;font-size:13px;padding:4px 10px;border-radius:14px;background:var(--sel);color:var(--sel-ink)}
+.rozet.uyari{background:color-mix(in srgb,var(--warn) 16%,transparent);color:var(--warn)}
+.rozet.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.rozet.pasif{background:color-mix(in srgb,var(--mute) 18%,transparent);color:var(--mute)}
+.kart{background:var(--sf);border:1px solid var(--line);border-radius:8px}
+
+.bos{padding:64px 24px;text-align:center;color:var(--mute)}
+.bos .b-ikon{font-size:42px;margin-bottom:14px}
+.bos h3{color:var(--ink);font-size:19px;font-weight:600;margin-bottom:6px}
+
+.karsilama{padding:26px 28px;margin-bottom:24px;background:var(--navy);color:#fff;border:0;display:flex;align-items:center;gap:24px;overflow:hidden;position:relative}
+.karsilama h2{font-size:24px;font-weight:600}
+.karsilama p{opacity:.75;margin-top:4px}
+.karsilama img{height:74px;margin-left:auto;opacity:.18}
+.bolum-bas{font-size:15px;color:var(--mute);margin:0 0 12px}
+.hizli{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.hizli button{padding:18px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.hizli button:hover{border-color:var(--acc)}
+.hizli .hi{font-size:24px}
+.hizli .ha{font-weight:600}
+.hizli .hs{font-size:13px;color:var(--mute)}
+
+/* kullanıcı listesi */
+.liste .satir{display:grid;grid-template-columns:minmax(160px,1.3fr) 1fr 110px 150px 170px;align-items:center;gap:12px;padding:14px 18px;border-top:1px solid var(--line)}
+.liste .satir:first-child{border-top:0}
+.liste .satir.bas{font-size:13px;color:var(--mute);padding-top:12px;padding-bottom:12px}
+.liste .kad{display:flex;align-items:center;gap:12px;min-width:0}
+.liste .kad b{display:block;overflow:hidden;text-overflow:ellipsis}
+.liste .kad small{color:var(--mute)}
+.liste .islem{display:flex;gap:8px;justify-content:flex-end}
+.liste .mut{color:var(--mute);font-size:14px}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:50;background:rgba(5,15,30,.5);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-ic{width:100%;max-width:560px;max-height:calc(100vh - 40px);background:var(--sf);border-radius:10px;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.modal-bas{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal-bas h3{font-size:18px;font-weight:600}
+.modal-bas button{margin-left:auto;font-size:22px;color:var(--mute);width:34px;height:34px;border-radius:6px}
+.modal-govde{padding:20px 22px;overflow-y:auto}
+.modal-alt{padding:14px 22px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:10px}
+.iki{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.anahtar{display:flex;align-items:center;gap:10px;margin:2px 0 18px;cursor:pointer;user-select:none}
+.anahtar input{width:18px;height:18px;accent-color:var(--acc)}
+
+.yetki-bas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.yetki-bas b{font-weight:600}
+.yetki-bas .sag{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--mute)}
+.yetki-satir{display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.yetki-satir .ys-ad{display:flex;gap:10px;align-items:center;flex:1;min-width:0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;flex:none}
+.seg button{padding:6px 11px;font-size:13px;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button.on[data-v="yok"]{background:color-mix(in srgb,var(--mute) 22%,transparent);font-weight:600}
+.seg button.on[data-v="goruntule"]{background:color-mix(in srgb,var(--warn) 20%,transparent);color:var(--warn);font-weight:600}
+.seg button.on[data-v="tam"]{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok);font-weight:600}
+.seg.kucuk button{padding:4px 8px;font-size:12px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + var(--bot));transform:translateX(-50%);background:var(--ink);color:var(--sf);padding:12px 18px;border-radius:8px;font-size:14px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+#toast.hata{background:var(--danger);color:#fff}
+
+/* ---------- mobil ---------- */
+@media (max-width:820px){
+  #giris{flex-direction:column}
+  .marka{width:100%;padding:calc(36px + var(--top)) 24px 32px}
+  .marka img{width:110px;margin-bottom:20px}
+  .marka h2{font-size:22px}
+  .gform-alan{align-items:flex-start;padding:36px 24px calc(36px + var(--bot))}
+  .gform-alan .tema-btn{top:14px;right:14px}
+  .gform .logo{width:190px;margin-bottom:30px}
+
+  .ust{background:var(--navy);border-bottom:0;color:#fff}
+  :root[data-theme="dark"] .ust{background:var(--sf);border-bottom:1px solid var(--line)}
+  .ust-ic{height:58px;padding:0 14px;gap:12px}
+  .ust .logo,.ust .ayrac{display:none!important}
+  .ust .sembol{display:block}
+  .ust h1{font-size:18px}
+  .ust .tema-btn{background:transparent;border-color:rgba(255,255,255,.25)}
+  :root[data-theme="light"] .ust .tema-btn .g{background:rgba(255,255,255,.2)}
+  .kul-btn .ad{display:none}
+  .ust .av{background:rgba(255,255,255,.18)}
+  .menu-acilir{top:calc(56px + var(--top));right:10px}
+
+  .yan{display:none}
+  .ic{padding:18px 14px calc(90px + var(--bot))}
+  .alt{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--sf);border-top:1px solid var(--line);padding-bottom:var(--bot)}
+  .alt button{flex:1;height:62px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11px;color:var(--mute);position:relative}
+  .alt button span:first-child{font-size:19px}
+  .alt button.on{color:var(--acc);font-weight:600}
+  :root[data-theme="dark"] .alt button.on{color:#6FA8EC}
+  .alt .kilit{position:absolute;top:8px;right:calc(50% - 20px);font-size:10px}
+
+  .sayfa-bas h2{font-size:21px}
+  .karsilama{padding:20px}
+  .karsilama img{display:none}
+  .hizli{grid-template-columns:repeat(2,1fr)}
+  .liste .satir.bas{display:none}
+  .liste .satir{grid-template-columns:1fr auto;gap:8px 12px}
+  .liste .satir .c-yetki,.liste .satir .c-son{grid-column:1/-1;padding-left:46px}
+  .liste .satir .c-durum{grid-row:1;grid-column:2}
+  .liste .satir .islem{grid-column:1/-1;justify-content:flex-start;padding-left:46px}
+  .modal{padding:0;align-items:flex-end}
+  .modal-ic{max-width:none;max-height:92vh;border-radius:14px 14px 0 0}
+  .modal-alt{padding-bottom:calc(14px + var(--bot))}
+  .iki{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div id="acilis"><img src="img/sembol-beyaz.png" alt=""></div>
+
+<!-- ================= GİRİŞ ================= -->
+<div id="giris" hidden>
+  <section class="marka">
+    <img src="img/sembol-beyaz.png" alt="">
+    <h2>Locus Şirket Takip Sistemi</h2>
+    <p>Müşteriler, Servis, Stok ve Finans Tek Yerde.</p>
+  </section>
+  <section class="gform-alan">
+    <button class="tema-btn" type="button" onclick="temaDegistir()" aria-label="Temayı değiştir"><span class="g">☀️</span><span class="k">🌙</span></button>
+    <form class="gform" id="girisForm" autocomplete="on">
+      <img class="logo lg-light" src="img/logo-renkli.png" alt="Locus Engineering">
+      <img class="logo lg-dark" src="img/logo-beyaz.png" alt="Locus Engineering">
+      <label class="et" for="gKadi">Kullanıcı adı</label>
+      <input class="girdi" id="gKadi" name="username" autocomplete="username" autocapitalize="none" spellcheck="false" required>
+      <label class="et" for="gSifre">Şifre</label>
+      <input class="girdi" id="gSifre" name="password" type="password" autocomplete="current-password" required>
+      <button class="btn tam" id="gBtn" type="submit">Giriş Yap</button>
+      <div class="hata-kutu" id="gHata" role="alert"></div>
+    </form>
+  </section>
+</div>
+
+<!-- ================= UYGULAMA ================= -->
+<div id="uygulama" hidden>
+  <header class="ust">
+    <div class="ust-ic">
+      <img class="logo lg-light" src="img/logo-renkli.png" alt="Locus" onclick="git('anasayfa')">
+      <img class="logo lg-dark" src="img/logo-beyaz.png" alt="Locus" onclick="git('anasayfa')">
+      <img class="sembol" src="img/sembol-beyaz.png" alt="Locus" onclick="git('anasayfa')">
+      <span class="ayrac"></span>
+      <h1 id="sayfaBaslik">Ana Sayfa</h1>
+      <div class="ust-sag">
+        <button class="tema-btn" type="button" onclick="temaDegistir()" aria-label="Temayı değiştir"><span class="g">☀️</span><span class="k">🌙</span></button>
+        <button class="kul-btn" type="button" onclick="kulMenu()" aria-haspopup="true"><span class="ad" id="kulAd"></span><span class="av" id="kulAv"></span></button>
+      </div>
+    </div>
+    <div class="menu-acilir" id="kulMenuKutu" hidden>
+      <div class="bas"><b id="kmAd"></b><small id="kmRol"></small></div>
+      <button type="button" id="yukleBtn" hidden onclick="uygulamayiYukle()">📲 Uygulamayı Yükle</button>
+      <button type="button" onclick="sifreModal()">🔑 Şifre Değiştir</button>
+      <button type="button" onclick="cikis()">↩ Çıkış Yap</button>
+    </div>
+  </header>
+
+  <div class="govde">
+    <nav class="yan" id="yanMenu" aria-label="Sayfalar"></nav>
+    <main class="ic" id="icerik"></main>
+  </div>
+
+  <nav class="alt" id="altMenu" aria-label="Alt menü"></nav>
+</div>
+
+<div class="daha" id="dahaKutu" hidden onclick="if(event.target===this)dahaKapat()">
+  <div class="daha-ic"><div class="tutamac"></div><div class="daha-grid" id="dahaGrid"></div></div>
+</div>
+
+<div class="modal" id="modal" hidden onclick="if(event.target===this)modalKapat()">
+  <div class="modal-ic" role="dialog" aria-modal="true">
+    <div class="modal-bas"><h3 id="modalBaslik"></h3><button type="button" onclick="modalKapat()" aria-label="Kapat">×</button></div>
+    <div class="modal-govde" id="modalGovde"></div>
+    <div class="modal-alt" id="modalAlt"></div>
+  </div>
+</div>
+
+<div id="toast" hidden></div>
+
+<script>
+// ==================== AYAR ====================
+const API_URL = 'https://script.google.com/macros/s/AKfycbxpWJi7Eh9GnXzd5_AvhI0eedxxDlNjxo-WmSKlg7pSFBKi_Z6z5OWeJonaz98hpBoP/exec';
+
+const VARSAYILAN_SAYFALAR = [
+  { kod: 'anasayfa', ad: 'Ana Sayfa', ikon: '🏠' },
+  { kod: 'musteriler', ad: 'Müşteriler', ikon: '🤝' },
+  { kod: 'tedarikciler', ad: 'Tedarikçiler', ikon: '🚚' },
+  { kod: 'oxyweld', ad: 'Oxyweld Servis', ikon: '🔧' },
+  { kod: 'ajanda', ad: 'Ajanda', ikon: '📅' },
+  { kod: 'ekip', ad: 'Ekip', ikon: '👥' },
+  { kod: 'stok', ad: 'Stok', ikon: '📦' },
+  { kod: 'finans', ad: 'Finans', ikon: '💰' },
+  { kod: 'raporlar', ad: 'Raporlar', ikon: '📊' },
+  { kod: 'bildirimler', ad: 'Bildirimler', ikon: '🔔' },
+  { kod: 'yonetim', ad: 'Yönetim', ikon: '⚙️' }
+];
+const ALT_MENU = ['anasayfa', 'ajanda', 'oxyweld', 'stok'];
+const KISA_AD = { oxyweld: 'Servis' };
+const ACIKLAMA = {
+  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve alımlar',
+  oxyweld: 'Makine bakım ve servis kayıtları', ajanda: 'Takvim, görev ve aktiviteler',
+  ekip: 'Personel bilgileri ve takibi', stok: 'Malzeme giriş ve çıkışları', finans: 'Gelir, gider ve cari hesaplar',
+  raporlar: 'Özetler ve analizler', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
+};
+
+// ==================== DURUM ====================
+const D = { token: null, kul: null, sayfalar: VARSAYILAN_SAYFALAR, aktif: 'anasayfa' };
+const ls = {
+  al(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  koy(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
+  sil(k) { try { localStorage.removeItem(k); } catch (e) {} }
+};
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+// ==================== API ====================
+async function api(islem, veri) {
+  let yanit;
+  try {
+    const r = await fetch(API_URL, {
+      method: 'POST',
+      // text/plain: tarayıcı ön kontrol (CORS preflight) yapmasın diye
+      body: JSON.stringify({ islem, token: D.token, veri: veri || {} })
+    });
+    yanit = await r.json();
+  } catch (e) {
+    throw Object.assign(new Error('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.'), { kod: 'AG' });
+  }
+  if (!yanit.ok) {
+    const err = Object.assign(new Error(yanit.hata || 'Beklenmeyen hata'), { kod: yanit.kod });
+    if (err.kod === 'OTURUM' && islem !== 'giris') { oturumBitti(err.message); }
+    throw err;
+  }
+  return yanit.veri;
+}
+
+// ==================== TEMA ====================
+function temaDegistir() {
+  const yeni = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', yeni);
+  try { localStorage.setItem('locus_tema', yeni); } catch (e) {}
+}
+
+// ==================== GİRİŞ / ÇIKIŞ ====================
+$('girisForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('gBtn');
+  $('gHata').textContent = '';
+  btn.disabled = true; btn.textContent = 'Giriş yapılıyor…';
+  try {
+    const v = await api('giris', { kullaniciAdi: $('gKadi').value, sifre: $('gSifre').value });
+    D.token = v.token; D.kul = v.kullanici; D.sayfalar = v.sayfalar || VARSAYILAN_SAYFALAR;
+    ls.koy('locus_oturum', { token: D.token, kul: D.kul, sayfalar: D.sayfalar });
+    $('gSifre').value = '';
+    uygulamayiAc();
+  } catch (err) {
+    $('gHata').textContent = err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = 'Giriş Yap';
+  }
+});
+
+function girisGoster(mesaj) {
+  $('acilis').hidden = true; $('uygulama').hidden = true; $('giris').hidden = false;
+  $('gHata').textContent = mesaj || '';
+  setTimeout(() => $('gKadi').focus(), 50);
+}
+
+function oturumBitti(mesaj) {
+  D.token = null; D.kul = null; ls.sil('locus_oturum');
+  modalKapat(); girisGoster(mesaj);
+}
+
+async function cikis() {
+  $('kulMenuKutu').hidden = true;
+  try { await api('cikis'); } catch (e) {}
+  oturumBitti('');
+}
+
+// ==================== UYGULAMA KABUĞU ====================
+function uygulamayiAc() {
+  $('acilis').hidden = true; $('giris').hidden = true; $('uygulama').hidden = false;
+  const ad = D.kul.adSoyad || D.kul.kullaniciAdi;
+  $('kulAd').textContent = ad;
+  $('kulAv').textContent = basHarf(ad);
+  $('kmAd').textContent = ad;
+  $('kmRol').textContent = D.kul.rol === 'yonetici' ? 'Yönetici' : '@' + D.kul.kullaniciAdi;
+  menuleriCiz();
+  rotaUygula();
+}
+
+function basHarf(s) {
+  return String(s).trim().split(/\s+/).slice(0, 2).map(x => x[0]).join('').toLocaleUpperCase('tr-TR');
+}
+
+function yetki(kod) { return (D.kul && D.kul.yetkiler && D.kul.yetkiler[kod]) || 'yok'; }
+
+function menuleriCiz() {
+  $('yanMenu').innerHTML = D.sayfalar.map(s => {
+    const y = yetki(s.kod);
+    return `<button type="button" class="nav-oge ${y === 'yok' ? 'kapali' : ''}" data-k="${s.kod}" onclick="git('${s.kod}')">
+      <span>${s.ikon}</span>${esc(s.ad)}${y === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`;
+  }).join('');
+
+  $('altMenu').innerHTML = ALT_MENU.map(k => {
+    const s = D.sayfalar.find(x => x.kod === k);
+    return `<button type="button" data-k="${k}" onclick="git('${k}')"><span>${s.ikon}</span><span>${esc(KISA_AD[k] || s.ad)}</span>${yetki(k) === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`;
+  }).join('') + `<button type="button" data-k="_daha" onclick="dahaAc()"><span>☰</span><span>Daha fazla</span></button>`;
+
+  $('dahaGrid').innerHTML = D.sayfalar.filter(s => !ALT_MENU.includes(s.kod)).map(s =>
+    `<button type="button" data-k="${s.kod}" onclick="dahaKapat();git('${s.kod}')"><span>${s.ikon}</span><span>${esc(s.ad)}</span>${yetki(s.kod) === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`
+  ).join('');
+}
+
+function dahaAc() { $('dahaKutu').hidden = false; }
+function dahaKapat() { $('dahaKutu').hidden = true; }
+
+function kulMenu() { $('kulMenuKutu').hidden = !$('kulMenuKutu').hidden; }
+document.addEventListener('click', e => {
+  if (!e.target.closest('.kul-btn') && !e.target.closest('#kulMenuKutu')) $('kulMenuKutu').hidden = true;
+});
+
+// ==================== YÖNLENDİRME ====================
+function git(kod) {
+  if (location.hash === '#/' + kod) rotaUygula(); else location.hash = '#/' + kod;
+}
+window.addEventListener('hashchange', () => { if (D.kul) rotaUygula(); });
+
+function rotaUygula() {
+  let kod = (location.hash.match(/^#\/(\w+)/) || [])[1] || 'anasayfa';
+  const s = D.sayfalar.find(x => x.kod === kod) || D.sayfalar[0];
+  D.aktif = s.kod;
+  $('sayfaBaslik').textContent = s.ad;
+  document.title = s.ad + ' | Locus Şirket Takip Sistemi';
+  document.querySelectorAll('[data-k]').forEach(el => el.classList.toggle('on', el.dataset.k === s.kod));
+  const altta = ALT_MENU.includes(s.kod);
+  const dahaBtn = document.querySelector('#altMenu [data-k="_daha"]');
+  if (dahaBtn) dahaBtn.classList.toggle('on', !altta);
+
+  const y = yetki(s.kod);
+  const ic = $('icerik');
+  window.scrollTo(0, 0);
+  if (y === 'yok') { ic.innerHTML = yetkiYokHTML(s); return; }
+  (SAYFA_CIZ[s.kod] || bosSayfa)(ic, s, y);
+}
+
+function yetkiYokHTML(s) {
+  return `<div class="kart bos"><div class="b-ikon">🔒</div><h3>Bu sayfada yetkiniz yok</h3>
+    <p>${esc(s.ad)} sayfasına erişim için yöneticinize başvurun.</p></div>`;
+}
+
+function sayfaBasHTML(s, y, sagHTML) {
+  return `<div class="sayfa-bas"><h2>${esc(s.ad)}</h2>
+    ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}
+    ${sagHTML ? `<div class="sag">${sagHTML}</div>` : ''}</div>`;
+}
+
+function bosSayfa(ic, s, y) {
+  ic.innerHTML = sayfaBasHTML(s, y) + `<div class="kart bos"><div class="b-ikon">${s.ikon}</div>
+    <h3>Bu sayfanın içeriği hazırlanıyor</h3><p>${esc(ACIKLAMA[s.kod] || '')}</p></div>`;
+}
+
+// ==================== SAYFALAR ====================
+const SAYFA_CIZ = {
+  anasayfa(ic) {
+    const ad = (D.kul.adSoyad || D.kul.kullaniciAdi).split(' ')[0];
+    const tarih = new Date().toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const acik = D.sayfalar.filter(s => s.kod !== 'anasayfa' && yetki(s.kod) !== 'yok');
+    ic.innerHTML = `
+      <div class="kart karsilama"><div><h2>Hoş geldin, ${esc(ad)}</h2><p>${esc(tarih)}</p></div>
+        <img src="img/sembol-beyaz.png" alt=""></div>
+      <h3 class="bolum-bas">Sayfaların</h3>
+      ${acik.length ? `<div class="hizli">${acik.map(s => `
+        <button type="button" class="kart" onclick="git('${s.kod}')"><span class="hi">${s.ikon}</span>
+          <span><span class="ha">${esc(s.ad)}</span><br><span class="hs">${esc(ACIKLAMA[s.kod] || '')}</span></span></button>`).join('')}</div>`
+        : `<div class="kart bos"><div class="b-ikon">🔒</div><h3>Henüz açık sayfanız yok</h3><p>Yöneticiniz size sayfa yetkisi verdiğinde burada görünecek.</p></div>`}`;
+  },
+
+  async yonetim(ic, s) {
+    ic.innerHTML = sayfaBasHTML(s, 'tam', `<button class="btn" type="button" onclick="kullaniciModal()">+ Kullanıcı Ekle</button>`) +
+      `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>`;
+    try {
+      const liste = await api('kullanicilar.liste');
+      YONETIM.liste = liste;
+      if (D.aktif === 'yonetim') kullaniciListesiCiz();
+    } catch (e) {
+      if ($('kulListe')) $('kulListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`;
+    }
+  }
+};
+
+// ==================== YÖNETİM ====================
+const YONETIM = { liste: [], duzenlenen: null, yetkiler: {} };
+const YETKI_ETIKET = { yok: 'Yok', goruntule: 'Görüntüle', tam: 'Tam' };
+const yetkiSayfalari = () => D.sayfalar.filter(s => s.kod !== 'yonetim' && s.kod !== 'anasayfa');
+
+function kullaniciListesiCiz() {
+  const satirlar = YONETIM.liste.sort((a, b) => (a.rol === 'yonetici' ? -1 : b.rol === 'yonetici' ? 1 : a.adSoyad.localeCompare(b.adSoyad, 'tr')))
+    .map(k => {
+      const yon = k.rol === 'yonetici';
+      const sp = yetkiSayfalari();
+      const tam = sp.filter(x => k.yetkiler[x.kod] === 'tam').length;
+      const gor = sp.filter(x => k.yetkiler[x.kod] === 'goruntule').length;
+      const ozet = yon ? 'Tüm sayfalar, tam yetki' : (tam + gor === 0 ? 'Sayfa yetkisi yok' : `${tam} tam, ${gor} görüntüleme`);
+      const son = k.sonGiris ? new Date(k.sonGiris).toLocaleString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Hiç giriş yapmadı';
+      return `<div class="satir">
+        <div class="kad"><span class="av">${esc(basHarf(k.adSoyad || k.kullaniciAdi))}</span><div style="min-width:0"><b>${esc(k.adSoyad)}</b><small>@${esc(k.kullaniciAdi)}</small></div></div>
+        <div class="mut c-yetki">${ozet}</div>
+        <div class="c-durum">${yon ? '<span class="rozet">Yönetici</span>' : k.aktif ? '<span class="rozet ok">Aktif</span>' : '<span class="rozet pasif">Pasif</span>'}</div>
+        <div class="mut c-son">${esc(son)}</div>
+        <div class="islem">${yon ? '' : `<button class="btn ikincil kucuk" type="button" onclick="kullaniciModal('${esc(k.kullaniciAdi)}')">Düzenle</button>
+          <button class="btn ikincil kucuk" type="button" style="color:var(--danger)" onclick="kullaniciSilOnay('${esc(k.kullaniciAdi)}')">Sil</button>`}</div>
+      </div>`;
+    }).join('');
+  $('kulListe').innerHTML = `<div class="satir bas"><div>Kullanıcı</div><div>Yetkiler</div><div>Durum</div><div>Son giriş</div><div></div></div>` + satirlar;
+}
+
+function kullaniciModal(kadi) {
+  const k = kadi ? YONETIM.liste.find(x => x.kullaniciAdi === kadi) : null;
+  YONETIM.duzenlenen = k;
+  YONETIM.yetkiler = {};
+  yetkiSayfalari().forEach(s => YONETIM.yetkiler[s.kod] = k ? (k.yetkiler[s.kod] || 'yok') : 'yok');
+
+  modalAc(k ? 'Kullanıcıyı Düzenle' : 'Yeni Kullanıcı', `
+    <div class="iki">
+      <div><label class="et" for="mKadi">Kullanıcı adı</label>
+        <input class="girdi" id="mKadi" autocapitalize="none" spellcheck="false" value="${k ? esc(k.kullaniciAdi) : ''}" ${k ? 'disabled' : ''} placeholder="ornek: ahmet.y"></div>
+      <div><label class="et" for="mAd">Ad Soyad</label>
+        <input class="girdi" id="mAd" value="${k ? esc(k.adSoyad) : ''}"></div>
+    </div>
+    <label class="et" for="mSifre">${k ? 'Yeni şifre' : 'Şifre'}</label>
+    <input class="girdi" id="mSifre" type="text" autocomplete="off" placeholder="${k ? 'Değiştirmeyecekseniz boş bırakın' : 'En az 6 karakter'}">
+    <label class="anahtar"><input type="checkbox" id="mAktif" ${!k || k.aktif ? 'checked' : ''}> Hesap aktif</label>
+    <div class="yetki-bas"><b>Sayfa yetkileri</b>
+      <div class="sag">Tümü: <span class="seg kucuk">${['yok', 'goruntule', 'tam'].map(v => `<button type="button" data-v="${v}" onclick="tumYetki('${v}')">${YETKI_ETIKET[v]}</button>`).join('')}</span></div>
+    </div>
+    <div id="yetkiListe"></div>
+    <p class="mut" style="font-size:13px;color:var(--mute);margin-top:12px">Ana Sayfa herkese açıktır. Yönetim sayfası sadece yöneticiye aittir.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="mKaydet" onclick="kullaniciKaydet()">Kaydet</button>`);
+  yetkiListesiCiz();
+  setTimeout(() => $(k ? 'mAd' : 'mKadi').focus(), 50);
+}
+
+function yetkiListesiCiz() {
+  $('yetkiListe').innerHTML = yetkiSayfalari().map(s => `
+    <div class="yetki-satir"><div class="ys-ad"><span>${s.ikon}</span>${esc(s.ad)}</div>
+      <div class="seg">${['yok', 'goruntule', 'tam'].map(v =>
+        `<button type="button" data-v="${v}" class="${YONETIM.yetkiler[s.kod] === v ? 'on' : ''}" onclick="yetkiSec('${s.kod}','${v}')">${YETKI_ETIKET[v]}</button>`).join('')}</div>
+    </div>`).join('');
+}
+function yetkiSec(kod, v) { YONETIM.yetkiler[kod] = v; yetkiListesiCiz(); }
+function tumYetki(v) { Object.keys(YONETIM.yetkiler).forEach(k => YONETIM.yetkiler[k] = v); yetkiListesiCiz(); }
+
+async function kullaniciKaydet() {
+  const k = YONETIM.duzenlenen;
+  const veri = {
+    kullaniciAdi: k ? k.kullaniciAdi : $('mKadi').value.trim(),
+    adSoyad: $('mAd').value.trim(),
+    sifre: $('mSifre').value,
+    aktif: $('mAktif').checked,
+    yetkiler: YONETIM.yetkiler
+  };
+  if (!veri.kullaniciAdi) return ($('mHata').textContent = 'Kullanıcı adı gerekli.');
+  if (!k && veri.sifre.length < 6) return ($('mHata').textContent = 'Şifre en az 6 karakter olmalı.');
+  if (k && veri.sifre && veri.sifre.length < 6) return ($('mHata').textContent = 'Şifre en az 6 karakter olmalı.');
+  if (!k && YONETIM.liste.some(x => x.kullaniciAdi === veri.kullaniciAdi.toLowerCase())) return ($('mHata').textContent = 'Bu kullanıcı adı zaten var.');
+
+  const btn = $('mKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const sonuc = await api('kullanicilar.kaydet', veri);
+    const i = YONETIM.liste.findIndex(x => x.kullaniciAdi === sonuc.kullaniciAdi);
+    if (i >= 0) YONETIM.liste[i] = sonuc; else YONETIM.liste.push(sonuc);
+    modalKapat(); kullaniciListesiCiz();
+    toast(k ? 'Kullanıcı güncellendi.' : 'Kullanıcı eklendi.');
+  } catch (e) {
+    $('mHata').textContent = e.message;
+    btn.disabled = false; btn.textContent = 'Kaydet';
+  }
+}
+
+function kullaniciSilOnay(kadi) {
+  const k = YONETIM.liste.find(x => x.kullaniciAdi === kadi);
+  modalAc('Kullanıcıyı Sil', `<p><b>${esc(k.adSoyad)}</b> (@${esc(k.kullaniciAdi)}) kalıcı olarak silinecek. Açık oturumları da hemen kapanır.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Geçici olarak engellemek istiyorsanız silmek yerine Düzenle'den hesabı pasif yapabilirsiniz.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn tehlike" type="button" id="mSil" onclick="kullaniciSil('${esc(kadi)}')">Sil</button>`);
+}
+
+async function kullaniciSil(kadi) {
+  const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
+  try {
+    await api('kullanicilar.sil', { kullaniciAdi: kadi });
+    YONETIM.liste = YONETIM.liste.filter(x => x.kullaniciAdi !== kadi);
+    modalKapat(); kullaniciListesiCiz(); toast('Kullanıcı silindi.');
+  } catch (e) {
+    $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
+  }
+}
+
+// ==================== ŞİFRE DEĞİŞTİR ====================
+function sifreModal() {
+  $('kulMenuKutu').hidden = true;
+  modalAc('Şifre Değiştir', `
+    <label class="et" for="sEski">Mevcut şifre</label><input class="girdi" id="sEski" type="password" autocomplete="current-password">
+    <label class="et" for="sYeni">Yeni şifre</label><input class="girdi" id="sYeni" type="password" autocomplete="new-password" placeholder="En az 6 karakter">
+    <label class="et" for="sYeni2">Yeni şifre (tekrar)</label><input class="girdi" id="sYeni2" type="password" autocomplete="new-password">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="sKaydet" onclick="sifreKaydet()">Şifreyi Değiştir</button>`);
+  setTimeout(() => $('sEski').focus(), 50);
+}
+
+async function sifreKaydet() {
+  const yeni = $('sYeni').value;
+  if (yeni.length < 6) return ($('mHata').textContent = 'Yeni şifre en az 6 karakter olmalı.');
+  if (yeni !== $('sYeni2').value) return ($('mHata').textContent = 'Yeni şifreler aynı değil.');
+  const btn = $('sKaydet'); btn.disabled = true; btn.textContent = 'Değiştiriliyor…';
+  try {
+    await api('sifreDegistir', { eskiSifre: $('sEski').value, yeniSifre: yeni });
+    modalKapat(); toast('Şifre değiştirildi.');
+  } catch (e) {
+    $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Şifreyi Değiştir';
+  }
+}
+
+// ==================== MODAL / TOAST ====================
+function modalAc(baslik, govde, alt) {
+  $('modalBaslik').textContent = baslik;
+  $('modalGovde').innerHTML = govde;
+  $('modalAlt').innerHTML = alt || '';
+  $('modal').hidden = false;
+}
+function modalKapat() { $('modal').hidden = true; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { modalKapat(); dahaKapat(); $('kulMenuKutu').hidden = true; } });
+
+let toastZaman;
+function toast(mesaj, hata) {
+  const t = $('toast'); t.textContent = mesaj; t.className = hata ? 'hata' : ''; t.hidden = false;
+  clearTimeout(toastZaman); toastZaman = setTimeout(() => t.hidden = true, 3200);
+}
+
+// ==================== PWA ====================
+let yuklemeOlayi = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); yuklemeOlayi = e; $('yukleBtn').hidden = false; });
+async function uygulamayiYukle() {
+  $('kulMenuKutu').hidden = true;
+  if (!yuklemeOlayi) return;
+  yuklemeOlayi.prompt(); await yuklemeOlayi.userChoice; yuklemeOlayi = null; $('yukleBtn').hidden = true;
+}
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+// ==================== BAŞLANGIÇ ====================
+(async function baslat() {
+  const kayit = ls.al('locus_oturum');
+  if (!kayit || !kayit.token) return girisGoster();
+  // Hızlı açılış: önce kayıtlı bilgiyle aç, arka planda oturumu doğrula
+  D.token = kayit.token; D.kul = kayit.kul; D.sayfalar = kayit.sayfalar || VARSAYILAN_SAYFALAR;
+  uygulamayiAc();
+  try {
+    const guncel = await api('ben');
+    const degisti = JSON.stringify(guncel.yetkiler) !== JSON.stringify(D.kul.yetkiler);
+    D.kul = guncel;
+    ls.koy('locus_oturum', { token: D.token, kul: D.kul, sayfalar: D.sayfalar });
+    if (degisti) { menuleriCiz(); rotaUygula(); }
+  } catch (e) {
+    if (e.kod === 'AG') toast('Çevrimdışı görünüyorsunuz. Bağlantı gelince veriler yenilenecek.', true);
+  }
+})();
+</script>
+</body>
+</html>
