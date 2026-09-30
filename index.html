@@ -286,6 +286,7 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 
 .sekmeler{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
 .sekmeler button{padding:10px 16px;font-size:15px;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.sekmeler .kisa{display:none}
 .sekmeler button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--acc)}
 .ozet{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;margin:0 2px 10px}
 .ozet .soluk{margin-right:4px}
@@ -329,6 +330,75 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .zaman .z-alt{font-size:13px;color:var(--mute);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .zaman .z-tutar{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
 .zaman .z-durum{width:118px;justify-content:center;flex:none}
+
+
+/* ---------- stok ---------- */
+.rozet.tehlike{background:color-mix(in srgb,var(--danger) 14%,transparent);color:var(--danger)}
+.arac .girdi.sec{height:46px;margin:0;width:auto;min-width:170px;background:var(--sf)}
+.arac-alt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.arac-alt .sayac{margin:0}
+.arac-sag{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.stok-miktar{font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;min-width:90px}
+.stok-miktar small{font-size:13px;color:var(--mute);font-weight:400;margin-left:4px}
+.stok-miktar.kritik,.buyuk-stok.kritik{color:var(--danger)}
+.h-satir{display:flex;align-items:center;gap:14px;padding:12px 18px;border-top:1px solid var(--line)}
+.h-satir:first-child{border-top:0}
+.h-tarih{width:84px;flex:none;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.h-tur{width:74px;flex:none}
+.h-tur .rozet{width:100%;justify-content:center}
+.h-ic{flex:1;min-width:0}
+.h-ic b{display:block}
+.h-ic small{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-miktar{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;min-width:96px}
+.h-miktar.arti{color:var(--ok)}
+.h-miktar.eksi{color:var(--danger)}
+.link{color:var(--acc);cursor:pointer;text-decoration:none}
+:root[data-theme="dark"] .link{color:#6FA8EC}
+.ikili{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;align-items:start}
+.ikili .panel{margin:0}
+.t-satir{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.t-satir:first-child{border-top:0}
+.t-ic{flex:1;min-width:0}
+.t-ic b{font-weight:600}
+.t-ic small{color:var(--mute);font-size:13px;display:block}
+.kat-ekle{display:flex;gap:8px;margin-top:14px}
+.kat-ekle .girdi{margin:0;height:40px}
+.stok-ozet{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:end}
+.stok-ozet .de{font-size:13px;color:var(--mute);margin-bottom:3px}
+.buyuk-stok{font-size:34px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.1}
+.buyuk-stok small{font-size:16px;color:var(--mute);font-weight:400;margin-left:6px}
+.stok-btn{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.bilgi-not{font-size:13px;color:var(--mute);margin:-8px 0 16px}
+.si-satir{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr) 110px;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.si-satir .girdi{margin:0;height:40px}
+.si-ac small{display:block;color:var(--mute);font-size:12px}
+#yazdirAlan{display:none}
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  html,body{background:#fff!important;color:#000!important;height:auto!important}
+  body>*:not(#yazdirAlan){display:none!important}
+  #yazdirAlan{display:block!important;font-family:var(--font);font-size:10.5pt;color:#000}
+  .y-bas{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #004085;padding-bottom:8px;margin-bottom:12px}
+  .y-bas img{height:36px}
+  .y-bas-sag{text-align:right;font-size:9.5pt;line-height:1.4}
+  .y-bas h1{font-size:16pt;color:#004085;margin-bottom:2px}
+  .y-tablo{width:100%;border-collapse:collapse}
+  .y-tablo thead{display:table-header-group}
+  .y-tablo th{background:#e6edf6;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:9pt;text-align:left;padding:5px 6px;border:1px solid #777}
+  .y-tablo td{border:1px solid #777;padding:6px;height:24px;font-size:10pt}
+  .y-tablo tr{page-break-inside:avoid}
+  .y-no{width:28px;text-align:center}
+  .y-birim{width:48px}
+  .y-sayi{width:64px;text-align:right}
+  .y-bos{width:74px}
+  .y-fark{width:54px}
+  .y-not{width:110px}
+  .y-grup td{background:#f1f4f8;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:700;font-size:9.5pt;height:auto}
+  .y-imza{display:flex;gap:48px;margin-top:30px;page-break-inside:avoid}
+  .y-imza div{flex:1;font-size:9.5pt}
+  .y-imza span{display:block;border-bottom:1px solid #000;height:40px;margin-bottom:4px}
+  .y-alt{margin-top:14px;font-size:8.5pt;color:#555}
+}
 
 /* ---------- mobil ---------- */
 @media (max-width:820px){
@@ -408,6 +478,23 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .kalem .k-tutar{text-align:left;font-weight:600}
   .kalem .k-sil{justify-self:end}
   .toplamlar{max-width:none}
+  .ikili{grid-template-columns:1fr}
+  .sekmeler .uzun{display:none}
+  .sekmeler .kisa{display:inline}
+  .arac .girdi.sec{flex:1;min-width:0}
+  .arac-sag{margin-left:0;width:100%}
+  .arac-sag .btn{flex:1}
+  .h-satir{flex-wrap:wrap;padding:12px 14px;gap:6px 10px}
+  .h-tarih{order:1;width:auto}
+  .h-tur{order:2;width:auto}
+  .h-miktar{order:3;margin-left:auto;min-width:0}
+  .h-ic{order:4;flex-basis:100%}
+  .h-sil{order:5;margin-left:auto}
+  .stok-ozet{grid-template-columns:1fr 1fr}
+  .stok-ozet>div:first-child{grid-column:1/-1}
+  .stok-btn .btn{flex:1}
+  .si-satir{grid-template-columns:1fr 110px}
+  .si-ac{grid-column:1/-1}
 }
 </style>
 </head>
@@ -1263,7 +1350,7 @@ function firmaAdi(t, s) {
   return f ? f.Ad : (s.FirmaAd || '—');
 }
 async function firmalarYukle() {
-  const r = await api('siparis.firmalar');
+  const r = await api('firma.secim');
   FIRMALAR = r; ls.koy('locus_c_firmalar', r);
   return r;
 }
@@ -1363,9 +1450,12 @@ function siparisDetay(ic, s, y, param) {
           <div class="d-rozetler"><span class="rozet">${c.ad}</span><span class="rozet ${durumSinif(t, x.Durum)}">${esc(x.Durum)}</span>
           ${gec ? '<span class="rozet" style="color:var(--danger)">Teslim gecikti</span>' : ''}
           ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
-        ${tam ? `<div class="d-bas-sag">
-          <button class="btn ikincil" type="button" style="color:var(--danger)" onclick="siparisSilOnay('${t}','${x.Id}')">Sil</button>
-          <button class="btn" type="button" onclick="siparisForm('${t}','${x.Id}')">Düzenle</button></div>` : ''}
+        ${tam || stokIslenebilir(t, x.Durum) ? `<div class="d-bas-sag">
+          ${yetki('stok') === 'tam' && stokIslenebilir(t, x.Durum) ? (VERI.stokHareket || []).some(hh => hh.SiparisId === x.Id)
+            ? `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka işlendi</button>`
+            : `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka İşle</button>` : ''}
+          ${tam ? `<button class="btn ikincil" type="button" style="color:var(--danger)" onclick="siparisSilOnay('${t}','${x.Id}')">Sil</button>
+          <button class="btn" type="button" onclick="siparisForm('${t}','${x.Id}')">Düzenle</button>` : ''}</div>` : ''}
       </div>
 
       <section class="kart panel">
@@ -1402,19 +1492,24 @@ function siparisDetay(ic, s, y, param) {
   if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
   const ob = VERI[t] || ls.al('locus_c_' + t);
   if (ob) { VERI[t] = ob; ciz(); } else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
-  Promise.all([veriYukle(t), firmalarYukle()])
+  if (yetki('stok') !== 'yok' && !VERI.stokHareket) VERI.stokHareket = ls.al('locus_c_stokHareket') || undefined;
+  Promise.all([veriYukle(t), firmalarYukle(), ...(yetki('stok') !== 'yok' ? [veriYukle('stokHareket').catch(() => null)] : [])])
     .then(() => { if (D.aktif === 'siparisler' && D.param === param && $('modal').hidden) ciz(); })
     .catch(e => { if (!ob) ic.innerHTML = geri + `<div class="kart bos"><h3>Sipariş alınamadı</h3><p>${esc(e.message)}</p></div>`; });
 }
 
 async function siparisDurumDegistir(t, id, durum) {
   const x = (VERI[t] || []).find(k => k.Id === id); if (!x) return;
+  const onceki = x.Durum;
+  let tamam = false;
   try {
     const r = await api('kayit.kaydet', { varlik: t, kayit: Object.assign({}, x, { Durum: durum }) });
     veriGuncelle(t, r);
     toast(`${r.No}: ${durum}`);
+    tamam = true;
   } catch (e) { toast(e.message, true); }
   rotaUygula();
+  if (tamam && yetki('stok') === 'tam' && stokIslenebilir(t, durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, id);
 }
 
 // ---------- Ekle / Düzenle ----------
@@ -1536,11 +1631,13 @@ async function siparisKaydet() {
 
   const btn = $('sfKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
   try {
+    const onceki = kayit.Id ? ((VERI[t] || []).find(k => k.Id === kayit.Id) || {}).Durum : null;
     const r = await api('kayit.kaydet', { varlik: t, kayit });
     veriGuncelle(t, r);
     modalKapat();
     if (D.aktif === 'siparisler' && D.param) rotaUygula(); else siparisListeCiz();
     toast(`${r.No} ${kayit.Id ? 'güncellendi' : 'oluşturuldu'}.`);
+    if (yetki('stok') === 'tam' && stokIslenebilir(t, r.Durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, r.Id);
   } catch (e) {
     hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet';
   }
@@ -1565,6 +1662,562 @@ async function siparisSil(t, id) {
   } catch (e) {
     $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
   }
+}
+
+
+// ==================== STOK ====================
+// Güncel miktar elle girilmez; hareketlerin toplamından hesaplanır.
+const STK = { sekme: 'durum', arama: '', kat: '', filtre: 'tumu', hArama: '', hTur: 'tumu' };
+const HAREKET_SINIF = { 'Açılış': '', 'Giriş': 'ok', 'Çıkış': 'tehlike', 'Sayım': 'uyari' };
+let HF = null; // açık hareket formu
+let SI = null; // siparişi stoka işleme
+const miktarYaz = n => Number(n || 0).toLocaleString('tr-TR', { maximumFractionDigits: 3 });
+const malzemeBul = id => (VERI.stokMalzeme || []).find(m => m.Id === id);
+const katAdi = id => ((VERI.stokKategori || []).find(c => c.Id === id) || {}).Ad || 'Kategorisiz';
+const hareketEtki = h => h.Tur === 'Çıkış' ? -Number(h.Miktar) : Number(h.Miktar);
+function stokHaritasi() {
+  const m = {};
+  (VERI.stokHareket || []).forEach(h => m[h.MalzemeId] = Math.round(((m[h.MalzemeId] || 0) + hareketEtki(h)) * 1000) / 1000);
+  return m;
+}
+const kritikMi = (m, stok) => m.KritikSeviye > 0 && (stok[m.Id] || 0) <= m.KritikSeviye;
+const hareketSirala = (a, b) => String(b.Tarih).localeCompare(String(a.Tarih)) || String(b.Olusturma).localeCompare(String(a.Olusturma));
+
+function stokOnbellek() {
+  let hazir = true;
+  ['stokMalzeme', 'stokKategori', 'stokHareket'].forEach(v => {
+    if (!VERI[v]) VERI[v] = ls.al('locus_c_' + v) || undefined;
+    if (!VERI[v]) hazir = false;
+  });
+  if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  return hazir;
+}
+function stokVeriYukle() {
+  return Promise.all([veriYukle('stokMalzeme'), veriYukle('stokKategori'), veriYukle('stokHareket'), firmalarYukle().catch(() => null)]);
+}
+
+SAYFA_CIZ.stok = function (ic, s, y) {
+  if (D.param) return malzemeDetay(ic, s, y, D.param);
+  const tam = y === 'tam';
+  ic.innerHTML = sayfaBasHTML(s, y, tam ? `<button class="btn ikincil" type="button" onclick="hareketForm('Çıkış')">− Çıkış</button>
+      <button class="btn" type="button" onclick="hareketForm('Giriş')">+ Giriş</button>` : '') + `
+    <div class="sekmeler" role="tablist">${[['durum', 'Stok Durumu'], ['hareketler', 'Hareketler'], ['tanimlar', '<span class="uzun">Malzemeler ve Kategoriler</span><span class="kisa">Tanımlar</span>']].map(([k, a]) =>
+      `<button type="button" role="tab" class="${STK.sekme === k ? 'on' : ''}" onclick="STK.sekme='${k}';rotaUygula()">${a}</button>`).join('')}</div>
+    <div id="stokIcerik"></div>`;
+  const hazir = stokOnbellek();
+  if (hazir) stokSekmeCiz(); else $('stokIcerik').innerHTML = '<div class="kart bos"><p>Stok yükleniyor…</p></div>';
+  stokVeriYukle()
+    .then(() => { if (D.aktif === 'stok' && !D.param && $('modal').hidden) { hazir ? stokListeYenile() : stokSekmeCiz(); } })
+    .catch(e => { if (!hazir && $('stokIcerik')) $('stokIcerik').innerHTML = `<div class="kart bos"><h3>Stok alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function stokSekmeCiz() {
+  const ic = $('stokIcerik'); if (!ic) return;
+  const tam = yetki('stok') === 'tam';
+  const katSec = (id, deger, bos) => `<select class="girdi sec" id="${id}" onchange="STK.kat=this.value;stokListeYenile()">
+      <option value="">${bos}</option>${(VERI.stokKategori || []).slice().sort((a, b) => trSirala(a.Ad, b.Ad)).map(c =>
+      `<option value="${c.Id}" ${deger === c.Id ? 'selected' : ''}>${esc(c.Ad)}</option>`).join('')}</select>`;
+
+  if (STK.sekme === 'durum') {
+    ic.innerHTML = `
+      <div class="arac">
+        <label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Malzeme ara" value="${esc(STK.arama)}" oninput="STK.arama=this.value;stokListeYenile()"></label>
+        ${katSec('stkKat', STK.kat, 'Tüm kategoriler')}
+        <div class="cips">${[['tumu', 'Tümü'], ['kritik', 'Kritik']].map(([k, a]) =>
+          `<button type="button" data-f="${k}" onclick="STK.filtre='${k}';stokListeYenile()">${a}</button>`).join('')}</div>
+      </div>
+      <div class="arac-alt">
+        <span class="sayac" id="stkSayac"></span>
+        <span class="arac-sag">
+          ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="hareketForm('Sayım')">⚖️ Sayım Gir</button>` : ''}
+          <button class="btn ikincil kucuk" type="button" onclick="stokExcel()">⬇ Excel</button>
+          <button class="btn ikincil kucuk" type="button" onclick="sayimListesiModal()">🖨 Sayım Listesi</button>
+        </span>
+      </div>
+      <div class="kart" id="stkListe"></div>`;
+  } else if (STK.sekme === 'hareketler') {
+    ic.innerHTML = `
+      <div class="arac">
+        <label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Malzeme, firma, sipariş no ara" value="${esc(STK.hArama)}" oninput="STK.hArama=this.value;stokListeYenile()"></label>
+        <div class="cips">${[['tumu', 'Tümü'], ['giris', 'Giriş'], ['cikis', 'Çıkış'], ['sayim', 'Sayım']].map(([k, a]) =>
+          `<button type="button" data-f="${k}" onclick="STK.hTur='${k}';stokListeYenile()">${a}</button>`).join('')}</div>
+      </div>
+      <div class="sayac" id="stkSayac"></div>
+      <div class="kart" id="stkListe"></div>`;
+  } else {
+    ic.innerHTML = `<div class="ikili">
+      <section class="kart panel"><div class="w-bas"><h3>Malzemeler</h3><span class="soluk" id="mlzSayac"></span>
+        ${tam ? `<button class="btn kucuk sag" type="button" onclick="malzemeForm()">+ Malzeme Ekle</button>` : ''}</div>
+        <div id="mlzListe"></div></section>
+      <section class="kart panel"><div class="w-bas"><h3>Kategoriler</h3></div>
+        <div id="katListe"></div>
+        ${tam ? `<div class="kat-ekle"><input class="girdi" id="katYeni" placeholder="Yeni kategori adı" onkeydown="if(event.key==='Enter')kategoriEkle()">
+          <button class="btn kucuk" type="button" onclick="kategoriEkle()">Ekle</button></div>` : ''}</section>
+    </div>`;
+  }
+  stokListeYenile();
+}
+
+function stokListeYenile() {
+  if (!$('stokIcerik')) return;
+  if (STK.sekme === 'durum') stokDurumCiz();
+  else if (STK.sekme === 'hareketler') hareketListeCiz();
+  else tanimlarCiz();
+}
+
+function stokDurumCiz() {
+  const kutu = $('stkListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === STK.filtre));
+  const stok = stokHaritasi(), q = trKucuk(STK.arama);
+  const aktif = (VERI.stokMalzeme || []).filter(m => m.Aktif);
+  const l = aktif
+    .filter(m => !STK.kat || m.KategoriId === STK.kat)
+    .filter(m => STK.filtre !== 'kritik' || kritikMi(m, stok))
+    .filter(m => !q || trKucuk(m.Ad).includes(q))
+    .sort((a, b) => trSirala(a.Ad, b.Ad));
+  const kritikSay = aktif.filter(m => kritikMi(m, stok)).length;
+  $('stkSayac').innerHTML = `${l.length} malzeme${kritikSay ? `, <span class="gecikti">${kritikSay} kritik</span>` : ''}`;
+
+  if (!aktif.length) {
+    kutu.innerHTML = `<div class="bos"><div class="b-ikon">📦</div><h3>Henüz malzeme tanımlanmadı</h3>
+      <p>${yetki('stok') === 'tam' ? 'Malzemeler ve Kategoriler sekmesinden ilk malzemeyi ekleyin.' : 'Malzeme tanımlandığında burada listelenecek.'}</p>
+      ${yetki('stok') === 'tam' ? `<button class="btn" type="button" style="margin-top:16px" onclick="STK.sekme='tanimlar';rotaUygula()">Malzeme Ekle</button>` : ''}</div>`;
+    return;
+  }
+  if (!l.length) { kutu.innerHTML = '<div class="bos"><h3>Sonuç yok</h3><p>Bu arama veya filtrede malzeme yok.</p></div>'; return; }
+  kutu.innerHTML = l.map(m => {
+    const n = stok[m.Id] || 0, kr = kritikMi(m, stok);
+    return `<div class="m-satir" onclick="git('stok/${m.Id}')">
+      <span class="ms-ic"><span class="ms-ad">${esc(m.Ad)}</span><span class="ms-alt">${esc(katAdi(m.KategoriId))}${m.KritikSeviye > 0 ? `, kritik seviye ${miktarYaz(m.KritikSeviye)}` : ''}</span></span>
+      ${kr ? `<span class="rozet tehlike">${n <= 0 ? 'Stok yok' : 'Kritik'}</span>` : ''}
+      <span class="stok-miktar ${kr ? 'kritik' : ''}">${miktarYaz(n)}<small>${esc(m.Birim)}</small></span>
+      <span class="ok-ic">›</span></div>`;
+  }).join('');
+}
+
+function hareketSatirHTML(h, malzemeGoster) {
+  const m = malzemeBul(h.MalzemeId);
+  const birim = m ? m.Birim : '';
+  const e = hareketEtki(h);
+  const sip = h.SiparisId && SIP[h.SiparisTur]
+    ? `<a class="link" onclick="event.stopPropagation();git('siparisler/${SIP[h.SiparisTur].kisa}.${h.SiparisId}')">${esc(h.SiparisNo)}</a>` : '';
+  const alt = [h.FirmaAd ? esc(h.FirmaAd) : '', sip, h.Aciklama ? esc(h.Aciklama) : '', '@' + esc(h.Olusturan || '?')].filter(Boolean).join(', ');
+  return `<div class="h-satir">
+    <span class="h-tarih">${tarihKisa(h.Tarih)}</span>
+    <span class="h-tur"><span class="rozet ${HAREKET_SINIF[h.Tur] || ''}">${esc(h.Tur)}</span></span>
+    <span class="h-ic">${malzemeGoster ? `<b class="link" onclick="git('stok/${h.MalzemeId}')">${esc(m ? m.Ad : h.MalzemeAd)}</b>` : ''}<small>${alt}</small></span>
+    <span class="h-miktar ${e >= 0 ? 'arti' : 'eksi'}">${e >= 0 ? '+' : '−'}${miktarYaz(Math.abs(e))} ${esc(birim)}</span>
+    ${yetki('stok') === 'tam' ? `<button class="k-sil h-sil" type="button" title="Hareketi sil" aria-label="Hareketi sil" onclick="hareketSilOnay('${h.Id}')">×</button>` : ''}
+  </div>`;
+}
+
+function hareketListeCiz() {
+  const kutu = $('stkListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === STK.hTur));
+  const q = trKucuk(STK.hArama);
+  const turF = { giris: ['Giriş', 'Açılış'], cikis: ['Çıkış'], sayim: ['Sayım'] }[STK.hTur];
+  const tum = VERI.stokHareket || [];
+  const l = tum
+    .filter(h => !turF || turF.includes(h.Tur))
+    .filter(h => !q || [h.MalzemeAd, (malzemeBul(h.MalzemeId) || {}).Ad, h.FirmaAd, h.SiparisNo, h.Aciklama].some(x => trKucuk(x).includes(q)))
+    .sort(hareketSirala);
+  const goster = l.slice(0, 300);
+  $('stkSayac').textContent = `${l.length} hareket${l.length > 300 ? ' (son 300 gösteriliyor)' : ''}`;
+  kutu.innerHTML = goster.length ? goster.map(h => hareketSatirHTML(h, true)).join('')
+    : `<div class="bos"><div class="b-ikon">🔄</div><h3>${tum.length ? 'Sonuç yok' : 'Henüz stok hareketi yok'}</h3></div>`;
+}
+
+function tanimlarCiz() {
+  const tam = yetki('stok') === 'tam';
+  const stok = stokHaritasi();
+  const mlz = (VERI.stokMalzeme || []).slice().sort((a, b) => trSirala(a.Ad, b.Ad));
+  $('mlzSayac').textContent = `${mlz.length} malzeme`;
+  $('mlzListe').innerHTML = mlz.length ? mlz.map(m => `
+    <div class="t-satir"><div class="t-ic"><b class="link" onclick="git('stok/${m.Id}')">${esc(m.Ad)}</b>
+      <small>${esc(katAdi(m.KategoriId))}, ${esc(m.Birim)}${m.KritikSeviye > 0 ? `, kritik ${miktarYaz(m.KritikSeviye)}` : ''}, stok ${miktarYaz(stok[m.Id] || 0)}</small></div>
+      ${m.Aktif ? '' : '<span class="rozet pasif">Pasif</span>'}
+      ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="malzemeForm('${m.Id}')">Düzenle</button>` : ''}</div>`).join('')
+    : '<p class="soluk">Henüz malzeme yok.</p>';
+
+  const kat = (VERI.stokKategori || []).slice().sort((a, b) => trSirala(a.Ad, b.Ad));
+  $('katListe').innerHTML = kat.length ? kat.map(c => {
+    const n = mlz.filter(m => m.KategoriId === c.Id).length;
+    return `<div class="t-satir"><div class="t-ic"><b>${esc(c.Ad)}</b><small>${n} malzeme</small></div>
+      ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="kategoriDuzenle('${c.Id}')">Düzenle</button>
+        <button class="k-sil" type="button" title="Sil" aria-label="Kategoriyi sil" onclick="kategoriSilOnay('${c.Id}')">×</button>` : ''}</div>`;
+  }).join('') : '<p class="soluk">Henüz kategori yok.</p>';
+}
+
+// ---------- Malzeme sayfası ----------
+function malzemeDetay(ic, s, y, id) {
+  const tam = y === 'tam';
+  const ciz = () => {
+    const m = malzemeBul(id);
+    const geri = `<button class="geri" type="button" onclick="git('stok')">‹ Stok</button>`;
+    if (!m) { ic.innerHTML = geri + '<div class="kart bos"><div class="b-ikon">🔍</div><h3>Malzeme bulunamadı</h3></div>'; return; }
+    const stok = stokHaritasi(), n = stok[m.Id] || 0, kr = kritikMi(m, stok);
+    const hs = (VERI.stokHareket || []).filter(h => h.MalzemeId === id).sort(hareketSirala);
+    ic.innerHTML = geri + `
+      <div class="d-bas">
+        <span class="av buyuk">📦</span>
+        <div class="d-bas-ic"><h2>${esc(m.Ad)}</h2>
+          <div class="d-rozetler"><span class="rozet">${esc(katAdi(m.KategoriId))}</span>
+            ${m.Aktif ? '' : '<span class="rozet pasif">Pasif</span>'}
+            ${kr ? `<span class="rozet tehlike">${n <= 0 ? 'Stok yok' : 'Kritik seviyede'}</span>` : ''}
+            ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
+        ${tam ? `<div class="d-bas-sag"><button class="btn ikincil" type="button" onclick="malzemeForm('${m.Id}')">Düzenle</button></div>` : ''}
+      </div>
+      <section class="kart panel">
+        <div class="stok-ozet">
+          <div><div class="de">Mevcut stok</div><div class="buyuk-stok ${kr ? 'kritik' : ''}">${miktarYaz(n)}<small>${esc(m.Birim)}</small></div></div>
+          <div><div class="de">Kritik seviye</div>${m.KritikSeviye > 0 ? miktarYaz(m.KritikSeviye) + ' ' + esc(m.Birim) : '<span class="soluk">Belirtilmemiş</span>'}</div>
+          <div><div class="de">Hareket sayısı</div>${hs.length}</div>
+        </div>
+        ${tam && m.Aktif ? `<div class="stok-btn">
+          <button class="btn" type="button" onclick="hareketForm('Giriş','${m.Id}')">+ Giriş</button>
+          <button class="btn ikincil" type="button" onclick="hareketForm('Çıkış','${m.Id}')">− Çıkış</button>
+          <button class="btn ikincil" type="button" onclick="hareketForm('Sayım','${m.Id}')">⚖️ Sayım</button></div>` : ''}
+        ${m.Notlar ? `<h4 class="panel-alt">Notlar</h4><div class="d-not">${esc(m.Notlar)}</div>` : ''}
+      </section>
+      <section class="kart panel"><h3 class="panel-bas">Hareket Geçmişi</h3>
+        ${hs.length ? `<div class="kart" style="border-radius:8px">${hs.map(h => hareketSatirHTML(h, false)).join('')}</div>`
+          : '<div class="bos kucuk-bos"><div class="b-ikon">🔄</div><p>Bu malzemenin henüz hareketi yok.</p></div>'}
+      </section>`;
+  };
+  const hazir = stokOnbellek();
+  if (hazir) ciz(); else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  stokVeriYukle()
+    .then(() => { if (D.aktif === 'stok' && D.param === id && $('modal').hidden) ciz(); })
+    .catch(e => { if (!hazir) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+// ---------- Malzeme formu ----------
+function malzemeForm(id) {
+  const m = id ? malzemeBul(id) : null;
+  const katlar = (VERI.stokKategori || []).slice().sort((a, b) => trSirala(a.Ad, b.Ad));
+  const birim = m ? m.Birim : 'adet';
+  modalAc(m ? 'Malzemeyi Düzenle' : 'Yeni Malzeme', `
+    <label class="et" for="mzAd">Malzeme adı *</label>
+    <input class="girdi" id="mzAd" value="${m ? esc(m.Ad) : ''}" placeholder="Ör. Kontaktör 24V DC">
+    <div class="iki">
+      <div><label class="et" for="mzKat">Kategori</label>
+        <select class="girdi" id="mzKat"><option value="">Kategorisiz</option>${katlar.map(c =>
+          `<option value="${c.Id}" ${m && m.KategoriId === c.Id ? 'selected' : ''}>${esc(c.Ad)}</option>`).join('')}</select></div>
+      <div><label class="et" for="mzBirim">Birim</label>
+        <select class="girdi" id="mzBirim">${[...new Set([...BIRIMLER, birim])].map(b => `<option ${b === birim ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select></div>
+      <div><label class="et" for="mzKritik">Kritik stok seviyesi</label>
+        <input class="girdi" id="mzKritik" inputmode="decimal" value="${m && m.KritikSeviye ? sayiYaz(m.KritikSeviye) : ''}" placeholder="Bu miktara düşünce uyar"></div>
+      ${m ? `<div><label class="et">Durum</label>
+          <div class="cips" style="width:100%;margin-bottom:18px"><button type="button" id="mzA1" style="flex:1" onclick="mzDurum(true)">Aktif</button><button type="button" id="mzA0" style="flex:1" onclick="mzDurum(false)">Pasif</button></div></div>`
+        : `<div><label class="et" for="mzBas">Başlangıç stoğu</label>
+          <input class="girdi" id="mzBas" inputmode="decimal" placeholder="Şu an elde olan miktar"></div>`}
+    </div>
+    ${katlar.length ? '' : '<p class="bilgi-not">Kategori tanımlamak için Malzemeler ve Kategoriler sekmesindeki Kategoriler bölümünü kullanın.</p>'}
+    ${m ? '<p class="bilgi-not">Stok miktarını değiştirmek için malzeme sayfasındaki Sayım düğmesini kullanın.</p>' : ''}
+    <label class="et" for="mzNot">Notlar</label>
+    <textarea class="girdi alan" id="mzNot" placeholder="Marka, model, tedarik süresi…">${m ? esc(m.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `${m ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="malzemeSilOnay('${m.Id}')">Sil</button>` : ''}
+     <button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="mzKaydet" onclick="malzemeKaydet('${m ? m.Id : ''}')">Kaydet</button>`);
+  if (m) mzDurum(m.Aktif);
+  if (!m) setTimeout(() => $('mzAd').focus(), 50);
+}
+let mzAktif = true;
+function mzDurum(a) { mzAktif = a; $('mzA1').classList.toggle('on', a); $('mzA0').classList.toggle('on', !a); }
+
+async function malzemeKaydet(id) {
+  const hata = t => ($('mHata').textContent = t);
+  const kritik = $('mzKritik').value.trim() ? sayiOku($('mzKritik').value) : 0;
+  const bas = !id && $('mzBas').value.trim() ? sayiOku($('mzBas').value) : 0;
+  const kayit = { Id: id || null, Ad: $('mzAd').value.trim(), KategoriId: $('mzKat').value, Birim: $('mzBirim').value,
+    KritikSeviye: kritik, Aktif: id ? mzAktif : true, Notlar: $('mzNot').value.trim() };
+  if (!kayit.Ad) return hata('Malzeme adı gerekli.');
+  if (!(kritik >= 0)) return hata('Kritik seviye geçersiz. Örnek: 5 veya 2,5');
+  if (!(bas >= 0)) return hata('Başlangıç stoğu geçersiz. Örnek: 12 veya 2,5');
+  if ((VERI.stokMalzeme || []).some(m => m.Id !== kayit.Id && trKucuk(m.Ad) === trKucuk(kayit.Ad))) return hata('Bu isimde bir malzeme zaten var.');
+  const btn = $('mzKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const r = await api('stok.malzemeKaydet', { kayit, baslangic: bas });
+    veriGuncelle('stokMalzeme', r.malzeme);
+    if (r.hareket) veriGuncelle('stokHareket', r.hareket);
+    modalKapat(); rotaUygula();
+    toast(id ? 'Malzeme güncellendi.' : `Malzeme eklendi${r.hareket ? `, başlangıç stoğu ${miktarYaz(r.hareket.Miktar)} ${r.malzeme.Birim}` : ''}.`);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+
+function malzemeSilOnay(id) {
+  const m = malzemeBul(id);
+  modalAc('Malzemeyi Sil', `<p><b>${esc(m.Ad)}</b> silinecek.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Giriş, çıkış veya sayım hareketi olan malzemeler silinemez; kullanılmıyorsa pasif yapın. Sadece başlangıç stoğu varsa onunla birlikte silinir.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="malzemeForm('${id}')">Vazgeç</button>
+     <button class="btn tehlike" type="button" id="mSil" onclick="malzemeSil('${id}')">Sil</button>`);
+}
+async function malzemeSil(id) {
+  const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
+  try {
+    await api('kayit.sil', { varlik: 'stokMalzeme', id });
+    veriCikar('stokMalzeme', id);
+    VERI.stokHareket = (VERI.stokHareket || []).filter(h => h.MalzemeId !== id); ls.koy('locus_c_stokHareket', VERI.stokHareket);
+    modalKapat(); toast('Malzeme silindi.');
+    if (D.param) git('stok'); else rotaUygula();
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil'; }
+}
+
+// ---------- Kategoriler ----------
+async function kategoriEkle() {
+  const inp = $('katYeni'), ad = inp.value.trim(); if (!ad) return inp.focus();
+  if ((VERI.stokKategori || []).some(c => trKucuk(c.Ad) === trKucuk(ad))) return toast('Bu isimde bir kategori zaten var.', true);
+  inp.disabled = true;
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'stokKategori', kayit: { Ad: ad } });
+    veriGuncelle('stokKategori', r); inp.value = ''; tanimlarCiz(); toast('Kategori eklendi.');
+  } catch (e) { toast(e.message, true); }
+  inp.disabled = false; inp.focus();
+}
+function kategoriDuzenle(id) {
+  const c = (VERI.stokKategori || []).find(x => x.Id === id);
+  modalAc('Kategoriyi Düzenle', `<label class="et" for="kAd">Kategori adı</label><input class="girdi" id="kAd" value="${esc(c.Ad)}"><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="kKaydet" onclick="kategoriKaydet('${id}')">Kaydet</button>`);
+}
+async function kategoriKaydet(id) {
+  const ad = $('kAd').value.trim(); if (!ad) return ($('mHata').textContent = 'Kategori adı gerekli.');
+  const btn = $('kKaydet'); btn.disabled = true;
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'stokKategori', kayit: { Id: id, Ad: ad } });
+    veriGuncelle('stokKategori', r); modalKapat(); tanimlarCiz(); toast('Kategori güncellendi.');
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+function kategoriSilOnay(id) {
+  const c = (VERI.stokKategori || []).find(x => x.Id === id);
+  modalAc('Kategoriyi Sil', `<p><b>${esc(c.Ad)}</b> kategorisi silinecek.</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="kategoriSil('${id}')">Sil</button>`);
+}
+async function kategoriSil(id) {
+  const btn = $('mSil'); btn.disabled = true;
+  try { await api('kayit.sil', { varlik: 'stokKategori', id }); veriCikar('stokKategori', id); modalKapat(); tanimlarCiz(); toast('Kategori silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Giriş / Çıkış / Sayım ----------
+function hareketForm(tur, malzemeId) {
+  if (!(VERI.stokMalzeme || []).some(m => m.Aktif)) {
+    modalAc('Stok Hareketi', '<p>Önce en az bir malzeme tanımlamalısınız.</p>',
+      `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>
+       <button class="btn" type="button" onclick="modalKapat();STK.sekme='tanimlar';git('stok')">Malzeme Ekle</button>`);
+    return;
+  }
+  HF = { tur, malzemeId: malzemeId || '', miktar: '', tarih: bugun(), firmaId: '', aciklama: '' };
+  hareketFormCiz();
+}
+function hfOku() {
+  if (!$('hfMlz')) return;
+  HF.malzemeId = $('hfMlz').value; HF.miktar = $('hfMiktar').value; HF.tarih = $('hfTarih').value;
+  HF.firmaId = $('hfFirma') ? $('hfFirma').value : ''; HF.aciklama = $('hfAck').value;
+}
+function hfTur(t) { hfOku(); HF.tur = t; HF.firmaId = ''; hareketFormCiz(); }
+function hareketFormCiz() {
+  const stok = stokHaritasi();
+  const mlz = (VERI.stokMalzeme || []).filter(m => m.Aktif).sort((a, b) => trSirala(a.Ad, b.Ad));
+  const firmaVarlik = HF.tur === 'Giriş' ? 'tedarikciler' : HF.tur === 'Çıkış' ? 'musteriler' : null;
+  const firmalar = firmaVarlik ? ((FIRMALAR || {})[firmaVarlik] || []).filter(f => f.Aktif).sort((a, b) => trSirala(a.Ad, b.Ad)) : [];
+  const etiket = { 'Giriş': 'Giriş miktarı *', 'Çıkış': 'Çıkış miktarı *', 'Sayım': 'Sayılan miktar *' }[HF.tur];
+  modalAc('Stok Hareketi', `
+    <div class="cips" style="width:100%;margin-bottom:18px">${['Giriş', 'Çıkış', 'Sayım'].map(t =>
+      `<button type="button" style="flex:1" class="${HF.tur === t ? 'on' : ''}" onclick="hfTur('${t}')">${t === 'Giriş' ? '+ Giriş' : t === 'Çıkış' ? '− Çıkış' : '⚖️ Sayım'}</button>`).join('')}</div>
+    <label class="et" for="hfMlz">Malzeme *</label>
+    <select class="girdi" id="hfMlz" onchange="hfBilgi()"><option value="">Seçin…</option>${mlz.map(m =>
+      `<option value="${m.Id}" ${HF.malzemeId === m.Id ? 'selected' : ''}>${esc(m.Ad)} (${miktarYaz(stok[m.Id] || 0)} ${esc(m.Birim)})</option>`).join('')}</select>
+    <div class="iki">
+      <div><label class="et" for="hfMiktar">${etiket}</label>
+        <input class="girdi" id="hfMiktar" inputmode="decimal" value="${esc(HF.miktar)}" oninput="hfBilgi()"></div>
+      <div><label class="et" for="hfTarih">Tarih</label><input class="girdi" type="date" id="hfTarih" value="${HF.tarih}"></div>
+    </div>
+    <p class="bilgi-not" id="hfBilgi"></p>
+    ${firmaVarlik ? `<label class="et" for="hfFirma">${HF.tur === 'Giriş' ? 'Tedarikçi' : 'Müşteri'}</label>
+      <select class="girdi" id="hfFirma"><option value="">Seçilmedi</option>${firmalar.map(f =>
+        `<option value="${f.Id}" ${HF.firmaId === f.Id ? 'selected' : ''}>${esc(f.Ad)}</option>`).join('')}</select>` : ''}
+    <label class="et" for="hfAck">Açıklama</label>
+    <input class="girdi" id="hfAck" value="${esc(HF.aciklama)}" placeholder="${HF.tur === 'Sayım' ? 'Ör. Ekim sayımı' : 'Ör. irsaliye no, kullanıldığı iş'}">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="hfKaydet" onclick="hareketKaydet()">Kaydet</button>`);
+  hfBilgi();
+  setTimeout(() => $(HF.malzemeId ? 'hfMiktar' : 'hfMlz').focus(), 50);
+}
+function hfBilgi() {
+  const m = malzemeBul($('hfMlz').value), kutu = $('hfBilgi');
+  if (!m) { kutu.textContent = ''; return; }
+  const n = stokHaritasi()[m.Id] || 0, v = sayiOku($('hfMiktar').value);
+  let t = `Mevcut stok: ${miktarYaz(n)} ${m.Birim}`;
+  if (v >= 0 && !isNaN(v)) {
+    if (HF.tur === 'Giriş') t += `, giriş sonrası ${miktarYaz(n + v)} ${m.Birim}`;
+    if (HF.tur === 'Çıkış') t += v > n ? `, stok yetersiz` : `, çıkış sonrası ${miktarYaz(n - v)} ${m.Birim}`;
+    if (HF.tur === 'Sayım') { const f = Math.round((v - n) * 1000) / 1000; t += f === 0 ? ', fark yok' : `, fark ${f > 0 ? '+' : '−'}${miktarYaz(Math.abs(f))} ${m.Birim}`; }
+  }
+  kutu.textContent = t;
+}
+async function hareketKaydet() {
+  hfOku();
+  const hata = t => ($('mHata').textContent = t);
+  const m = malzemeBul(HF.malzemeId), v = sayiOku(HF.miktar);
+  if (!m) return hata('Malzeme seçin.');
+  if (HF.tur === 'Sayım' ? !(v >= 0) : !(v > 0)) return hata('Miktar geçersiz. Örnek: 12 veya 2,5');
+  const n = stokHaritasi()[m.Id] || 0;
+  if (HF.tur === 'Çıkış' && v > n) return hata(`Stokta ${miktarYaz(n)} ${m.Birim} var, daha fazla çıkış yapılamaz.`);
+  if (HF.tur === 'Sayım' && Math.round((v - n) * 1000) === 0) return hata('Sayılan miktar sistemdekiyle aynı, düzeltme gerekmiyor.');
+  const kayit = { Tur: HF.tur, MalzemeId: m.Id, Tarih: HF.tarih || bugun(), FirmaId: HF.firmaId, Aciklama: HF.aciklama.trim() };
+  if (HF.tur === 'Sayım') kayit.SayilanMiktar = v; else kayit.Miktar = v;
+  const btn = $('hfKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'stokHareket', kayit });
+    veriGuncelle('stokHareket', r);
+    modalKapat(); rotaUygula();
+    toast(`${m.Ad}: ${r.Tur.toLocaleLowerCase('tr-TR')} kaydedildi. Yeni stok ${miktarYaz(stokHaritasi()[m.Id] || 0)} ${m.Birim}.`);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+function hareketSilOnay(id) {
+  const h = (VERI.stokHareket || []).find(x => x.Id === id), m = malzemeBul(h.MalzemeId);
+  modalAc('Hareketi Sil', `<p><b>${esc(m ? m.Ad : h.MalzemeAd)}</b>: ${tarihKisa(h.Tarih)} tarihli ${esc(h.Tur.toLocaleLowerCase('tr-TR'))} hareketi (${miktarYaz(Math.abs(hareketEtki(h)))} ${esc(m ? m.Birim : '')}) silinecek ve stok buna göre yeniden hesaplanacak.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="hareketSil('${id}')">Sil</button>`);
+}
+async function hareketSil(id) {
+  const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
+  try { await api('kayit.sil', { varlik: 'stokHareket', id }); veriCikar('stokHareket', id); modalKapat(); rotaUygula(); toast('Hareket silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil'; }
+}
+
+// ---------- Excel ve A4 sayım listesi ----------
+function stokListeSatirlari(katId) {
+  const stok = stokHaritasi();
+  return (VERI.stokMalzeme || []).filter(m => m.Aktif && (!katId || m.KategoriId === katId))
+    .map(m => ({ ad: m.Ad, kategori: katAdi(m.KategoriId), birim: m.Birim, miktar: stok[m.Id] || 0, kritik: m.KritikSeviye || 0 }))
+    .sort((a, b) => (a.kategori === 'Kategorisiz') - (b.kategori === 'Kategorisiz') || trSirala(a.kategori, b.kategori) || trSirala(a.ad, b.ad));
+}
+function scriptYukle(src) {
+  if (document.querySelector(`script[src="${src}"]`)) return Promise.resolve();
+  return new Promise((ok, no) => {
+    const s = document.createElement('script'); s.src = src; s.onload = ok;
+    s.onerror = () => { s.remove(); no(new Error('Excel kütüphanesi yüklenemedi. İnternet bağlantınızı kontrol edin.')); };
+    document.head.appendChild(s);
+  });
+}
+async function stokExcel() {
+  const satirlar = stokListeSatirlari(STK.kat);
+  if (!satirlar.length) return toast('Listede malzeme yok.', true);
+  toast('Excel hazırlanıyor…');
+  try {
+    await scriptYukle('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
+    const aoa = [['Malzeme', 'Kategori', 'Birim', 'Sistemdeki Miktar', 'Kritik Seviye', 'Sayılan Miktar', 'Fark', 'Not'],
+      ...satirlar.map(r => [r.ad, r.kategori, r.birim, r.miktar, r.kritik || '', '', '', ''])];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    satirlar.forEach((r, i) => { const n = i + 2; ws['G' + n] = { t: 'n', f: `IF(F${n}="","",F${n}-D${n})` }; });
+    ws['!cols'] = [{ wch: 38 }, { wch: 18 }, { wch: 8 }, { wch: 17 }, { wch: 13 }, { wch: 15 }, { wch: 10 }, { wch: 28 }];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Stok');
+    XLSX.writeFile(wb, `Locus_Stok_${bugun()}.xlsx`);
+  } catch (e) { toast(e.message, true); }
+}
+function sayimListesiModal() {
+  const katlar = (VERI.stokKategori || []).slice().sort((a, b) => trSirala(a.Ad, b.Ad));
+  modalAc('Sayım Listesi Yazdır', `
+    <label class="et" for="yKat">Kategori</label>
+    <select class="girdi" id="yKat"><option value="">Tüm kategoriler</option>${katlar.map(c =>
+      `<option value="${c.Id}" ${STK.kat === c.Id ? 'selected' : ''}>${esc(c.Ad)}</option>`).join('')}</select>
+    <label class="anahtar"><input type="checkbox" id="yGoster" checked> Sistemdeki miktarı göster</label>
+    <p class="bilgi-not" style="margin-top:0">İşareti kaldırırsanız kör sayım listesi basılır: sayan kişi sistemdeki miktarı görmeden sayar. PDF için yazdırma ekranında hedef olarak "PDF olarak kaydet"i seçin.</p>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" onclick="sayimYazdir()">🖨 Yazdır / PDF</button>`);
+}
+function sayimYazdir() {
+  const kat = $('yKat').value, goster = $('yGoster').checked;
+  const satirlar = stokListeSatirlari(kat);
+  if (!satirlar.length) return toast('Bu kategoride malzeme yok.', true);
+  const sut = goster ? 7 : 6;
+  let grup = null, sira = 0, govde = '';
+  satirlar.forEach(r => {
+    if (r.kategori !== grup) { grup = r.kategori; govde += `<tr class="y-grup"><td colspan="${sut}">${esc(grup)}</td></tr>`; }
+    govde += `<tr><td class="y-no">${++sira}</td><td>${esc(r.ad)}</td><td class="y-birim">${esc(r.birim)}</td>
+      ${goster ? `<td class="y-sayi">${miktarYaz(r.miktar)}</td>` : ''}<td class="y-bos"></td><td class="y-fark"></td><td class="y-not"></td></tr>`;
+  });
+  let alan = $('yazdirAlan');
+  if (!alan) { alan = document.createElement('div'); alan.id = 'yazdirAlan'; document.body.appendChild(alan); }
+  alan.innerHTML = `
+    <div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering">
+      <div class="y-bas-sag"><h1>Stok Sayım Listesi</h1><div>Tarih: ${tarihKisa(bugun())}</div><div>Kategori: ${esc(kat ? katAdi(kat) : 'Tümü')}</div></div></div>
+    <table class="y-tablo"><thead><tr><th class="y-no">#</th><th>Malzeme</th><th class="y-birim">Birim</th>
+      ${goster ? '<th class="y-sayi">Sistemde</th>' : ''}<th class="y-bos">Sayılan</th><th class="y-fark">Fark</th><th class="y-not">Not</th></tr></thead>
+      <tbody>${govde}</tbody></table>
+    <div class="y-imza"><div><span></span>Sayımı yapan (Ad Soyad / İmza)</div><div><span></span>Kontrol eden (Ad Soyad / İmza)</div></div>
+    <div class="y-alt">Locus Şirket Takip Sistemi, ${satirlar.length} malzeme, ${goster ? 'sistem miktarlı liste' : 'kör sayım listesi'}</div>`;
+  modalKapat();
+  const img = alan.querySelector('img');
+  const bas = () => setTimeout(() => window.print(), 50);
+  if (img.complete) bas(); else { img.onload = bas; img.onerror = bas; }
+}
+
+// ---------- Siparişi stoka işleme ----------
+const stokIslenebilir = (t, durum) => t === 'satinalma' ? durum === 'Teslim Alındı' : (durum === 'Sevk Edildi' || durum === 'Teslim Edildi');
+
+async function stokIsleModal(t, id) {
+  const x = (VERI[t] || []).find(k => k.Id === id); if (!x) return;
+  const tur = t === 'satinalma' ? 'Giriş' : 'Çıkış';
+  modalAc('Stoka İşle', '<p class="soluk">Stok bilgileri yükleniyor…</p>');
+  try { await Promise.all([veriYukle('stokMalzeme'), veriYukle('stokHareket')]); }
+  catch (e) { modalAc('Stoka İşle', `<p>${esc(e.message)}</p>`, `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>`); return; }
+
+  const islenmis = (VERI.stokHareket || []).filter(h => h.SiparisId === id);
+  if (islenmis.length) {
+    modalAc('Stoka İşle', `<p><b>${esc(x.No)}</b> daha önce stoka işlenmiş:</p>
+      <div class="kart" style="margin-top:12px;border-radius:8px">${islenmis.map(h => hareketSatirHTML(h, true)).join('')}</div>`,
+      `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>`);
+    return;
+  }
+  const mlz = (VERI.stokMalzeme || []).filter(m => m.Aktif).sort((a, b) => trSirala(a.Ad, b.Ad));
+  if (!mlz.length) {
+    modalAc('Stoka İşle', '<p>Stoka işlemek için önce Stok sayfasında malzeme tanımlamalısınız.</p>',
+      `<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
+       <button class="btn" type="button" onclick="modalKapat();STK.sekme='tanimlar';git('stok')">Malzeme Tanımla</button>`);
+    return;
+  }
+  const stok = stokHaritasi();
+  SI = { t, id, tur, satirlar: (x.Kalemler || []).map(k => ({
+    miktar: sayiYaz(k.miktar),
+    malzemeId: (mlz.find(m => trKucuk(m.Ad) === trKucuk(k.aciklama)) || {}).Id || ''
+  })) };
+  modalAc(`${x.No}: Stoka ${tur}`, `
+    <p class="bilgi-not" style="margin:0 0 8px">Her kalemi stoktaki bir malzemeyle eşleştirin. Stoğa girmeyecek kalemler (nakliye, hizmet vb.) için "Stoka işleme" seçili kalsın.</p>
+    ${(x.Kalemler || []).map((k, i) => `
+      <div class="si-satir">
+        <div class="si-ac"><b>${esc(k.aciklama)}</b><small>Siparişte: ${miktarYaz(k.miktar)} ${esc(k.birim)}</small></div>
+        <select class="girdi" onchange="SI.satirlar[${i}].malzemeId=this.value"><option value="">Stoka işleme</option>${mlz.map(m =>
+          `<option value="${m.Id}" ${SI.satirlar[i].malzemeId === m.Id ? 'selected' : ''}>${esc(m.Ad)} (${miktarYaz(stok[m.Id] || 0)} ${esc(m.Birim)})</option>`).join('')}</select>
+        <input class="girdi" inputmode="decimal" value="${esc(SI.satirlar[i].miktar)}" aria-label="Miktar" oninput="SI.satirlar[${i}].miktar=this.value">
+      </div>`).join('')}
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
+     <button class="btn" type="button" id="siKaydet" onclick="stokIsleKaydet()">Stoka İşle</button>`, true);
+}
+
+async function stokIsleKaydet() {
+  const x = (VERI[SI.t] || []).find(k => k.Id === SI.id);
+  const hata = t => ($('mHata').textContent = t);
+  const hareketler = [];
+  for (const s of SI.satirlar) {
+    if (!s.malzemeId) continue;
+    const v = sayiOku(s.miktar);
+    if (!(v > 0)) return hata('Eşleştirilen kalemlerde miktar geçersiz.');
+    hareketler.push({ Tur: SI.tur, MalzemeId: s.malzemeId, Miktar: v, Tarih: bugun(), FirmaId: x.FirmaId, SiparisTur: SI.t, SiparisId: x.Id });
+  }
+  if (!hareketler.length) return hata('En az bir kalemi bir malzemeyle eşleştirin.');
+  const btn = $('siKaydet'); btn.disabled = true; btn.textContent = 'İşleniyor…';
+  try {
+    const r = await api('stok.topluHareket', { hareketler });
+    r.forEach(h => veriGuncelle('stokHareket', h));
+    modalKapat(); rotaUygula();
+    toast(`${x.No}: ${r.length} kalem stoka işlendi.`);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Stoka İşle'; }
 }
 
 // ==================== ŞİFRE DEĞİŞTİR ====================
