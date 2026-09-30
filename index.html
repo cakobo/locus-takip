@@ -41,7 +41,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
-button,input,select{font:inherit;color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
 [hidden]{display:none!important}
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
@@ -287,6 +287,41 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .kod{display:inline-block;min-width:46px;text-align:center;font-weight:600;font-size:13px;padding:3px 8px;border-radius:6px;background:var(--sel);color:var(--sel-ink);margin-right:10px}
 .kur-ad{color:var(--mute);font-size:14px}
 
+
+.sekmeler{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.sekmeler button{padding:10px 16px;font-size:15px;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.sekmeler button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--acc)}
+.ozet{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;margin:0 2px 10px}
+.ozet .soluk{margin-right:4px}
+.ozet-tutar{font-weight:600;font-variant-numeric:tabular-nums;background:var(--sf);border:1px solid var(--line);border-radius:6px;padding:3px 10px}
+.s-no{display:flex;flex-direction:column;width:118px;flex:none;font-variant-numeric:tabular-nums}
+.s-no b{font-size:14px;font-weight:600}
+.s-no small{color:var(--mute);font-size:12px}
+.s-tutar{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.gecikti{color:var(--danger);font-weight:600}
+.modal-ic.genis{max-width:880px}
+.kalem-bas,.kalem{display:grid;grid-template-columns:minmax(0,1fr) 84px 92px 120px 120px 32px;gap:8px;align-items:center}
+.kalem-bas{font-size:12px;color:var(--mute);margin-bottom:6px}
+.kalem{margin-bottom:8px}
+.kalem .girdi{margin:0;height:40px;padding:0 10px}
+.k-tutar{text-align:right;font-variant-numeric:tabular-nums;font-size:14px}
+.k-sil{width:32px;height:32px;border-radius:6px;color:var(--mute);font-size:20px}
+.k-sil:hover:not(:disabled){color:var(--danger);background:var(--sel)}
+.k-sil:disabled{opacity:.3;cursor:default}
+.toplamlar{margin:14px 0 18px auto;max-width:320px;font-variant-numeric:tabular-nums}
+.toplamlar div{display:flex;justify-content:space-between;gap:16px;padding:4px 0;font-size:14px}
+.toplamlar .genel{border-top:1px solid var(--line);margin-top:4px;padding-top:8px;font-size:16px;font-weight:600}
+.tablo-kap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.tablo{width:100%;border-collapse:collapse;font-size:14px}
+.tablo th{font-size:12px;color:var(--mute);font-weight:500;text-align:left;padding:10px 12px;background:var(--inbg);border-bottom:1px solid var(--line);white-space:nowrap}
+.tablo td{padding:10px 12px;border-top:1px solid var(--line)}
+.tablo tr:first-child td{border-top:0}
+.tablo .sag{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.firma-link{color:var(--acc);cursor:pointer;font-weight:500;text-decoration:none}
+:root[data-theme="dark"] .firma-link{color:#6FA8EC}
+.durum-sec{height:36px;margin:0;padding:0 10px;width:auto;max-width:100%}
+.zaman .z-ic .rozet{font-size:12px;padding:2px 8px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -348,6 +383,19 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .panel{padding:18px 16px}
   .bilgi-grid{grid-template-columns:1fr 1fr}
   .zaman li{flex-direction:column;gap:2px}
+  .s-satir{display:grid;grid-template-columns:1fr auto;gap:6px 10px}
+  .s-satir .s-no{order:1;width:auto;flex-direction:row;gap:8px;align-items:baseline}
+  .s-satir .rozet{order:2}
+  .s-satir .ms-ic{order:3;grid-column:1/-1}
+  .s-satir .s-tutar{order:4;grid-column:1/-1;font-size:16px}
+  .s-satir .m-btn{order:5;grid-column:1/-1;padding-left:0}
+  .kalem-bas{display:none}
+  .kalem{grid-template-columns:1fr 1fr;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
+  .kalem .girdi{background:var(--sf)}
+  .kalem .k-ac{grid-column:1/-1}
+  .kalem .k-tutar{text-align:left;font-weight:600}
+  .kalem .k-sil{justify-self:end}
+  .toplamlar{max-width:none}
 }
 </style>
 </head>
@@ -574,7 +622,7 @@ function git(kod) {
 window.addEventListener('hashchange', () => { if (D.kul) rotaUygula(); });
 
 function rotaUygula() {
-  const eslesme = location.hash.match(/^#\/(\w+)(?:\/([\w-]+))?/) || [];
+  const eslesme = location.hash.match(/^#\/(\w+)(?:\/([\w.-]+))?/) || [];
   let kod = eslesme[1] || 'anasayfa';
   D.param = eslesme[2] || null;
   modalKapat(); dahaKapat();
@@ -891,15 +939,20 @@ const FIRMA = {
     tekil: 'Müşteri', kucuk: 'müşteri', ikon: '🤝',
     islemBaslik: 'Yapılan İşlemler',
     islemBos: 'Bu müşteriye ait projeler ve siparişler burada tarih sırasına göre listelenecek.',
-    // Projeler ve müşteri siparişleri yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
-    islemler: m => []
+    // Projeler sayfası yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
+    kaynaklar: ['musteriSiparis'],
+    islemler: m => (VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
+      tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: para(x.Toplam, x.ParaBirimi), durum: x.Durum, rota: 'siparisler/ms.' + x.Id
+    }))
   },
   tedarikciler: {
     tekil: 'Tedarikçi', kucuk: 'tedarikçi', ikon: '🚚',
     islemBaslik: 'Satın Almalar',
     islemBos: 'Bu tedarikçiden yapılan satın almalar burada tarih sırasına göre listelenecek.',
-    // Satın alma siparişleri yapıldığında buraya eklenecek.
-    islemler: m => []
+    kaynaklar: ['satinalma'],
+    islemler: m => (VERI.satinalma || []).filter(x => x.FirmaId === m.Id).map(x => ({
+      tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: para(x.Toplam, x.ParaBirimi), durum: x.Durum, rota: 'siparisler/sa.' + x.Id
+    }))
   }
 };
 const FD = {};
@@ -1019,14 +1072,19 @@ function firmaDetay(v, ic, s, y, id) {
 
       <section class="kart panel">
         <h3 class="panel-bas">${c.islemBaslik}</h3>
-        ${islemlerHTML(c.islemler(m).sort((a, b) => new Date(b.tarih) - new Date(a.tarih)), c.islemBos)}
+        ${yetki('siparisler') === 'yok'
+          ? '<div class="bos kucuk-bos"><div class="b-ikon">🔒</div><p>Sipariş kayıtlarını görme yetkiniz yok.</p></div>'
+          : islemlerHTML(c.islemler(m).sort((a, b) => String(b.tarih).localeCompare(String(a.tarih))), c.islemBos)}
       </section>`;
   };
 
   const onbellek = VERI[v] || ls.al('locus_c_' + v);
   if (onbellek) { VERI[v] = onbellek; ciz(); }
   else ic.innerHTML = `<div class="kart bos"><p>Yükleniyor…</p></div>`;
-  veriYukle(v)
+  const kaynaklar = yetki('siparisler') === 'yok' ? [] : (c.kaynaklar || []);
+  kaynaklar.forEach(kv => { if (!VERI[kv]) VERI[kv] = ls.al('locus_c_' + kv) || undefined; });
+  if (VERI[v]) ciz();
+  Promise.all([veriYukle(v), ...kaynaklar.map(kv => veriYukle(kv).catch(() => null))])
     .then(() => { if (D.aktif === v && D.param === id && $('modal').hidden) ciz(); })
     .catch(e => { if (!onbellek) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
 }
@@ -1037,7 +1095,7 @@ function islemlerHTML(liste, bosMetin) {
   }
   return `<ol class="zaman">${liste.map(x => `
     <li onclick="${x.rota ? `git('${x.rota}')` : ''}">
-      <span class="z-tarih">${esc(new Date(x.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' }))}</span>
+      <span class="z-tarih">${esc(tarihKisa(x.tarih))}</span>
       <span class="z-ic"><span class="rozet">${esc(x.tur)}</span> <b>${esc(x.baslik)}</b>
         ${x.aciklama ? `<span class="soluk"> ${esc(x.aciklama)}</span>` : ''}
         ${x.durum ? `<span class="rozet pasif" style="margin-left:6px">${esc(x.durum)}</span>` : ''}</span>
@@ -1144,6 +1202,349 @@ async function firmaSil(v, id) {
   }
 }
 
+
+// ==================== SİPARİŞLER ====================
+// Para birimleri ayrı tutulur (TL / EUR / USD), hiçbir yerde kur çevrimi yapılmaz.
+const SIP = {
+  satinalma: {
+    kisa: 'sa', ad: 'Satın Alma', cogul: 'Satın Almalar', firmaVarlik: 'tedarikciler', firmaEt: 'Tedarikçi',
+    durumlar: ['Taslak', 'Sipariş Verildi', 'Yolda', 'Teslim Alındı', 'İptal'], tamam: 'Teslim Alındı', varsayilan: 'Sipariş Verildi'
+  },
+  musteriSiparis: {
+    kisa: 'ms', ad: 'Müşteri Siparişi', cogul: 'Müşteri Siparişleri', firmaVarlik: 'musteriler', firmaEt: 'Müşteri',
+    durumlar: ['Alındı', 'Hazırlanıyor', 'Sevk Edildi', 'Teslim Edildi', 'İptal'], tamam: 'Teslim Edildi', varsayilan: 'Alındı'
+  }
+};
+const KISA_TUR = { sa: 'satinalma', ms: 'musteriSiparis' };
+const PARA = { TRY: 'TL', EUR: 'EUR', USD: 'USD' };
+const BIRIMLER = ['adet', 'kg', 'm', 'm²', 'lt', 'set', 'paket', 'saat'];
+const SP = { tur: 'satinalma', arama: '', filtre: 'acik' };
+let SF = null;
+let FIRMALAR = null;
+
+const para = (n, pb) => Number(n || 0).toLocaleString('tr-TR', { style: 'currency', currency: pb || 'TRY' });
+const tarihKisa = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') : '';
+const sayiGoster = n => Number(n).toLocaleString('tr-TR', { maximumFractionDigits: 3 });
+const bugun = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+function sayiOku(s) {
+  s = String(s ?? '').trim().replace(/\s/g, '');
+  if (!s) return NaN;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  return Number(s);
+}
+const sayiYaz = n => (n === '' || n == null || isNaN(n)) ? '' : String(n).replace('.', ',');
+const siraNo = no => parseInt(String(no).split('-').pop(), 10) || 0; // LCS261001-12 → 12
+const siparisAcik = (t, s) => s.Durum !== SIP[t].tamam && s.Durum !== 'İptal';
+const durumSinif = (t, d) => d === SIP[t].tamam ? 'ok' : d === 'İptal' ? 'pasif' : d === 'Taslak' ? 'uyari' : '';
+function firmaAdi(t, s) {
+  const f = ((FIRMALAR && FIRMALAR[SIP[t].firmaVarlik]) || []).find(x => x.Id === s.FirmaId);
+  return f ? f.Ad : (s.FirmaAd || '—');
+}
+async function firmalarYukle() {
+  const r = await api('siparis.firmalar');
+  FIRMALAR = r; ls.koy('locus_c_firmalar', r);
+  return r;
+}
+
+SAYFA_CIZ.siparisler = function (ic, s, y) {
+  if (D.param) return siparisDetay(ic, s, y, D.param);
+  const t = SP.tur, c = SIP[t];
+  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `<button class="btn" type="button" onclick="siparisForm('${t}')">+ Yeni ${c.ad}</button>` : '') + `
+    <div class="sekmeler" role="tablist">${Object.keys(SIP).map(k =>
+      `<button type="button" role="tab" class="${k === t ? 'on' : ''}" onclick="SP.tur='${k}';rotaUygula()">${SIP[k].cogul}</button>`).join('')}</div>
+    <div class="arac">
+      <label class="arama"><span>🔍</span><input id="sAra" type="search" autocomplete="off"
+        placeholder="${t === 'musteriSiparis' ? 'Sipariş no, müşteri veya müşteri PO no ara' : 'Sipariş no veya tedarikçi ara'}"
+        value="${esc(SP.arama)}" oninput="SP.arama=this.value;siparisListeCiz()"></label>
+      <div class="cips">${[['acik', 'Açık'], ['tamam', 'Tamamlanan'], ['iptal', 'İptal'], ['tumu', 'Tümü']].map(([k, a]) =>
+        `<button type="button" data-f="${k}" onclick="SP.filtre='${k}';siparisListeCiz()">${a}</button>`).join('')}</div>
+    </div>
+    <div class="ozet" id="sOzet"></div>
+    <div class="kart" id="sListe"></div>`;
+
+  if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  const ob = VERI[t] || ls.al('locus_c_' + t);
+  if (ob) { VERI[t] = ob; siparisListeCiz(); }
+  else $('sListe').innerHTML = '<div class="bos"><p>Siparişler yükleniyor…</p></div>';
+  Promise.all([veriYukle(t), firmalarYukle()])
+    .then(() => { if (D.aktif === 'siparisler' && !D.param && SP.tur === t) siparisListeCiz(); })
+    .catch(e => { if (!ob && $('sListe')) $('sListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function siparisListeCiz() {
+  const kutu = $('sListe'); if (!kutu) return;
+  const t = SP.tur, c = SIP[t], tam = yetki('siparisler') === 'tam';
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === SP.filtre));
+  const tum = VERI[t] || [];
+  const q = trKucuk(SP.arama);
+  const l = tum
+    .filter(s => SP.filtre === 'tumu' || (SP.filtre === 'acik' && siparisAcik(t, s)) ||
+      (SP.filtre === 'tamam' && s.Durum === c.tamam) || (SP.filtre === 'iptal' && s.Durum === 'İptal'))
+    .filter(s => !q || [s.No, firmaAdi(t, s), s.MusteriSiparisNo].some(x => trKucuk(x).includes(q)))
+    .sort((a, b) => String(b.Tarih).localeCompare(String(a.Tarih)) || siraNo(b.No) - siraNo(a.No));
+
+  // Para birimi başına ayrı toplam (iptaller hariç)
+  const top = {};
+  l.filter(s => s.Durum !== 'İptal').forEach(s => top[s.ParaBirimi] = (top[s.ParaBirimi] || 0) + Number(s.Toplam));
+  $('sOzet').innerHTML = `<span class="soluk">${l.length} sipariş</span>` +
+    Object.keys(PARA).filter(p => top[p]).map(p => `<span class="ozet-tutar">${para(top[p], p)}</span>`).join('');
+
+  if (!tum.length) {
+    kutu.innerHTML = `<div class="bos"><div class="b-ikon">🛒</div><h3>Henüz ${c.ad.toLocaleLowerCase('tr-TR')} kaydı yok</h3>
+      <p>${tam ? `İlk kaydı eklemek için Yeni ${c.ad}'ya dokunun.` : 'Kayıt eklendiğinde burada listelenecek.'}</p></div>`;
+    return;
+  }
+  if (!l.length) {
+    kutu.innerHTML = `<div class="bos"><h3>Sonuç yok</h3><p>${q ? `"${esc(SP.arama.trim())}" ile eşleşen sipariş bulunamadı.` : 'Bu filtrede sipariş yok.'}</p></div>`;
+    return;
+  }
+  const bgn = bugun();
+  kutu.innerHTML = l.map(s => {
+    const gec = siparisAcik(t, s) && s.TeslimTarihi && s.TeslimTarihi < bgn;
+    const n = (s.Kalemler || []).length;
+    const rota = `siparisler/${c.kisa}.${s.Id}`;
+    return `<div class="m-satir s-satir" onclick="git('${rota}')">
+      <span class="s-no"><b>${esc(s.No)}</b><small>${tarihKisa(s.Tarih)}</small></span>
+      <span class="ms-ic"><span class="ms-ad">${esc(firmaAdi(t, s))}</span>
+        <span class="ms-alt">${n} kalem${s.MusteriSiparisNo ? ', PO ' + esc(s.MusteriSiparisNo) : ''}${s.TeslimTarihi ? ', teslim ' + tarihKisa(s.TeslimTarihi) : ''}${gec ? ' <span class="gecikti">Gecikti</span>' : ''}</span></span>
+      <span class="s-tutar">${para(s.Toplam, s.ParaBirimi)}</span>
+      <span class="rozet ${durumSinif(t, s.Durum)}">${esc(s.Durum)}</span>
+      <span class="m-btn">
+        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('${rota}')">Görüntüle</button>
+        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();siparisForm('${t}','${s.Id}')">Düzenle</button>` : ''}
+      </span></div>`;
+  }).join('');
+}
+
+// ---------- Sipariş görüntüleme ----------
+function siparisDetay(ic, s, y, param) {
+  const t = KISA_TUR[param.slice(0, 2)], id = param.slice(3);
+  const geri = `<button class="geri" type="button" onclick="SP.tur='${t || 'satinalma'}';git('siparisler')">‹ Siparişler</button>`;
+  if (!t) { ic.innerHTML = geri + '<div class="kart bos"><h3>Sipariş bulunamadı</h3></div>'; return; }
+  const c = SIP[t];
+
+  const ciz = () => {
+    const x = (VERI[t] || []).find(k => k.Id === id);
+    if (!x) { ic.innerHTML = geri + '<div class="kart bos"><div class="b-ikon">🔍</div><h3>Sipariş bulunamadı</h3><p>Silinmiş olabilir.</p></div>'; return; }
+    const tam = y === 'tam';
+    const gec = siparisAcik(t, x) && x.TeslimTarihi && x.TeslimTarihi < bugun();
+    const firmaHTML = yetki(c.firmaVarlik) !== 'yok'
+      ? `<a class="firma-link" onclick="git('${c.firmaVarlik}/${x.FirmaId}')">${esc(firmaAdi(t, x))}</a>` : esc(firmaAdi(t, x));
+    const durumHTML = tam
+      ? `<select class="girdi durum-sec" onchange="siparisDurumDegistir('${t}','${x.Id}',this.value)">${c.durumlar.map(d => `<option ${d === x.Durum ? 'selected' : ''}>${d}</option>`).join('')}</select>`
+      : esc(x.Durum);
+
+    ic.innerHTML = geri + `
+      <div class="d-bas">
+        <span class="av buyuk">${c.kisa.toUpperCase()}</span>
+        <div class="d-bas-ic"><h2>${esc(x.No)}</h2>
+          <div class="d-rozetler"><span class="rozet">${c.ad}</span><span class="rozet ${durumSinif(t, x.Durum)}">${esc(x.Durum)}</span>
+          ${gec ? '<span class="rozet" style="color:var(--danger)">Teslim gecikti</span>' : ''}
+          ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
+        ${tam ? `<div class="d-bas-sag">
+          <button class="btn ikincil" type="button" style="color:var(--danger)" onclick="siparisSilOnay('${t}','${x.Id}')">Sil</button>
+          <button class="btn" type="button" onclick="siparisForm('${t}','${x.Id}')">Düzenle</button></div>` : ''}
+      </div>
+
+      <section class="kart panel">
+        <h3 class="panel-bas">Sipariş Bilgileri</h3>
+        <div class="bilgi-grid">
+          <div><div class="de">${c.firmaEt}</div>${firmaHTML}</div>
+          <div><div class="de">Sipariş tarihi</div>${tarihKisa(x.Tarih)}</div>
+          <div><div class="de">Teslim tarihi</div>${x.TeslimTarihi ? tarihKisa(x.TeslimTarihi) : '<span class="soluk">Belirtilmemiş</span>'}</div>
+          <div><div class="de">Durum</div>${durumHTML}</div>
+          <div><div class="de">Para birimi</div>${PARA[x.ParaBirimi] || esc(x.ParaBirimi)}</div>
+          <div><div class="de">KDV</div>%${x.KdvOrani}</div>
+          ${t === 'musteriSiparis' ? `<div><div class="de">Müşteri sipariş no</div>${x.MusteriSiparisNo ? esc(x.MusteriSiparisNo) : '<span class="soluk">Yok</span>'}</div>` : ''}
+        </div>
+
+        <h4 class="panel-alt">Kalemler</h4>
+        <div class="tablo-kap"><table class="tablo">
+          <thead><tr><th style="width:36px">#</th><th>Açıklama</th><th class="sag">Miktar</th><th class="sag">Birim fiyat</th><th class="sag">Tutar</th></tr></thead>
+          <tbody>${(x.Kalemler || []).map((k, i) => `<tr><td class="soluk">${i + 1}</td><td>${esc(k.aciklama)}</td>
+            <td class="sag">${sayiGoster(k.miktar)} ${esc(k.birim)}</td><td class="sag">${para(k.birimFiyat, x.ParaBirimi)}</td>
+            <td class="sag">${para(k.tutar, x.ParaBirimi)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div class="toplamlar">
+          <div><span>Ara toplam</span><span>${para(x.AraToplam, x.ParaBirimi)}</span></div>
+          <div><span>KDV (%${x.KdvOrani})</span><span>${para(x.Kdv, x.ParaBirimi)}</span></div>
+          <div class="genel"><span>Genel toplam</span><span>${para(x.Toplam, x.ParaBirimi)}</span></div>
+        </div>
+
+        <h4 class="panel-alt">Notlar</h4>
+        ${x.Notlar ? `<div class="d-not">${esc(x.Notlar)}</div>` : '<p class="soluk">Not yok.</p>'}
+        <div class="d-meta" style="margin-top:16px">Oluşturan: @${esc(x.Olusturan || '?')}, ${esc(tarihYaz(x.Olusturma))}. Son güncelleme: @${esc(x.Guncelleyen || '?')}, ${esc(tarihYaz(x.Guncelleme))}</div>
+      </section>`;
+  };
+
+  if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  const ob = VERI[t] || ls.al('locus_c_' + t);
+  if (ob) { VERI[t] = ob; ciz(); } else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  Promise.all([veriYukle(t), firmalarYukle()])
+    .then(() => { if (D.aktif === 'siparisler' && D.param === param && $('modal').hidden) ciz(); })
+    .catch(e => { if (!ob) ic.innerHTML = geri + `<div class="kart bos"><h3>Sipariş alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+async function siparisDurumDegistir(t, id, durum) {
+  const x = (VERI[t] || []).find(k => k.Id === id); if (!x) return;
+  try {
+    const r = await api('kayit.kaydet', { varlik: t, kayit: Object.assign({}, x, { Durum: durum }) });
+    veriGuncelle(t, r);
+    toast(`${r.No}: ${durum}`);
+  } catch (e) { toast(e.message, true); }
+  rotaUygula();
+}
+
+// ---------- Ekle / Düzenle ----------
+function siparisForm(t, id) {
+  const c = SIP[t];
+  const x = id ? (VERI[t] || []).find(k => k.Id === id) : null;
+  if (!FIRMALAR) { toast('Firma listesi yükleniyor, birazdan tekrar deneyin.'); firmalarYukle().catch(() => {}); return; }
+  const firmalar = (FIRMALAR[c.firmaVarlik] || []).filter(f => f.Aktif || (x && f.Id === x.FirmaId)).sort((a, b) => trSirala(a.Ad, b.Ad));
+
+  if (!firmalar.length) {
+    const fk = FIRMA[c.firmaVarlik];
+    modalAc(`Yeni ${c.ad}`, `<p>Sipariş girebilmek için önce en az bir aktif ${fk.kucuk} kaydı olmalı.</p>`,
+      `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>
+       ${yetki(c.firmaVarlik) === 'tam' ? `<button class="btn" type="button" onclick="git('${c.firmaVarlik}')">${fk.tekil} Ekle</button>` : ''}`);
+    return;
+  }
+
+  SF = {
+    tur: t, Id: x ? x.Id : null, pb: x ? x.ParaBirimi : 'TRY',
+    kalemler: x ? x.Kalemler.map(k => ({ aciklama: k.aciklama, miktar: sayiYaz(k.miktar), birim: k.birim, birimFiyat: sayiYaz(k.birimFiyat) }))
+      : [{ aciklama: '', miktar: '1', birim: 'adet', birimFiyat: '' }]
+  };
+  modalAc(x ? `${x.No} Düzenle` : `Yeni ${c.ad}`, `
+    <div class="iki">
+      <div><label class="et" for="sfFirma">${c.firmaEt} *</label>
+        <select class="girdi" id="sfFirma"><option value="">Seçin…</option>${firmalar.map(f =>
+          `<option value="${f.Id}" ${x && x.FirmaId === f.Id ? 'selected' : ''}>${esc(f.Ad)}${f.Aktif ? '' : ' (pasif)'}</option>`).join('')}</select></div>
+      <div><label class="et" for="sfDurum">Durum</label>
+        <select class="girdi" id="sfDurum">${c.durumlar.map(d => `<option ${d === (x ? x.Durum : c.varsayilan) ? 'selected' : ''}>${d}</option>`).join('')}</select></div>
+      <div><label class="et" for="sfTarih">Sipariş tarihi *</label>
+        <input class="girdi" type="date" id="sfTarih" value="${x ? x.Tarih : bugun()}"></div>
+      <div><label class="et" for="sfTeslim">Teslim tarihi</label>
+        <input class="girdi" type="date" id="sfTeslim" value="${x ? x.TeslimTarihi || '' : ''}"></div>
+      <div><label class="et">Para birimi</label>
+        <div class="cips" style="width:100%;margin-bottom:18px">${Object.keys(PARA).map(p =>
+          `<button type="button" data-pb="${p}" style="flex:1" onclick="pbSec('${p}')">${PARA[p]}</button>`).join('')}</div></div>
+      <div><label class="et" for="sfKdv">KDV oranı</label>
+        <select class="girdi" id="sfKdv" onchange="toplamHesapla()">${[20, 10, 1, 0].map(o =>
+          `<option value="${o}" ${(x ? x.KdvOrani : 20) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select></div>
+    </div>
+    ${t === 'musteriSiparis' ? `<label class="et" for="sfPo">Müşterinin sipariş no'su</label>
+      <input class="girdi" id="sfPo" value="${x ? esc(x.MusteriSiparisNo) : ''}" placeholder="Müşterinin kendi PO numarası (varsa)">` : ''}
+    <div class="bolum-et">Kalemler<button class="btn ikincil kucuk" type="button" onclick="kalemEkle()">+ Kalem Ekle</button></div>
+    <div class="kalem-bas"><span>Ürün / hizmet</span><span>Miktar</span><span>Birim</span><span>Birim fiyat</span><span style="text-align:right">Tutar</span><span></span></div>
+    <div id="sfKalemler"></div>
+    <div class="toplamlar" id="sfToplam"></div>
+    <label class="et" for="sfNot">Notlar</label>
+    <textarea class="girdi alan" id="sfNot" placeholder="Siparişle ilgili notlar">${x ? esc(x.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="sfKaydet" onclick="siparisKaydet()">Kaydet</button>`, true);
+  pbSec(SF.pb);
+  kalemlerCiz();
+}
+
+function pbSec(pb) {
+  SF.pb = pb;
+  document.querySelectorAll('[data-pb]').forEach(b => b.classList.toggle('on', b.dataset.pb === pb));
+  toplamHesapla();
+}
+
+function kalemlerCiz() {
+  $('sfKalemler').innerHTML = SF.kalemler.map((k, i) => `
+    <div class="kalem">
+      <input class="girdi k-ac" placeholder="Ürün / hizmet açıklaması" value="${esc(k.aciklama)}" oninput="SF.kalemler[${i}].aciklama=this.value">
+      <input class="girdi" inputmode="decimal" placeholder="Miktar" value="${esc(k.miktar)}" oninput="SF.kalemler[${i}].miktar=this.value;toplamHesapla()">
+      <select class="girdi" onchange="SF.kalemler[${i}].birim=this.value">${[...new Set([...BIRIMLER, k.birim || 'adet'])].map(b =>
+        `<option ${b === (k.birim || 'adet') ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select>
+      <input class="girdi" inputmode="decimal" placeholder="Birim fiyat" value="${esc(k.birimFiyat)}" oninput="SF.kalemler[${i}].birimFiyat=this.value;toplamHesapla()">
+      <span class="k-tutar" id="kt${i}"></span>
+      <button class="k-sil" type="button" onclick="kalemKaldir(${i})" aria-label="Kalemi kaldır" ${SF.kalemler.length === 1 ? 'disabled' : ''}>×</button>
+    </div>`).join('');
+  toplamHesapla();
+}
+function kalemEkle() { SF.kalemler.push({ aciklama: '', miktar: '1', birim: 'adet', birimFiyat: '' }); kalemlerCiz(); }
+function kalemKaldir(i) { if (SF.kalemler.length > 1) { SF.kalemler.splice(i, 1); kalemlerCiz(); } }
+
+function toplamHesapla() {
+  if (!$('sfToplam')) return;
+  const yuv = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  let ara = 0;
+  SF.kalemler.forEach((k, i) => {
+    const m = sayiOku(k.miktar), f = sayiOku(k.birimFiyat);
+    const ok = m > 0 && f >= 0;
+    const tutar = ok ? yuv(m * f) : 0;
+    ara += tutar;
+    if ($('kt' + i)) $('kt' + i).textContent = ok ? para(tutar, SF.pb) : '—';
+  });
+  ara = yuv(ara);
+  const oran = Number($('sfKdv').value), kdv = yuv(ara * oran / 100);
+  $('sfToplam').innerHTML = `
+    <div><span>Ara toplam</span><span>${para(ara, SF.pb)}</span></div>
+    <div><span>KDV (%${oran})</span><span>${para(kdv, SF.pb)}</span></div>
+    <div class="genel"><span>Genel toplam</span><span>${para(yuv(ara + kdv), SF.pb)}</span></div>`;
+}
+
+async function siparisKaydet() {
+  const t = SF.tur, c = SIP[t];
+  const hata = m => ($('mHata').textContent = m);
+  const kalemler = SF.kalemler
+    .filter(k => k.aciklama.trim() || String(k.birimFiyat).trim())
+    .map(k => ({ aciklama: k.aciklama.trim(), miktar: sayiOku(k.miktar), birim: k.birim || 'adet', birimFiyat: sayiOku(k.birimFiyat) }));
+  const kayit = {
+    Id: SF.Id, FirmaId: $('sfFirma').value, Durum: $('sfDurum').value,
+    Tarih: $('sfTarih').value, TeslimTarihi: $('sfTeslim').value,
+    ParaBirimi: SF.pb, KdvOrani: Number($('sfKdv').value),
+    MusteriSiparisNo: $('sfPo') ? $('sfPo').value.trim() : undefined,
+    Kalemler: kalemler, Notlar: $('sfNot').value.trim()
+  };
+  if (!kayit.FirmaId) return hata(`${c.firmaEt} seçin.`);
+  if (!kayit.Tarih) return hata('Sipariş tarihi gerekli.');
+  if (!kalemler.length) return hata('En az bir kalem girin.');
+  for (let i = 0; i < kalemler.length; i++) {
+    const k = kalemler[i];
+    if (!k.aciklama) return hata(`${i + 1}. kalemin açıklaması boş.`);
+    if (!(k.miktar > 0)) return hata(`${i + 1}. kalemde miktar geçersiz.`);
+    if (!(k.birimFiyat >= 0)) return hata(`${i + 1}. kalemde birim fiyat geçersiz. Örnek: 1250,50`);
+  }
+
+  const btn = $('sfKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const r = await api('kayit.kaydet', { varlik: t, kayit });
+    veriGuncelle(t, r);
+    modalKapat();
+    if (D.aktif === 'siparisler' && D.param) rotaUygula(); else siparisListeCiz();
+    toast(`${r.No} ${kayit.Id ? 'güncellendi' : 'oluşturuldu'}.`);
+  } catch (e) {
+    hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet';
+  }
+}
+
+function siparisSilOnay(t, id) {
+  const x = (VERI[t] || []).find(k => k.Id === id);
+  modalAc('Siparişi Sil', `<p><b>${esc(x.No)}</b> (${esc(firmaAdi(t, x))}, ${para(x.Toplam, x.ParaBirimi)}) kalıcı olarak silinecek.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Gerçekleşmeyen bir siparişse silmek yerine durumunu İptal yapmanız geçmiş kayıtlar için daha iyi olur.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn tehlike" type="button" id="mSil" onclick="siparisSil('${t}','${id}')">Sil</button>`);
+}
+
+async function siparisSil(t, id) {
+  const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
+  try {
+    await api('kayit.sil', { varlik: t, id });
+    veriCikar(t, id);
+    modalKapat(); toast('Sipariş silindi.');
+    SP.tur = t; git('siparisler');
+  } catch (e) {
+    $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
+  }
+}
+
 // ==================== ŞİFRE DEĞİŞTİR ====================
 function sifreModal() {
   $('kulMenuKutu').hidden = true;
@@ -1171,7 +1572,8 @@ async function sifreKaydet() {
 }
 
 // ==================== MODAL / TOAST ====================
-function modalAc(baslik, govde, alt) {
+function modalAc(baslik, govde, alt, genis) {
+  document.querySelector('.modal-ic').classList.toggle('genis', !!genis);
   $('modalBaslik').textContent = baslik;
   $('modalGovde').innerHTML = govde;
   $('modalAlt').innerHTML = alt || '';
