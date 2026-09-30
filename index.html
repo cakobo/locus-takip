@@ -442,7 +442,7 @@ const VARSAYILAN_SAYFALAR = [
 const ALT_MENU = ['anasayfa', 'ajanda', 'oxyweld', 'stok'];
 const KISA_AD = { oxyweld: 'Servis' };
 const ACIKLAMA = {
-  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve alımlar', siparisler: 'Satın alma ve sipariş takibi',
+  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve satın almalar', siparisler: 'Satın alma ve sipariş takibi',
   oxyweld: 'Makine bakım ve servis kayıtları', ajanda: 'Takvim, görev ve aktiviteler',
   ekip: 'Personel bilgileri ve takibi', stok: 'Malzeme giriş ve çıkışları', finans: 'Gelir, gider ve cari hesaplar',
   raporlar: 'Özetler ve analizler', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
@@ -884,76 +884,101 @@ function veriCikar(varlik, id) {
   ls.koy('locus_c_' + varlik, VERI[varlik]);
 }
 
-// ==================== MÜŞTERİLER ====================
-const MUS = { arama: '', filtre: 'tumu', form: null };
-const musBul = id => (VERI.musteriler || []).find(x => x.Id === id);
-
-SAYFA_CIZ.musteriler = function (ic, s, y) {
-  if (D.param) return musteriSayfa(ic, s, y, D.param);
-
-  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `<button class="btn" type="button" onclick="musteriForm()">+ Müşteri Ekle</button>` : '') + `
-    <div class="arac">
-      <label class="arama"><span>🔍</span><input id="musAra" type="search" placeholder="Müşteri adı ara" autocomplete="off" value="${esc(MUS.arama)}" oninput="MUS.arama=this.value;musteriListeCiz()"></label>
-      <div class="cips">${[['tumu', 'Tümü'], ['aktif', 'Aktif'], ['pasif', 'Pasif']].map(([k, a]) =>
-        `<button type="button" data-f="${k}" onclick="MUS.filtre='${k}';musteriListeCiz()">${a}</button>`).join('')}</div>
-    </div>
-    <div class="sayac" id="musSayac"></div>
-    <div class="kart" id="musListe"></div>`;
-
-  const onbellek = VERI.musteriler || ls.al('locus_c_musteriler');
-  if (onbellek) { VERI.musteriler = onbellek; musteriListeCiz(); }
-  else $('musListe').innerHTML = '<div class="bos"><p>Müşteriler yükleniyor…</p></div>';
-
-  veriYukle('musteriler')
-    .then(() => { if (D.aktif === 'musteriler' && !D.param) musteriListeCiz(); })
-    .catch(e => { if (!onbellek && $('musListe')) $('musListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+// ==================== FİRMA SAYFALARI (MÜŞTERİLER / TEDARİKÇİLER) ====================
+// İki sayfa aynı kodu kullanır; farkları buradaki ayarlardır.
+const FIRMA = {
+  musteriler: {
+    tekil: 'Müşteri', kucuk: 'müşteri', ikon: '🤝',
+    islemBaslik: 'Yapılan İşlemler',
+    islemBos: 'Bu müşteriye ait projeler ve siparişler burada tarih sırasına göre listelenecek.',
+    // Projeler ve müşteri siparişleri yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
+    islemler: m => []
+  },
+  tedarikciler: {
+    tekil: 'Tedarikçi', kucuk: 'tedarikçi', ikon: '🚚',
+    islemBaslik: 'Satın Almalar',
+    islemBos: 'Bu tedarikçiden yapılan satın almalar burada tarih sırasına göre listelenecek.',
+    // Satın alma siparişleri yapıldığında buraya eklenecek.
+    islemler: m => []
+  }
 };
+const FD = {};
+const fDurum = v => FD[v] || (FD[v] = { arama: '', filtre: 'tumu' });
+const firmaBul = (v, id) => (VERI[v] || []).find(x => x.Id === id);
+let FF = null; // açık form
 
-function musteriListeCiz() {
-  const kutu = $('musListe'); if (!kutu) return;
-  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === MUS.filtre));
-  const tam = yetki('musteriler') === 'tam';
-  const tum = VERI.musteriler || [];
-  const q = trKucuk(MUS.arama);
+SAYFA_CIZ.musteriler = (ic, s, y) => firmaSayfasi('musteriler', ic, s, y);
+SAYFA_CIZ.tedarikciler = (ic, s, y) => firmaSayfasi('tedarikciler', ic, s, y);
+
+function firmaSayfasi(v, ic, s, y) {
+  if (D.param) return firmaDetay(v, ic, s, y, D.param);
+  const c = FIRMA[v], st = fDurum(v);
+
+  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `<button class="btn" type="button" onclick="firmaForm('${v}')">+ ${c.tekil} Ekle</button>` : '') + `
+    <div class="arac">
+      <label class="arama"><span>🔍</span><input id="fAra" type="search" placeholder="${c.tekil} adı ara" autocomplete="off" value="${esc(st.arama)}" oninput="fDurum('${v}').arama=this.value;firmaListeCiz('${v}')"></label>
+      <div class="cips">${[['tumu', 'Tümü'], ['aktif', 'Aktif'], ['pasif', 'Pasif']].map(([k, a]) =>
+        `<button type="button" data-f="${k}" onclick="fDurum('${v}').filtre='${k}';firmaListeCiz('${v}')">${a}</button>`).join('')}</div>
+    </div>
+    <div class="sayac" id="fSayac"></div>
+    <div class="kart" id="fListe"></div>`;
+
+  const onbellek = VERI[v] || ls.al('locus_c_' + v);
+  if (onbellek) { VERI[v] = onbellek; firmaListeCiz(v); }
+  else $('fListe').innerHTML = `<div class="bos"><p>${s.ad} yükleniyor…</p></div>`;
+
+  veriYukle(v)
+    .then(() => { if (D.aktif === v && !D.param) firmaListeCiz(v); })
+    .catch(e => { if (!onbellek && $('fListe')) $('fListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+function firmaListeCiz(v) {
+  const kutu = $('fListe'); if (!kutu || D.aktif !== v) return;
+  const c = FIRMA[v], st = fDurum(v);
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === st.filtre));
+  const tam = yetki(v) === 'tam';
+  const tum = VERI[v] || [];
+  const q = trKucuk(st.arama);
   const l = tum
-    .filter(m => MUS.filtre === 'tumu' || (MUS.filtre === 'aktif') === m.Aktif)
+    .filter(m => st.filtre === 'tumu' || (st.filtre === 'aktif') === m.Aktif)
     .filter(m => !q || trKucuk(m.Ad).includes(q))
     .sort((a, b) => trSirala(a.Ad, b.Ad));
 
-  $('musSayac').textContent = l.length === tum.length ? `${tum.length} müşteri` : `${l.length} / ${tum.length} müşteri`;
+  $('fSayac').textContent = l.length === tum.length ? `${tum.length} ${c.kucuk}` : `${l.length} / ${tum.length} ${c.kucuk}`;
 
   if (!tum.length) {
-    kutu.innerHTML = `<div class="bos"><div class="b-ikon">🤝</div><h3>Henüz müşteri yok</h3>
-      <p>${tam ? 'İlk müşteriyi eklemek için Müşteri Ekle\'ye dokunun.' : 'Müşteri eklendiğinde burada listelenecek.'}</p></div>`;
+    kutu.innerHTML = `<div class="bos"><div class="b-ikon">${c.ikon}</div><h3>Henüz ${c.kucuk} yok</h3>
+      <p>${tam ? `İlk ${c.kucuk} kaydını eklemek için ${c.tekil} Ekle'ye dokunun.` : `${c.tekil} eklendiğinde burada listelenecek.`}</p></div>`;
     return;
   }
   if (!l.length) {
-    kutu.innerHTML = `<div class="bos"><h3>Sonuç yok</h3><p>${q ? `"${esc(MUS.arama.trim())}" ile eşleşen müşteri bulunamadı.` : 'Bu filtrede müşteri yok.'}</p></div>`;
+    kutu.innerHTML = `<div class="bos"><h3>Sonuç yok</h3><p>${q ? `"${esc(st.arama.trim())}" ile eşleşen ${c.kucuk} bulunamadı.` : `Bu filtrede ${c.kucuk} yok.`}</p></div>`;
     return;
   }
   kutu.innerHTML = l.map(m => {
     const y1 = (m.Yetkililer || [])[0];
     const alt = y1 ? [y1.adSoyad, y1.pozisyon].filter(Boolean).join(', ') : (m.VergiNo ? 'Vergi No: ' + m.VergiNo : 'Yetkili eklenmemiş');
     const ek = (m.Yetkililer || []).length > 1 ? ` +${m.Yetkililer.length - 1} kişi` : '';
-    return `<div class="m-satir ${m.Aktif ? '' : 'pasif'}" onclick="git('musteriler/${m.Id}')">
+    return `<div class="m-satir ${m.Aktif ? '' : 'pasif'}" onclick="git('${v}/${m.Id}')">
       <span class="av">${esc(basHarf(m.Ad))}</span>
       <span class="ms-ic"><span class="ms-ad">${esc(m.Ad)}</span><span class="ms-alt">${esc(alt)}${ek}</span></span>
       ${y1 && y1.telefon ? `<span class="ms-tel">${esc(y1.telefon)}</span>` : ''}
       ${m.Aktif ? '<span class="rozet ok">Aktif</span>' : '<span class="rozet pasif">Pasif</span>'}
       <span class="m-btn">
-        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('musteriler/${m.Id}')">Görüntüle</button>
-        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();musteriForm('${m.Id}')">Düzenle</button>` : ''}
+        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('${v}/${m.Id}')">Görüntüle</button>
+        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();firmaForm('${v}','${m.Id}')">Düzenle</button>` : ''}
       </span></div>`;
   }).join('');
 }
 
-// ---------- Müşteri görüntüleme sayfası ----------
-function musteriSayfa(ic, s, y, id) {
+// ---------- Görüntüleme sayfası ----------
+function firmaDetay(v, ic, s, y, id) {
+  const c = FIRMA[v];
   const ciz = () => {
-    const m = musBul(id);
-    const geri = `<button class="geri" type="button" onclick="git('musteriler')">‹ Müşteriler</button>`;
+    const m = firmaBul(v, id);
+    const geri = `<button class="geri" type="button" onclick="git('${v}')">‹ ${esc(s.ad)}</button>`;
     if (!m) {
-      ic.innerHTML = geri + `<div class="kart bos"><div class="b-ikon">🔍</div><h3>Müşteri bulunamadı</h3><p>Silinmiş olabilir.</p></div>`;
+      ic.innerHTML = geri + `<div class="kart bos"><div class="b-ikon">🔍</div><h3>${c.tekil} bulunamadı</h3><p>Silinmiş olabilir.</p></div>`;
       return;
     }
     const tam = y === 'tam';
@@ -974,12 +999,12 @@ function musteriSayfa(ic, s, y, id) {
           <div class="d-rozetler">${m.Aktif ? '<span class="rozet ok">Aktif</span>' : '<span class="rozet pasif">Pasif</span>'}
           ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
         ${tam ? `<div class="d-bas-sag">
-          <button class="btn ikincil" type="button" style="color:var(--danger)" onclick="musteriSilOnay('${m.Id}')">Sil</button>
-          <button class="btn" type="button" onclick="musteriForm('${m.Id}')">Düzenle</button></div>` : ''}
+          <button class="btn ikincil" type="button" style="color:var(--danger)" onclick="firmaSilOnay('${v}','${m.Id}')">Sil</button>
+          <button class="btn" type="button" onclick="firmaForm('${v}','${m.Id}')">Düzenle</button></div>` : ''}
       </div>
 
       <section class="kart panel">
-        <h3 class="panel-bas">Müşteri Bilgileri</h3>
+        <h3 class="panel-bas">${c.tekil} Bilgileri</h3>
         <div class="bilgi-grid">
           <div><div class="de">Vergi No</div>${m.VergiNo ? esc(m.VergiNo) : '<span class="soluk">Girilmemiş</span>'}</div>
           <div><div class="de">Durum</div>${m.Aktif ? 'Aktif' : 'Pasif'}</div>
@@ -993,33 +1018,22 @@ function musteriSayfa(ic, s, y, id) {
       </section>
 
       <section class="kart panel">
-        <h3 class="panel-bas">Yapılan İşlemler</h3>
-        ${islemlerHTML(musteriIslemleri(m))}
+        <h3 class="panel-bas">${c.islemBaslik}</h3>
+        ${islemlerHTML(c.islemler(m).sort((a, b) => new Date(b.tarih) - new Date(a.tarih)), c.islemBos)}
       </section>`;
   };
 
-  const onbellek = VERI.musteriler || ls.al('locus_c_musteriler');
-  if (onbellek) { VERI.musteriler = onbellek; ciz(); }
+  const onbellek = VERI[v] || ls.al('locus_c_' + v);
+  if (onbellek) { VERI[v] = onbellek; ciz(); }
   else ic.innerHTML = `<div class="kart bos"><p>Yükleniyor…</p></div>`;
-  veriYukle('musteriler')
-    .then(() => { if (D.aktif === 'musteriler' && D.param === id && $('modal').hidden) ciz(); })
+  veriYukle(v)
+    .then(() => { if (D.aktif === v && D.param === id && $('modal').hidden) ciz(); })
     .catch(e => { if (!onbellek) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
 }
 
-/**
- * Müşterinin işlem geçmişi. Projeler ve müşteri siparişleri sayfaları yapıldığında
- * buradan eklenecek. Her öğe: { tarih, tur, baslik, aciklama, durum, rota }
- */
-function musteriIslemleri(m) {
-  const liste = [];
-  // Örn: (VERI.siparisler || []).filter(x => x.MusteriId === m.Id).forEach(x => liste.push({...}))
-  return liste.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
-}
-
-function islemlerHTML(liste) {
+function islemlerHTML(liste, bosMetin) {
   if (!liste.length) {
-    return `<div class="bos kucuk-bos"><div class="b-ikon">🗂️</div><h3>Henüz işlem yok</h3>
-      <p>Bu müşteriye ait projeler ve siparişler burada tarih sırasına göre listelenecek.</p></div>`;
+    return `<div class="bos kucuk-bos"><div class="b-ikon">🗂️</div><h3>Henüz kayıt yok</h3><p>${esc(bosMetin)}</p></div>`;
   }
   return `<ol class="zaman">${liste.map(x => `
     <li onclick="${x.rota ? `git('${x.rota}')` : ''}">
@@ -1031,97 +1045,100 @@ function islemlerHTML(liste) {
 }
 
 // ---------- Ekle / Düzenle ----------
-function musteriForm(id) {
-  const m = id ? musBul(id) : null;
-  MUS.form = {
-    Id: m ? m.Id : null,
+function firmaForm(v, id) {
+  const c = FIRMA[v];
+  const m = id ? firmaBul(v, id) : null;
+  FF = {
+    varlik: v, Id: m ? m.Id : null,
     yetkililer: m && m.Yetkililer && m.Yetkililer.length ? m.Yetkililer.map(y => Object.assign({}, y)) : [{ adSoyad: '', pozisyon: '', eposta: '', telefon: '' }]
   };
-  modalAc(m ? 'Müşteriyi Düzenle' : 'Yeni Müşteri', `
-    <label class="et" for="fAd">Müşteri adı *</label>
+  modalAc(m ? `${c.tekil}yi Düzenle` : `Yeni ${c.tekil}`, `
+    <label class="et" for="fAd">${c.tekil} adı *</label>
     <input class="girdi" id="fAd" value="${m ? esc(m.Ad) : ''}" placeholder="Firma adı">
     <div class="iki">
       <div><label class="et" for="fVn">Vergi No</label>
-        <input class="girdi" id="fVn" inputmode="numeric" maxlength="11" value="${m ? esc(m.VergiNo) : ''}" placeholder="10 haneli"></div>
+        <input class="girdi" id="fVn" autocapitalize="characters" maxlength="24" value="${m ? esc(m.VergiNo) : ''}" placeholder="10 haneli, yurt dışı: IT…"></div>
       <div><label class="et">Durum</label>
         <div class="cips" style="width:100%;margin-bottom:18px"><button type="button" id="fAktif1" style="flex:1" onclick="durumSec(true)">Aktif</button><button type="button" id="fAktif0" style="flex:1" onclick="durumSec(false)">Pasif</button></div></div>
     </div>
     <div class="bolum-et">Yetkililer<button class="btn ikincil kucuk" type="button" onclick="yetkiliEkle()">+ Yetkili Ekle</button></div>
     <div id="fYetkililer"></div>
     <label class="et" for="fNot" style="margin-top:6px">Notlar</label>
-    <textarea class="girdi alan" id="fNot" placeholder="Müşteriyle ilgili notlar">${m ? esc(m.Notlar) : ''}</textarea>
+    <textarea class="girdi alan" id="fNot" placeholder="${c.tekil}yle ilgili notlar">${m ? esc(m.Notlar) : ''}</textarea>
     <div class="hata-kutu" id="mHata"></div>`,
     `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
-     <button class="btn" type="button" id="fKaydet" onclick="musteriKaydet()">Kaydet</button>`);
+     <button class="btn" type="button" id="fKaydet" onclick="firmaKaydet()">Kaydet</button>`);
   durumSec(m ? m.Aktif : true);
   yetkililerCiz();
   if (!m) setTimeout(() => $('fAd').focus(), 50);
 }
 
 function durumSec(aktif) {
-  MUS.form.aktif = aktif;
+  FF.aktif = aktif;
   $('fAktif1').classList.toggle('on', aktif);
   $('fAktif0').classList.toggle('on', !aktif);
 }
 
 function yetkililerCiz() {
-  $('fYetkililer').innerHTML = MUS.form.yetkililer.map((y, i) => `
+  $('fYetkililer').innerHTML = FF.yetkililer.map((y, i) => `
     <div class="yk"><div class="yk-bas">Yetkili ${i + 1}<button type="button" onclick="yetkiliKaldir(${i})">Kaldır</button></div>
       <div class="iki">
-        <input class="girdi" placeholder="Ad Soyad" value="${esc(y.adSoyad)}" oninput="MUS.form.yetkililer[${i}].adSoyad=this.value">
-        <input class="girdi" placeholder="Şirketteki pozisyonu" value="${esc(y.pozisyon)}" oninput="MUS.form.yetkililer[${i}].pozisyon=this.value">
-        <input class="girdi" type="email" inputmode="email" autocapitalize="none" placeholder="E-posta" value="${esc(y.eposta)}" oninput="MUS.form.yetkililer[${i}].eposta=this.value">
-        <input class="girdi" type="tel" inputmode="tel" placeholder="Telefon" value="${esc(y.telefon)}" oninput="MUS.form.yetkililer[${i}].telefon=this.value">
+        <input class="girdi" placeholder="Ad Soyad" value="${esc(y.adSoyad)}" oninput="FF.yetkililer[${i}].adSoyad=this.value">
+        <input class="girdi" placeholder="Şirketteki pozisyonu" value="${esc(y.pozisyon)}" oninput="FF.yetkililer[${i}].pozisyon=this.value">
+        <input class="girdi" type="email" inputmode="email" autocapitalize="none" placeholder="E-posta" value="${esc(y.eposta)}" oninput="FF.yetkililer[${i}].eposta=this.value">
+        <input class="girdi" type="tel" inputmode="tel" placeholder="Telefon" value="${esc(y.telefon)}" oninput="FF.yetkililer[${i}].telefon=this.value">
       </div></div>`).join('') || '<p style="color:var(--mute);font-size:14px;margin-bottom:14px">Yetkili eklenmemiş.</p>';
 }
-function yetkiliEkle() { MUS.form.yetkililer.push({ adSoyad: '', pozisyon: '', eposta: '', telefon: '' }); yetkililerCiz(); }
-function yetkiliKaldir(i) { MUS.form.yetkililer.splice(i, 1); yetkililerCiz(); }
+function yetkiliEkle() { FF.yetkililer.push({ adSoyad: '', pozisyon: '', eposta: '', telefon: '' }); yetkililerCiz(); }
+function yetkiliKaldir(i) { FF.yetkililer.splice(i, 1); yetkililerCiz(); }
 
-async function musteriKaydet() {
+async function firmaKaydet() {
+  const v = FF.varlik, c = FIRMA[v];
   const hata = t => ($('mHata').textContent = t);
   const kayit = {
-    Id: MUS.form.Id,
+    Id: FF.Id,
     Ad: $('fAd').value.trim(),
-    VergiNo: $('fVn').value.replace(/\s/g, ''),
-    Aktif: MUS.form.aktif,
-    Yetkililer: MUS.form.yetkililer.map(y => ({ adSoyad: y.adSoyad.trim(), pozisyon: y.pozisyon.trim(), eposta: y.eposta.trim(), telefon: y.telefon.trim() }))
+    VergiNo: $('fVn').value.replace(/[\s.\-]/g, '').toUpperCase(),
+    Aktif: FF.aktif,
+    Yetkililer: FF.yetkililer.map(y => ({ adSoyad: y.adSoyad.trim(), pozisyon: y.pozisyon.trim(), eposta: y.eposta.trim(), telefon: y.telefon.trim() }))
       .filter(y => y.adSoyad || y.pozisyon || y.eposta || y.telefon),
     Notlar: $('fNot').value.trim()
   };
-  if (!kayit.Ad) return hata('Müşteri adı gerekli.');
-  if (kayit.VergiNo && !/^\d{10,11}$/.test(kayit.VergiNo)) return hata('Vergi no 10 haneli (şahıs firmasında TC kimlik no, 11 haneli) olmalı.');
+  if (!kayit.Ad) return hata(`${c.tekil} adı gerekli.`);
+  if (kayit.VergiNo && !/^\d{10,11}$/.test(kayit.VergiNo) && !/^[A-Z]{2}[A-Z0-9]{2,18}$/.test(kayit.VergiNo))
+    return hata('Vergi no 10 haneli (şahıs firmasında 11 haneli TC no) olmalı. Yurt dışı firmalarda ülke koduyla yazın, ör. IT01234567890.');
   const kotuMail = kayit.Yetkililer.find(y => y.eposta && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(y.eposta));
   if (kotuMail) return hata('Geçersiz e-posta adresi: ' + kotuMail.eposta);
-  if ((VERI.musteriler || []).some(m => m.Id !== kayit.Id && trKucuk(m.Ad) === trKucuk(kayit.Ad))) return hata('Bu isimde bir müşteri zaten var.');
+  if ((VERI[v] || []).some(m => m.Id !== kayit.Id && trKucuk(m.Ad) === trKucuk(kayit.Ad))) return hata(`Bu isimde bir ${c.kucuk} zaten var.`);
 
   const btn = $('fKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
   try {
-    const sonuc = await api('kayit.kaydet', { varlik: 'musteriler', kayit });
-    veriGuncelle('musteriler', sonuc);
+    const sonuc = await api('kayit.kaydet', { varlik: v, kayit });
+    veriGuncelle(v, sonuc);
     modalKapat();
-    if (D.aktif === 'musteriler' && D.param) rotaUygula(); else musteriListeCiz();
-    toast(kayit.Id ? 'Müşteri güncellendi.' : 'Müşteri eklendi.');
+    if (D.aktif === v && D.param) rotaUygula(); else firmaListeCiz(v);
+    toast(kayit.Id ? `${c.tekil} güncellendi.` : `${c.tekil} eklendi.`);
   } catch (e) {
     hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet';
   }
 }
 
-function musteriSilOnay(id) {
-  const m = musBul(id);
-  modalAc('Müşteriyi Sil', `<p><b>${esc(m.Ad)}</b> ve tüm yetkili bilgileri kalıcı olarak silinecek.</p>
-    <p style="color:var(--mute);margin-top:10px;font-size:14px">Artık çalışmadığınız bir müşteriyse silmek yerine Pasif yapmanız geçmiş kayıtlar için daha iyi olur.</p>
+function firmaSilOnay(v, id) {
+  const c = FIRMA[v], m = firmaBul(v, id);
+  modalAc(`${c.tekil}yi Sil`, `<p><b>${esc(m.Ad)}</b> ve tüm yetkili bilgileri kalıcı olarak silinecek.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Artık çalışmadığınız bir ${c.kucuk}yse silmek yerine Pasif yapmanız geçmiş kayıtlar için daha iyi olur.</p>
     <div class="hata-kutu" id="mHata"></div>`,
     `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
-     <button class="btn tehlike" type="button" id="mSil" onclick="musteriSil('${id}')">Sil</button>`);
+     <button class="btn tehlike" type="button" id="mSil" onclick="firmaSil('${v}','${id}')">Sil</button>`);
 }
 
-async function musteriSil(id) {
+async function firmaSil(v, id) {
   const btn = $('mSil'); btn.disabled = true; btn.textContent = 'Siliniyor…';
   try {
-    await api('kayit.sil', { varlik: 'musteriler', id });
-    veriCikar('musteriler', id);
-    modalKapat(); toast('Müşteri silindi.');
-    if (D.param) git('musteriler'); else musteriListeCiz();
+    await api('kayit.sil', { varlik: v, id });
+    veriCikar(v, id);
+    modalKapat(); toast(`${FIRMA[v].tekil} silindi.`);
+    if (D.param) git(v); else firmaListeCiz(v);
   } catch (e) {
     $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Sil';
   }
