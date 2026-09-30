@@ -374,12 +374,15 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .si-ac small{display:block;color:var(--mute);font-size:12px}
 #yazdirAlan{display:none}
 @media print{
-  @page{size:A4 portrait;margin:0}
-  #yazdirAlan{padding:0 12mm}
-  .y-sayfa{width:100%;border-collapse:collapse}
-  .y-sayfa>thead>tr>td{height:12mm;padding:0}
-  .y-sayfa>tfoot>tr>td{height:12mm;padding:0}
-  .y-sayfa>tbody>tr>td{padding:0;vertical-align:top}
+  @page{
+    size:A4 portrait;margin:12mm 12mm 16mm 12mm;
+    @top-left{content:""}
+    @top-center{content:""}
+    @top-right{content:""}
+    @bottom-left{content:var(--y-alt,"");font-family:'IBM Plex Sans',Arial,sans-serif;font-size:8.5pt;color:#555;vertical-align:middle}
+    @bottom-center{content:""}
+    @bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:'IBM Plex Sans',Arial,sans-serif;font-size:8.5pt;color:#555;vertical-align:middle}
+  }
   html,body{background:#fff!important;color:#000!important;height:auto!important}
   body>*:not(#yazdirAlan){display:none!important}
   #yazdirAlan{display:block!important;font-family:var(--font);font-size:10.5pt;color:#000}
@@ -387,7 +390,7 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .y-bas img{height:36px}
   .y-bas-sag{text-align:right;font-size:9.5pt;line-height:1.4}
   .y-bas h1{font-size:16pt;color:#004085;margin-bottom:2px}
-  .y-tablo{width:100%;border-collapse:collapse}
+  .y-tablo{width:calc(100% - 2px);margin-left:1px;border-collapse:collapse}
   .y-tablo thead{display:table-header-group}
   .y-tablo th{background:#e6edf6;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:9pt;text-align:left;padding:5px 6px;border:1px solid #777}
   .y-tablo td{border:1px solid #777;padding:6px;height:24px;font-size:10pt}
@@ -398,6 +401,7 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
   .y-bos{width:74px}
   .y-fark{width:54px}
   .y-not{width:110px}
+  .y-grup{break-after:avoid;page-break-after:avoid}
   .y-grup td{background:#f1f4f8;-webkit-print-color-adjust:exact;print-color-adjust:exact;font-weight:700;font-size:9.5pt;height:auto}
   .y-imza{display:flex;gap:48px;margin-top:30px;page-break-inside:avoid}
   .y-imza div{flex:1;font-size:9.5pt}
@@ -2148,17 +2152,16 @@ function sayimYazdir() {
   });
   let alan = $('yazdirAlan');
   if (!alan) { alan = document.createElement('div'); alan.id = 'yazdirAlan'; document.body.appendChild(alan); }
-  // Sayfa kenar boşluğu 0: Chrome'un eklediği adres/tarih/sayfa no üst-alt bilgileri basılmaz.
-  // Boşluk, her sayfada tekrarlanan boş üst/alt satırlarla verilir.
-  alan.innerHTML = `<table class="y-sayfa"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
+  // Alt bilgi (liste adı ve "Sayfa 1 / 3") sayfa kenarına CSS ile basılır; Chrome kendi adres/tarih bilgisini eklemez.
+  document.documentElement.style.setProperty('--y-alt', `"Stok Sayım Listesi, ${tarihKisa(bugun())}"`);
+  alan.innerHTML = `
     <div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering">
       <div class="y-bas-sag"><h1>Stok Sayım Listesi</h1><div>Tarih: ${tarihKisa(bugun())}</div><div>Kategori: ${esc(kat ? katAdi(kat) : 'Tümü')}</div></div></div>
     <table class="y-tablo"><thead><tr><th class="y-no">#</th><th>Malzeme</th><th class="y-birim">Birim</th>
       ${goster ? '<th class="y-sayi">Sistemde</th>' : ''}<th class="y-bos">Sayılan</th><th class="y-fark">Fark</th><th class="y-not">Not</th></tr></thead>
       <tbody>${govde}</tbody></table>
     <div class="y-imza"><div><span></span>Sayımı yapan (Ad Soyad / İmza)</div><div><span></span>Kontrol eden (Ad Soyad / İmza)</div></div>
-    <div class="y-alt">Locus Şirket Takip Sistemi, ${satirlar.length} malzeme, ${goster ? 'sistem miktarlı liste' : 'kör sayım listesi'}</div>
-    </td></tr></tbody></table>`;
+    <div class="y-alt">Locus Şirket Takip Sistemi, ${satirlar.length} malzeme, ${goster ? 'sistem miktarlı liste' : 'kör sayım listesi'}</div>`;
   modalKapat();
   const img = alan.querySelector('img');
   const bas = () => setTimeout(() => window.print(), 50);
