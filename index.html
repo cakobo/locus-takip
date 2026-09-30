@@ -374,7 +374,12 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 .si-ac small{display:block;color:var(--mute);font-size:12px}
 #yazdirAlan{display:none}
 @media print{
-  @page{size:A4 portrait;margin:12mm}
+  @page{size:A4 portrait;margin:0}
+  #yazdirAlan{padding:0 12mm}
+  .y-sayfa{width:100%;border-collapse:collapse}
+  .y-sayfa>thead>tr>td{height:12mm;padding:0}
+  .y-sayfa>tfoot>tr>td{height:12mm;padding:0}
+  .y-sayfa>tbody>tr>td{padding:0;vertical-align:top}
   html,body{background:#fff!important;color:#000!important;height:auto!important}
   body>*:not(#yazdirAlan){display:none!important}
   #yazdirAlan{display:block!important;font-family:var(--font);font-size:10.5pt;color:#000}
@@ -2143,14 +2148,17 @@ function sayimYazdir() {
   });
   let alan = $('yazdirAlan');
   if (!alan) { alan = document.createElement('div'); alan.id = 'yazdirAlan'; document.body.appendChild(alan); }
-  alan.innerHTML = `
+  // Sayfa kenar boşluğu 0: Chrome'un eklediği adres/tarih/sayfa no üst-alt bilgileri basılmaz.
+  // Boşluk, her sayfada tekrarlanan boş üst/alt satırlarla verilir.
+  alan.innerHTML = `<table class="y-sayfa"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
     <div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering">
       <div class="y-bas-sag"><h1>Stok Sayım Listesi</h1><div>Tarih: ${tarihKisa(bugun())}</div><div>Kategori: ${esc(kat ? katAdi(kat) : 'Tümü')}</div></div></div>
     <table class="y-tablo"><thead><tr><th class="y-no">#</th><th>Malzeme</th><th class="y-birim">Birim</th>
       ${goster ? '<th class="y-sayi">Sistemde</th>' : ''}<th class="y-bos">Sayılan</th><th class="y-fark">Fark</th><th class="y-not">Not</th></tr></thead>
       <tbody>${govde}</tbody></table>
     <div class="y-imza"><div><span></span>Sayımı yapan (Ad Soyad / İmza)</div><div><span></span>Kontrol eden (Ad Soyad / İmza)</div></div>
-    <div class="y-alt">Locus Şirket Takip Sistemi, ${satirlar.length} malzeme, ${goster ? 'sistem miktarlı liste' : 'kör sayım listesi'}</div>`;
+    <div class="y-alt">Locus Şirket Takip Sistemi, ${satirlar.length} malzeme, ${goster ? 'sistem miktarlı liste' : 'kör sayım listesi'}</div>
+    </td></tr></tbody></table>`;
   modalKapat();
   const img = alan.querySelector('img');
   const bas = () => setTimeout(() => window.print(), 50);
