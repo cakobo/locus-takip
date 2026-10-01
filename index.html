@@ -476,6 +476,30 @@ a.btn{text-decoration:none}
 .ik-modeller .bos-model{opacity:.45}
 .model-sec button{flex:1;padding:0 8px}
 
+
+/* ---------- teklifler ---------- */
+.islem-cubugu{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-6px 0 18px;padding:10px 14px;background:var(--sf);border:1px solid var(--line);border-radius:8px}
+.islem-cubugu label{display:flex;align-items:center;gap:8px;font-size:14px}
+.tk-kalem{display:grid;grid-template-columns:minmax(0,1fr) 72px 84px 110px 66px 112px 32px;gap:8px;align-items:center;margin-bottom:8px}
+.tk-kalem .girdi{margin:0;height:40px;padding:0 10px}
+.tk-kalem textarea.girdi{height:40px;min-height:40px;padding:9px 10px;resize:vertical;line-height:1.4}
+.tk-bas{font-size:12px;color:var(--mute);margin-bottom:6px}
+.rozet.link{cursor:pointer}
+@media print{
+  .y-baslik{font-size:17pt;color:#004085;margin:0 0 10px;letter-spacing:.5px}
+  .y-toplam{margin:10px 0 14px auto;border-collapse:collapse;min-width:260px}
+  .y-toplam td{padding:3px 6px;font-size:10pt;text-align:right}
+  .y-toplam td:first-child{color:#444}
+  .y-toplam .genel td{font-weight:700;font-size:11.5pt;border-top:1px solid #004085;border-bottom:3px double #004085;background:#f2f5f9;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .y-blok{margin-bottom:10px;page-break-inside:avoid}
+  .y-blok h3{font-size:10pt;color:#004085;margin-bottom:2px}
+  .y-blok p{font-size:9.5pt;line-height:1.45}
+  .y-altnot{font-size:8.5pt;color:#555;font-style:italic;margin:6px 0 12px}
+  .y-kapanis{display:flex;justify-content:flex-end;gap:40px;margin-top:20px;text-align:center;font-size:10pt;page-break-inside:avoid}
+  .y-imza-cizgi{min-width:200px;border-top:1px solid #000;margin-top:46px;padding-top:4px}
+  .y-tablo td{vertical-align:top}
+}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -579,6 +603,14 @@ a.btn{text-decoration:none}
   .istat{grid-template-columns:1fr 1fr;gap:8px}
   .istat-kart{padding:12px}
   .istat-kart.genis{grid-column:1/-1;order:-1}
+  .tk-bas{display:none}
+  .tk-kalem{grid-template-columns:1fr 1fr 1fr;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
+  .tk-kalem .girdi{background:var(--sf)}
+  .tk-kalem .k-ac{grid-column:1/-1}
+  .tk-kalem .k-tutar{grid-column:1/3;text-align:left;font-weight:600}
+  .tk-kalem .k-sil{justify-self:end}
+  .islem-cubugu{gap:8px}
+  .islem-cubugu .btn{flex:1}
   .ik-deger{font-size:22px}
   .f-bas{flex-wrap:wrap;padding:12px 14px}
   .f-bas .btn{margin-left:auto}
@@ -667,6 +699,7 @@ const VARSAYILAN_SAYFALAR = [
   { kod: 'musteriler', ad: 'Müşteriler', ikon: '🤝' },
   { kod: 'tedarikciler', ad: 'Tedarikçiler', ikon: '🚚' },
   { kod: 'siparisler', ad: 'Siparişler', ikon: '🛒' },
+  { kod: 'teklifler', ad: 'Teklifler', ikon: '📝' },
   { kod: 'oxyweld', ad: 'Oxyweld Servis', ikon: '🔧' },
   { kod: 'ajanda', ad: 'Ajanda', ikon: '📅' },
   { kod: 'ekip', ad: 'Ekip', ikon: '👥' },
@@ -679,7 +712,7 @@ const VARSAYILAN_SAYFALAR = [
 const ALT_MENU = ['anasayfa', 'ajanda', 'oxyweld', 'stok'];
 const KISA_AD = { oxyweld: 'Servis' };
 const ACIKLAMA = {
-  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve satın almalar', siparisler: 'Satın alma ve sipariş takibi',
+  musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve satın almalar', siparisler: 'Satın alma ve sipariş takibi', teklifler: 'Fiyat teklifleri, Excel ve PDF çıktısı',
   oxyweld: 'Makine bakım ve servis kayıtları', ajanda: 'Takvim, görev ve aktiviteler',
   ekip: 'Personel bilgileri ve takibi', stok: 'Malzeme giriş ve çıkışları', finans: 'Gelir, gider ve cari hesaplar',
   raporlar: 'Özetler ve analizler', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
@@ -1867,14 +1900,17 @@ const FIRMA = {
   musteriler: {
     tekil: 'Müşteri', kucuk: 'müşteri', ikon: '🤝',
     islemBaslik: 'Yapılan İşlemler',
-    islemBos: 'Bu müşteriye ait siparişler ve Oxyweld bakımları burada tarih sırasına göre listelenecek.',
+    islemBos: 'Bu müşteriye ait teklifler, siparişler ve Oxyweld bakımları burada tarih sırasına göre listelenecek.',
     // Projeler sayfası yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
-    kaynaklar: [['musteriSiparis', 'siparisler'], ['oxyBakim', 'oxyweld']],
-    islemler: m => (VERI.oxyBakim || []).filter(x => x.MusteriId === m.Id).map(x => ({
+    kaynaklar: [['musteriSiparis', 'siparisler'], ['oxyBakim', 'oxyweld'], ['teklif', 'teklifler']],
+    islemler: m => (VERI.teklif || []).filter(x => x.FirmaId === m.Id).map(x => ({
+      tarih: x.Tarih, tur: 'Teklif', baslik: x.No, aciklama: x.Konu || kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      durum: x.Durum, durumSinif: TEKLIF_DURUM_SINIF[x.Durum] || '', rota: 'teklifler/' + x.Id
+    })).concat((VERI.oxyBakim || []).filter(x => x.MusteriId === m.Id).map(x => ({
       tarih: x.Tarih, tur: x.Gecmis ? 'Geçmiş Bakım' : 'Oxyweld Bakım', baslik: x.No,
       aciklama: [x.Model, x.SeriNo].filter(Boolean).join(', '), durum: x.Durum,
       durumSinif: x.Durum === 'Tamamlandı' ? 'ok' : 'uyari', rota: 'oxyweld/b.' + x.Id
-    })).concat((VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
+    }))).concat((VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
       tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: durumSinif('musteriSiparis', x.Durum), rota: 'siparisler/ms.' + x.Id
     })))
@@ -2155,7 +2191,7 @@ const SIP = {
 };
 const KISA_TUR = { sa: 'satinalma', ms: 'musteriSiparis' };
 const PARA = { TRY: 'TL', EUR: 'EUR', USD: 'USD' };
-const BIRIMLER = ['adet', 'kg', 'm', 'm²', 'lt', 'set', 'paket', 'saat'];
+const BIRIMLER = ['adet', 'kg', 'm', 'm²', 'lt', 'set', 'paket', 'saat', 'gün'];
 const SP = { tur: 'satinalma', arama: '', filtre: 'acik' };
 let SF = null;
 let FIRMALAR = null;
@@ -2164,10 +2200,12 @@ const para = (n, pb) => Number(n || 0).toLocaleString('tr-TR', { style: 'currenc
 const tarihKisa = s => s ? String(s).slice(0, 10).split('-').reverse().join('.') : '';
 const sayiGoster = n => Number(n).toLocaleString('tr-TR', { maximumFractionDigits: 3 });
 const bugun = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+/** Türkçe sayı okuma: "1.250,50" → 1250.5, "42.000" → 42000, "2,5" → 2.5, "2.5" → 2.5 */
 function sayiOku(s) {
   s = String(s ?? '').trim().replace(/\s/g, '');
   if (!s) return NaN;
   if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^-?\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, ''); // nokta binlik ayırıcı
   return Number(s);
 }
 const sayiYaz = n => (n === '' || n == null || isNaN(n)) ? '' : String(n).replace('.', ',');
@@ -3060,6 +3098,520 @@ async function stokIsleKaydet() {
     modalKapat(); rotaUygula();
     toast(`${x.No}: ${r.length} kalem stoka işlendi.`);
   } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Stoka İşle'; }
+}
+
+
+// ==================== TEKLİFLER ====================
+// Teklif no otomatik (TKL261001-1), revizyonlar TKL261001-1-R1 ... Para birimleri ayrı, çevrim yok.
+const TK = { arama: '', filtre: 'acik' };
+let TF = null;           // açık teklif formu
+let TEKLIF_AYAR = null;  // firma bilgileri, banka, varsayılan şartlar
+const TEKLIF_DURUM_SINIF = { 'Taslak': 'uyari', 'Gönderildi': '', 'Kabul Edildi': 'ok', 'Reddedildi': 'tehlike', 'Revize Edildi': 'pasif' };
+const TEKLIF_SECILEBILIR = ['Taslak', 'Gönderildi', 'Kabul Edildi', 'Reddedildi'];
+const teklifBul = id => (VERI.teklif || []).find(x => x.Id === id);
+const teklifSuresiDoldu = t => t.Durum === 'Gönderildi' && t.GecerlilikTarihi && t.GecerlilikTarihi < bugun();
+const teklifDuzenlenebilir = t => !t.SiparisId && t.Durum !== 'Revize Edildi';
+const teklifRozet = t => `<span class="rozet ${TEKLIF_DURUM_SINIF[t.Durum] || ''}">${esc(t.Durum)}</span>${teklifSuresiDoldu(t) ? ' <span class="rozet tehlike">Süresi doldu</span>' : ''}`;
+const teklifSirala = (a, b) => String(b.Tarih).localeCompare(String(a.Tarih))
+  || siraNo(b.AnaNo || b.No) - siraNo(a.AnaNo || a.No) || (b.Revizyon || 0) - (a.Revizyon || 0);
+const gunEkle = (tarih, gun) => { const d = new Date(tarih + 'T12:00:00'); d.setDate(d.getDate() + gun); return d.toISOString().slice(0, 10); };
+
+async function teklifAyarYukle(zorla) {
+  if (!TEKLIF_AYAR) TEKLIF_AYAR = ls.al('locus_c_teklifAyar');
+  if (TEKLIF_AYAR && !zorla) { api('ayar.oku', { anahtar: 'teklif' }).then(r => { TEKLIF_AYAR = r; ls.koy('locus_c_teklifAyar', r); }).catch(() => {}); return TEKLIF_AYAR; }
+  try { TEKLIF_AYAR = await api('ayar.oku', { anahtar: 'teklif' }); ls.koy('locus_c_teklifAyar', TEKLIF_AYAR); }
+  catch (e) { TEKLIF_AYAR = TEKLIF_AYAR || {}; }
+  return TEKLIF_AYAR;
+}
+function teklifOnbellek() {
+  if (!VERI.teklif) VERI.teklif = ls.al('locus_c_teklif') || undefined;
+  if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  return !!VERI.teklif;
+}
+const teklifVeriYukle = () => Promise.all([veriYukle('teklif'), firmalarYukle().catch(() => null), teklifAyarYukle().catch(() => null)]);
+
+SAYFA_CIZ.teklifler = function (ic, s, y) {
+  if (D.param) return teklifDetay(ic, s, y, D.param);
+  const tam = y === 'tam';
+  ic.innerHTML = sayfaBasHTML(s, y, tam ? `<button class="btn ikincil" type="button" onclick="teklifAyarModal()">⚙️ Ayarlar</button>
+      <button class="btn" type="button" onclick="teklifForm()">+ Yeni Teklif</button>` : '') + `
+    <div class="arac">
+      <label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Teklif no, müşteri veya konu ara" value="${esc(TK.arama)}" oninput="TK.arama=this.value;teklifListeCiz()"></label>
+      <div class="cips">${[['acik', 'Açık'], ['kabul', 'Kabul'], ['red', 'Red'], ['tumu', 'Tümü']].map(([k, a]) =>
+        `<button type="button" data-f="${k}" onclick="TK.filtre='${k}';teklifListeCiz()">${a}</button>`).join('')}</div>
+    </div>
+    <div class="ozet" id="tkOzet"></div>
+    <div class="kart" id="tkListe"></div>`;
+  const hazir = teklifOnbellek();
+  if (hazir) teklifListeCiz(); else $('tkListe').innerHTML = '<div class="bos"><p>Teklifler yükleniyor…</p></div>';
+  teklifVeriYukle().then(() => { if (D.aktif === 'teklifler' && !D.param && $('modal').hidden) teklifListeCiz(); })
+    .catch(e => { if (!hazir && $('tkListe')) $('tkListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function teklifListeCiz() {
+  const kutu = $('tkListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === TK.filtre));
+  const tum = VERI.teklif || [], q = trKucuk(TK.arama), tam = yetki('teklifler') === 'tam';
+  const filtre = { acik: ['Taslak', 'Gönderildi'], kabul: ['Kabul Edildi'], red: ['Reddedildi'] }[TK.filtre];
+  const l = tum.filter(t => !filtre || filtre.includes(t.Durum))
+    .filter(t => !q || [t.No, t.FirmaAd, t.Konu, t.YetkiliAd].some(x => trKucuk(x).includes(q)))
+    .sort(teklifSirala);
+  const top = {};
+  l.filter(t => !['Reddedildi', 'Revize Edildi'].includes(t.Durum)).forEach(t => top[t.ParaBirimi] = (top[t.ParaBirimi] || 0) + Number(t.Toplam));
+  $('tkOzet').innerHTML = `<span class="soluk">${l.length} teklif</span>` + Object.keys(PARA).filter(p => top[p]).map(p => `<span class="ozet-tutar">${para(top[p], p)}</span>`).join('');
+  if (!tum.length) {
+    kutu.innerHTML = `<div class="bos"><div class="b-ikon">📝</div><h3>Henüz teklif yok</h3>
+      <p>${tam ? 'İlk teklifi Yeni Teklif ile oluşturun. Önce Ayarlar\'dan firma ve banka bilgilerinizi girmenizi öneririz.' : 'Teklifler burada listelenecek.'}</p></div>`;
+    return;
+  }
+  if (!l.length) { kutu.innerHTML = `<div class="bos"><h3>${q ? 'Sonuç yok' : 'Bu filtrede teklif yok'}</h3></div>`; return; }
+  kutu.innerHTML = l.map(t => `<div class="m-satir s-satir" onclick="git('teklifler/${t.Id}')">
+      <span class="s-no"><b>${esc(t.No)}</b><small>${tarihKisa(t.Tarih)}</small></span>
+      <span class="ms-ic"><span class="ms-ad">${esc(t.FirmaAd)}</span><span class="ms-alt">${esc(t.Konu || kalemOzet(t))}${t.SiparisNo ? ', sipariş ' + esc(t.SiparisNo) : ''}</span></span>
+      <span class="s-tutar">${para(t.Toplam, t.ParaBirimi)}</span>
+      <span class="oxy-durum">${teklifRozet(t)}</span>
+      <span class="m-btn">
+        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();teklifExcel('${t.Id}')">⬇ Excel</button>
+        ${tam && teklifDuzenlenebilir(t) ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();teklifForm('${t.Id}')">Düzenle</button>` : ''}
+      </span></div>`).join('');
+}
+
+// ---------- Teklif sayfası ----------
+function teklifDetay(ic, s, y, id) {
+  const tam = y === 'tam';
+  const ciz = () => {
+    const t = teklifBul(id);
+    const geri = `<button class="geri" type="button" onclick="git('teklifler')">‹ Teklifler</button>`;
+    if (!t) { ic.innerHTML = geri + '<div class="kart bos"><div class="b-ikon">🔍</div><h3>Teklif bulunamadı</h3></div>'; return; }
+    const duz = tam && teklifDuzenlenebilir(t);
+    const revizyonlar = (VERI.teklif || []).filter(x => (x.AnaNo || x.No) === (t.AnaNo || t.No)).sort((a, b) => (a.Revizyon || 0) - (b.Revizyon || 0));
+    const sonRev = revizyonlar[revizyonlar.length - 1];
+    const musteri = yetki('musteriler') !== 'yok' ? `<a class="firma-link" onclick="git('musteriler/${t.FirmaId}')">${esc(t.FirmaAd)}</a>` : esc(t.FirmaAd);
+    const iskVar = (t.Kalemler || []).some(k => Number(k.iskonto) > 0);
+    ic.innerHTML = geri + `
+      <div class="d-bas">
+        <span class="av buyuk">📝</span>
+        <div class="d-bas-ic"><h2>${esc(t.No)}</h2>
+          <div class="d-rozetler">${teklifRozet(t)}
+            ${t.SiparisNo ? `<span class="rozet ok link" onclick="git('siparisler/ms.${t.SiparisId}')">Sipariş: ${esc(t.SiparisNo)}</span>` : ''}
+            ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
+        <div class="d-bas-sag">
+          <button class="btn ikincil" type="button" onclick="teklifYazdir('${t.Id}')">🖨 PDF</button>
+          <button class="btn ${duz ? 'ikincil' : ''}" type="button" onclick="teklifExcel('${t.Id}')">⬇ Excel</button>
+          ${duz ? `<button class="btn" type="button" onclick="teklifForm('${t.Id}')">Düzenle</button>` : ''}
+        </div>
+      </div>
+      ${tam ? `<div class="islem-cubugu">
+        ${duz ? `<label class="soluk">Durum <select class="girdi durum-sec" onchange="teklifDurum('${t.Id}',this.value)">${TEKLIF_SECILEBILIR.map(d => `<option ${d === t.Durum ? 'selected' : ''}>${d}</option>`).join('')}</select></label>` : ''}
+        ${duz && yetki('siparisler') === 'tam' && t.Durum !== 'Reddedildi' ? `<button class="btn ikincil kucuk" type="button" onclick="teklifSiparisOnay('${t.Id}')">🛒 Siparişe Dönüştür</button>` : ''}
+        ${!t.SiparisId && sonRev && sonRev.Id === t.Id ? `<button class="btn ikincil kucuk" type="button" onclick="teklifRevize('${t.Id}')">↻ Revize Et</button>` : ''}
+        <button class="btn ikincil kucuk" type="button" onclick="teklifForm(null,'${t.Id}')">⧉ Kopyala</button>
+        ${!t.SiparisId ? `<button class="btn ikincil kucuk" type="button" style="color:var(--danger)" onclick="teklifSilOnay('${t.Id}')">Sil</button>` : ''}
+      </div>` : ''}
+      <section class="kart panel">
+        <h3 class="panel-bas">Teklif Bilgileri</h3>
+        <div class="bilgi-grid">
+          <div><div class="de">Müşteri</div>${musteri}</div>
+          <div><div class="de">Sayın</div>${t.YetkiliAd ? esc(t.YetkiliAd) : '<span class="soluk">Belirtilmemiş</span>'}</div>
+          <div><div class="de">Teklif tarihi</div>${tarihKisa(t.Tarih)}</div>
+          <div><div class="de">Geçerlilik</div>${t.GecerlilikTarihi ? tarihKisa(t.GecerlilikTarihi) : '<span class="soluk">Belirtilmemiş</span>'}</div>
+          <div style="grid-column:span 2"><div class="de">Konu</div>${t.Konu ? esc(t.Konu) : '<span class="soluk">Belirtilmemiş</span>'}</div>
+          <div><div class="de">Para birimi</div>${PARA[t.ParaBirimi] || esc(t.ParaBirimi)}</div>
+          <div><div class="de">Hazırlayan</div>@${esc(t.Olusturan || '?')}</div>
+        </div>
+        <h4 class="panel-alt">Kalemler</h4>
+        <div class="tablo-kap"><table class="tablo">
+          <thead><tr><th style="width:36px">#</th><th>Açıklama</th><th class="sag">Miktar</th><th class="sag">Birim fiyat</th>${iskVar ? '<th class="sag">İsk.</th>' : ''}<th class="sag">Tutar</th></tr></thead>
+          <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="soluk">${i + 1}</td><td style="white-space:pre-wrap">${esc(k.aciklama)}</td>
+            <td class="sag">${sayiGoster(k.miktar)} ${esc(k.birim)}</td><td class="sag">${para(k.birimFiyat, t.ParaBirimi)}</td>
+            ${iskVar ? `<td class="sag">${Number(k.iskonto) ? '%' + sayiGoster(k.iskonto) : '—'}</td>` : ''}
+            <td class="sag">${para(k.tutar, t.ParaBirimi)}</td></tr>`).join('')}</tbody>
+        </table></div>
+        <div class="toplamlar">
+          ${t.IskontoToplam > 0 ? `<div><span>Toplam</span><span>${para(t.BrutToplam, t.ParaBirimi)}</span></div>
+            <div><span>İskonto</span><span>−${para(t.IskontoToplam, t.ParaBirimi)}</span></div>` : ''}
+          <div><span>Ara toplam</span><span>${para(t.AraToplam, t.ParaBirimi)}</span></div>
+          <div><span>KDV (%${t.KdvOrani})</span><span>${para(t.Kdv, t.ParaBirimi)}</span></div>
+          <div class="genel"><span>Genel toplam</span><span>${para(t.Toplam, t.ParaBirimi)}</span></div>
+        </div>
+        ${t.OdemeSartlari ? `<h4 class="panel-alt">Ödeme şartları</h4><div class="d-not">${esc(t.OdemeSartlari)}</div>` : ''}
+        ${t.TeslimSartlari ? `<h4 class="panel-alt">Teslim şartları</h4><div class="d-not">${esc(t.TeslimSartlari)}</div>` : ''}
+        ${t.Notlar ? `<h4 class="panel-alt">Notlar</h4><div class="d-not">${esc(t.Notlar)}</div>` : ''}
+        <div class="d-meta" style="margin-top:16px">Son güncelleme: @${esc(t.Guncelleyen || '?')}, ${esc(tarihYaz(t.Guncelleme))}</div>
+      </section>
+      ${revizyonlar.length > 1 ? `<section class="kart panel"><h3 class="panel-bas">Revizyonlar</h3>
+        ${islemlerHTML(revizyonlar.slice().reverse().map(r => ({ tarih: r.Tarih, tur: r.Revizyon ? 'R' + r.Revizyon : 'İlk', baslik: r.No,
+          aciklama: r.Id === t.Id ? 'Şu an görüntülenen' : (r.Konu || ''), tutar: para(r.Toplam, r.ParaBirimi), durum: r.Durum,
+          durumSinif: TEKLIF_DURUM_SINIF[r.Durum] || '', rota: 'teklifler/' + r.Id })), '')}</section>` : ''}`;
+  };
+  const hazir = teklifOnbellek();
+  if (hazir) ciz(); else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  teklifVeriYukle().then(() => { if (D.aktif === 'teklifler' && D.param === id && $('modal').hidden) ciz(); })
+    .catch(e => { if (!hazir) ic.innerHTML = `<div class="kart bos"><h3>Teklif alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+async function teklifDurum(id, durum) {
+  const t = teklifBul(id); if (!t) return;
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'teklif', kayit: Object.assign({}, t, { Durum: durum }) });
+    veriGuncelle('teklif', r); toast(`${r.No}: ${durum}`);
+    if (durum === 'Kabul Edildi' && yetki('siparisler') === 'tam') { rotaUygula(); return teklifSiparisOnay(id); }
+  } catch (e) { toast(e.message, true); }
+  rotaUygula();
+}
+
+function teklifSiparisOnay(id) {
+  const t = teklifBul(id);
+  modalAc('Siparişe Dönüştür', `<p><b>${esc(t.No)}</b> (${esc(t.FirmaAd)}, ${para(t.Toplam, t.ParaBirimi)}) müşteri siparişine dönüştürülsün mü?</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Kalemler iskontolu net fiyatlarıyla yeni bir müşteri siparişine (LOC…) aktarılır, teklif "Kabul Edildi" olur ve artık düzenlenemez.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
+     <button class="btn" type="button" id="tsKaydet" onclick="teklifSiparisYap('${id}')">🛒 Siparişe Dönüştür</button>`);
+}
+async function teklifSiparisYap(id) {
+  const btn = $('tsKaydet'); btn.disabled = true; btn.textContent = 'Dönüştürülüyor…';
+  try {
+    const r = await api('teklif.siparisYap', { id });
+    veriGuncelle('teklif', r.teklif); veriGuncelle('musteriSiparis', r.siparis);
+    modalKapat(); rotaUygula(); toast(`${r.teklif.No} → ${r.siparis.No} siparişi oluşturuldu.`);
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = '🛒 Siparişe Dönüştür'; }
+}
+async function teklifRevize(id) {
+  const t = teklifBul(id);
+  if (!confirm(`${t.No} için yeni revizyon oluşturulsun mu? Mevcut teklif "Revize Edildi" olarak işaretlenir.`)) return;
+  try {
+    const r = await api('teklif.revize', { id });
+    veriGuncelle('teklif', r.eski); veriGuncelle('teklif', r.yeni);
+    await veriYukle('teklif').catch(() => null);
+    toast(`${r.yeni.No} oluşturuldu.`); git('teklifler/' + r.yeni.Id);
+    setTimeout(() => teklifForm(r.yeni.Id), 300);
+  } catch (e) { toast(e.message, true); }
+}
+function teklifSilOnay(id) {
+  const t = teklifBul(id);
+  modalAc('Teklifi Sil', `<p><b>${esc(t.No)}</b> kalıcı olarak silinecek.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Gönderilmiş bir teklifse silmek yerine durumunu Reddedildi yapmanız geçmiş kayıtlar için daha iyi olur.</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="teklifSil('${id}')">Sil</button>`);
+}
+async function teklifSil(id) {
+  const btn = $('mSil'); btn.disabled = true;
+  try { await api('kayit.sil', { varlik: 'teklif', id }); veriCikar('teklif', id); modalKapat(); git('teklifler'); toast('Teklif silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Teklif formu ----------
+async function teklifForm(id, kopyaId) {
+  const t = id ? teklifBul(id) : null, kaynak = t || (kopyaId ? teklifBul(kopyaId) : null);
+  if (!FIRMALAR) { try { await firmalarYukle(); } catch (e) { return toast(e.message, true); } }
+  const a = TEKLIF_AYAR || await teklifAyarYukle();
+  const musteriler = (FIRMALAR.musteriler || []).filter(f => f.Aktif || (kaynak && f.Id === kaynak.FirmaId)).sort((x, y) => trSirala(x.Ad, y.Ad));
+  if (!musteriler.length) {
+    modalAc('Yeni Teklif', '<p>Teklif hazırlamak için önce Müşteriler sayfasında müşteri tanımlanmalı.</p>',
+      `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>`);
+    return;
+  }
+  const tarih = t ? t.Tarih : bugun(), gun = Number(a.GecerlilikGun) || 15;
+  TF = {
+    Id: t ? t.Id : null, pb: kaynak ? kaynak.ParaBirimi : 'EUR', gecerlilikElle: !!t,
+    kalemler: kaynak ? kaynak.Kalemler.map(k => ({ aciklama: k.aciklama, miktar: sayiYaz(k.miktar), birim: k.birim, birimFiyat: sayiYaz(k.birimFiyat), iskonto: k.iskonto ? sayiYaz(k.iskonto) : '' }))
+      : [{ aciklama: '', miktar: '1', birim: 'adet', birimFiyat: '', iskonto: '' }]
+  };
+  modalAc(t ? `${t.No} Düzenle` : kopyaId ? `Yeni Teklif (${kaynak.No} kopyası)` : 'Yeni Teklif', `
+    <div class="iki">
+      <div><label class="et" for="tfMus">Müşteri *</label>
+        <select class="girdi" id="tfMus" onchange="tfYetkililer()"><option value="">Seçin…</option>${musteriler.map(f =>
+          `<option value="${f.Id}" ${kaynak && kaynak.FirmaId === f.Id ? 'selected' : ''}>${esc(f.Ad)}</option>`).join('')}</select></div>
+      <div><label class="et" for="tfYetkili">Sayın</label>
+        <input class="girdi" id="tfYetkili" list="tfYetkiliListe" value="${kaynak ? esc(kaynak.YetkiliAd) : ''}" placeholder="Teklifin hitap edileceği kişi"><datalist id="tfYetkiliListe"></datalist></div>
+    </div>
+    <label class="et" for="tfKonu">Konu</label>
+    <input class="girdi" id="tfKonu" value="${kaynak ? esc(kaynak.Konu) : ''}" placeholder="Ör. Helyum kaçak test kabini">
+    <div class="iki">
+      <div><label class="et" for="tfTarih">Teklif tarihi *</label>
+        <input class="girdi" type="date" id="tfTarih" value="${tarih}" onchange="if(!TF.gecerlilikElle&&this.value)$('tfGec').value=gunEkle(this.value,${gun})"></div>
+      <div><label class="et" for="tfGec">Geçerlilik tarihi</label>
+        <input class="girdi" type="date" id="tfGec" value="${t ? t.GecerlilikTarihi || '' : gun ? gunEkle(tarih, gun) : ''}" onchange="TF.gecerlilikElle=true"></div>
+      <div><label class="et">Para birimi</label>
+        <div class="cips" style="width:100%;margin-bottom:18px">${Object.keys(PARA).map(p =>
+          `<button type="button" data-pb="${p}" style="flex:1" onclick="tfPb('${p}')">${PARA[p]}</button>`).join('')}</div></div>
+      <div><label class="et" for="tfKdv">KDV oranı</label>
+        <select class="girdi" id="tfKdv" onchange="tfHesapla()">${[20, 10, 1, 0].map(o =>
+          `<option value="${o}" ${(kaynak ? kaynak.KdvOrani : 20) === o ? 'selected' : ''}>%${o}</option>`).join('')}</select></div>
+    </div>
+    ${t ? `<label class="et" for="tfDurum">Durum</label><select class="girdi" id="tfDurum">${TEKLIF_SECILEBILIR.map(d => `<option ${d === t.Durum ? 'selected' : ''}>${d}</option>`).join('')}</select>` : ''}
+    <div class="bolum-et">Kalemler<button class="btn ikincil kucuk" type="button" onclick="TF.kalemler.push({aciklama:'',miktar:'1',birim:'adet',birimFiyat:'',iskonto:''});tfKalemCiz()">+ Kalem Ekle</button></div>
+    <div class="tk-kalem tk-bas"><span>Ürün / hizmet</span><span>Miktar</span><span>Birim</span><span>Birim fiyat</span><span>İsk. %</span><span style="text-align:right">Tutar</span><span></span></div>
+    <div id="tfKalemler"></div>
+    <div class="toplamlar" id="tfToplam"></div>
+    <div class="iki">
+      <div><label class="et" for="tfOdeme">Ödeme şartları</label><textarea class="girdi alan" id="tfOdeme">${esc(kaynak ? kaynak.OdemeSartlari : a.OdemeSartlari || '')}</textarea></div>
+      <div><label class="et" for="tfTeslim">Teslim şartları</label><textarea class="girdi alan" id="tfTeslim">${esc(kaynak ? kaynak.TeslimSartlari : a.TeslimSartlari || '')}</textarea></div>
+    </div>
+    <label class="et" for="tfNot">Notlar</label>
+    <textarea class="girdi alan" id="tfNot" placeholder="Teklifte görünecek ek notlar">${kaynak ? esc(kaynak.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" id="tfKaydet" onclick="teklifKaydet()">Kaydet</button>`, true);
+  tfYetkililer(); tfPb(TF.pb); tfKalemCiz();
+}
+function tfYetkililer() {
+  const f = ((FIRMALAR || {}).musteriler || []).find(x => x.Id === $('tfMus').value);
+  $('tfYetkiliListe').innerHTML = (f && f.Yetkililer || []).filter(y => y.adSoyad).map(y => `<option value="${esc(y.adSoyad)}">${esc(y.pozisyon || '')}</option>`).join('');
+}
+function tfPb(pb) { TF.pb = pb; document.querySelectorAll('[data-pb]').forEach(b => b.classList.toggle('on', b.dataset.pb === pb)); tfHesapla(); }
+function tfKalemCiz() {
+  $('tfKalemler').innerHTML = TF.kalemler.map((k, i) => `
+    <div class="tk-kalem">
+      <textarea class="girdi k-ac" rows="1" placeholder="Ürün / hizmet açıklaması" oninput="TF.kalemler[${i}].aciklama=this.value">${esc(k.aciklama)}</textarea>
+      <input class="girdi" inputmode="decimal" placeholder="Miktar" value="${esc(k.miktar)}" oninput="TF.kalemler[${i}].miktar=this.value;tfHesapla()">
+      <select class="girdi" onchange="TF.kalemler[${i}].birim=this.value">${[...new Set([...BIRIMLER, k.birim || 'adet'])].map(b =>
+        `<option ${b === (k.birim || 'adet') ? 'selected' : ''}>${esc(b)}</option>`).join('')}</select>
+      <input class="girdi" inputmode="decimal" placeholder="Birim fiyat" value="${esc(k.birimFiyat)}" oninput="TF.kalemler[${i}].birimFiyat=this.value;tfHesapla()">
+      <input class="girdi" inputmode="decimal" placeholder="İsk. %" value="${esc(k.iskonto)}" oninput="TF.kalemler[${i}].iskonto=this.value;tfHesapla()">
+      <span class="k-tutar" id="tft${i}"></span>
+      <button class="k-sil" type="button" aria-label="Kalemi kaldır" ${TF.kalemler.length === 1 ? 'disabled' : ''} onclick="TF.kalemler.splice(${i},1);tfKalemCiz()">×</button>
+    </div>`).join('');
+  tfHesapla();
+}
+function tfHesapla() {
+  if (!$('tfToplam')) return;
+  const yuv = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  let brut = 0, isk = 0;
+  TF.kalemler.forEach((k, i) => {
+    const m = sayiOku(k.miktar), f = sayiOku(k.birimFiyat), d = String(k.iskonto).trim() ? sayiOku(k.iskonto) : 0;
+    const ok = m > 0 && f >= 0 && d >= 0 && d <= 100;
+    const b = ok ? yuv(m * f) : 0, di = ok ? yuv(b * d / 100) : 0;
+    brut += b; isk += di;
+    if ($('tft' + i)) $('tft' + i).textContent = ok ? para(b - di, TF.pb) : '—';
+  });
+  const ara = yuv(brut - isk), oran = Number($('tfKdv').value), kdv = yuv(ara * oran / 100);
+  $('tfToplam').innerHTML = `${isk > 0 ? `<div><span>Toplam</span><span>${para(brut, TF.pb)}</span></div><div><span>İskonto</span><span>−${para(isk, TF.pb)}</span></div>` : ''}
+    <div><span>Ara toplam</span><span>${para(ara, TF.pb)}</span></div>
+    <div><span>KDV (%${oran})</span><span>${para(kdv, TF.pb)}</span></div>
+    <div class="genel"><span>Genel toplam</span><span>${para(yuv(ara + kdv), TF.pb)}</span></div>`;
+}
+async function teklifKaydet() {
+  const hata = m => ($('mHata').textContent = m);
+  const kalemler = TF.kalemler.filter(k => k.aciklama.trim() || String(k.birimFiyat).trim())
+    .map(k => ({ aciklama: k.aciklama.trim(), miktar: sayiOku(k.miktar), birim: k.birim || 'adet', birimFiyat: sayiOku(k.birimFiyat),
+                 iskonto: String(k.iskonto).trim() ? sayiOku(k.iskonto) : 0 }));
+  const kayit = {
+    Id: TF.Id, FirmaId: $('tfMus').value, YetkiliAd: $('tfYetkili').value.trim(), Konu: $('tfKonu').value.trim(),
+    Tarih: $('tfTarih').value, GecerlilikTarihi: $('tfGec').value, ParaBirimi: TF.pb, KdvOrani: Number($('tfKdv').value),
+    Durum: $('tfDurum') ? $('tfDurum').value : 'Taslak', Kalemler: kalemler,
+    OdemeSartlari: $('tfOdeme').value.trim(), TeslimSartlari: $('tfTeslim').value.trim(), Notlar: $('tfNot').value.trim()
+  };
+  if (!kayit.FirmaId) return hata('Müşteri seçin.');
+  if (!kayit.Tarih) return hata('Teklif tarihi gerekli.');
+  if (kayit.GecerlilikTarihi && kayit.GecerlilikTarihi < kayit.Tarih) return hata('Geçerlilik tarihi teklif tarihinden önce olamaz.');
+  if (!kalemler.length) return hata('En az bir kalem girin.');
+  for (let i = 0; i < kalemler.length; i++) {
+    const k = kalemler[i];
+    if (!k.aciklama) return hata(`${i + 1}. kalemin açıklaması boş.`);
+    if (!(k.miktar > 0)) return hata(`${i + 1}. kalemde miktar geçersiz.`);
+    if (!(k.birimFiyat >= 0)) return hata(`${i + 1}. kalemde birim fiyat geçersiz. Örnek: 1250,50`);
+    if (!(k.iskonto >= 0 && k.iskonto <= 100)) return hata(`${i + 1}. kalemde iskonto 0-100 arasında olmalı.`);
+  }
+  const btn = $('tfKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'teklif', kayit });
+    veriGuncelle('teklif', r); modalKapat();
+    toast(`${r.No} ${kayit.Id ? 'güncellendi' : 'oluşturuldu'}.`);
+    if (D.aktif === 'teklifler' && D.param === r.Id) rotaUygula(); else git('teklifler/' + r.Id);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+
+// ---------- Teklif ayarları ----------
+async function teklifAyarModal() {
+  const a = await teklifAyarYukle(true);
+  const alan = (id, et, tip, ph) => tip === 'alan'
+    ? `<label class="et" for="ta${id}">${et}</label><textarea class="girdi alan" id="ta${id}" placeholder="${ph || ''}">${esc(a[id] || '')}</textarea>`
+    : `<div><label class="et" for="ta${id}">${et}</label><input class="girdi" id="ta${id}" value="${esc(a[id] == null ? '' : a[id])}" placeholder="${ph || ''}"></div>`;
+  modalAc('Teklif Ayarları', `
+    <p class="bilgi-not" style="margin:0 0 14px">Bu bilgiler her teklifin Excel ve PDF çıktısının başlığında ve altında görünür.</p>
+    <div class="iki">${alan('Unvan', 'Firma unvanı', '', 'Ör. Locus Mühendislik Ltd. Şti.')}${alan('Telefon', 'Telefon', '')}${alan('Eposta', 'E-posta', '')}${alan('Web', 'Web sitesi', '')}${alan('VergiDairesi', 'Vergi dairesi', '')}${alan('VergiNo', 'Vergi no', '')}</div>
+    ${alan('Adres', 'Adres', 'alan')}
+    ${alan('Banka', 'Banka bilgileri', 'alan', 'Banka adı, şube, IBAN (TL / EUR / USD)')}
+    <div class="iki">${alan('GecerlilikGun', 'Varsayılan geçerlilik (gün)', '', '15')}${alan('Imza', 'İmza altı (ad soyad / unvan)', '', 'Ör. Ad Soyad, Satış Müdürü')}</div>
+    ${alan('OdemeSartlari', 'Varsayılan ödeme şartları', 'alan')}
+    ${alan('TeslimSartlari', 'Varsayılan teslim şartları', 'alan')}
+    ${alan('AltNot', 'Alt not', 'alan', 'Ör. Fiyatlarımıza KDV dahil değildir.')}
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="taKaydet" onclick="teklifAyarKaydet()">Kaydet</button>`, true);
+}
+async function teklifAyarKaydet() {
+  const d = {};
+  ['Unvan', 'Telefon', 'Eposta', 'Web', 'VergiDairesi', 'VergiNo', 'Adres', 'Banka', 'GecerlilikGun', 'Imza', 'OdemeSartlari', 'TeslimSartlari', 'AltNot'].forEach(k => d[k] = $('ta' + k).value.trim());
+  d.GecerlilikGun = d.GecerlilikGun === '' ? 15 : Number(d.GecerlilikGun);
+  if (!(Number.isInteger(d.GecerlilikGun) && d.GecerlilikGun >= 0 && d.GecerlilikGun <= 365)) return ($('mHata').textContent = 'Geçerlilik 0-365 gün arasında bir tam sayı olmalı.');
+  const btn = $('taKaydet'); btn.disabled = true;
+  try { TEKLIF_AYAR = await api('ayar.kaydet', { anahtar: 'teklif', deger: d }); ls.koy('locus_c_teklifAyar', TEKLIF_AYAR); modalKapat(); toast('Teklif ayarları kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Excel çıktısı (Locus logolu, formüllü, A4) ----------
+async function resimBase64(url) {
+  const blob = await (await fetch(url)).blob();
+  return await new Promise(ok => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(blob); });
+}
+function dosyaIndir(blob, ad) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = ad; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+}
+const dosyaAdi = s => String(s || '').replace(/[\\/:*?"<>|]+/g, '').replace(/\s+/g, '_').slice(0, 40).replace(/[._]+$/, '');
+
+async function teklifExcel(id) {
+  const t = teklifBul(id); if (!t) return;
+  toast('Excel hazırlanıyor…');
+  try {
+    const a = TEKLIF_AYAR || await teklifAyarYukle();
+    await scriptYukle('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js');
+    const LACI = 'FF004085', GRI = 'FFF2F5F9', CIZGI = { style: 'thin', color: { argb: 'FFB8C2D0' } };
+    const PB = { TRY: '#,##0.00 "₺"', EUR: '#,##0.00 "€"', USD: '"$"#,##0.00' }[t.ParaBirimi] || '#,##0.00';
+    const wb = new ExcelJS.Workbook(); wb.creator = 'Locus Şirket Takip Sistemi';
+    const ws = wb.addWorksheet('Teklif', {
+      views: [{ showGridLines: false }],
+      pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0,
+                   margins: { left: 0.45, right: 0.45, top: 0.5, bottom: 0.6, header: 0.2, footer: 0.3 } },
+      headerFooter: { oddFooter: `&L&8${t.No}&R&8Sayfa &P / &N` }
+    });
+    ws.columns = [{ width: 6 }, { width: 46 }, { width: 9 }, { width: 8 }, { width: 15 }, { width: 8 }, { width: 17 }];
+    const yaz = (ref, deger, stil) => { const c = ws.getCell(ref); c.value = deger; if (stil) Object.assign(c, stil); return c; };
+    const font = (o) => Object.assign({ name: 'Calibri', size: 10 }, o);
+
+    // Başlık: logo (sol) + firma bilgileri (sağ)
+    const logo = wb.addImage({ base64: await resimBase64('logo-renkli.png'), extension: 'png' });
+    ws.addImage(logo, { tl: { col: 0.1, row: 0.3 }, ext: { width: 210, height: 57 } });
+    const firmaSatir = [a.Unvan, a.Adres, [a.Telefon && 'Tel: ' + a.Telefon, a.Eposta].filter(Boolean).join('  |  '),
+      [a.Web, (a.VergiDairesi || a.VergiNo) && `V.D.: ${a.VergiDairesi || ''} ${a.VergiNo || ''}`.trim()].filter(Boolean).join('  |  ')].filter(Boolean);
+    firmaSatir.slice(0, 4).forEach((s, i) => {
+      ws.mergeCells(`C${i + 1}:G${i + 1}`);
+      yaz(`C${i + 1}`, s.replace(/\n/g, ', '), { font: font(i === 0 ? { bold: true, size: 11, color: { argb: LACI } } : { size: 9, color: { argb: 'FF505A6B' } }), alignment: { horizontal: 'right', vertical: 'middle' } });
+    });
+    let r = 6;
+    ws.mergeCells(`A${r}:G${r}`);
+    yaz(`A${r}`, 'FİYAT TEKLİFİ', { font: font({ bold: true, size: 16, color: { argb: LACI } }), alignment: { horizontal: 'left', vertical: 'middle' },
+      border: { bottom: { style: 'medium', color: { argb: LACI } } } });
+    ws.getRow(r).height = 26;
+
+    // Müşteri ve teklif bilgileri
+    r = 8;
+    const sol = [['Firma', t.FirmaAd], ['Sayın', t.YetkiliAd || '—'], ['Konu', t.Konu || '—']];
+    const sag = [['Teklif No', t.No], ['Tarih', tarihKisa(t.Tarih)], ['Geçerlilik', t.GecerlilikTarihi ? tarihKisa(t.GecerlilikTarihi) : '—'], ['Para birimi', PARA[t.ParaBirimi]]];
+    for (let i = 0; i < 4; i++) {
+      const satir = r + i;
+      if (sol[i]) { ws.mergeCells(`A${satir}:D${satir}`); yaz(`A${satir}`, { richText: [{ text: sol[i][0] + ': ', font: font({ bold: true }) }, { text: String(sol[i][1]), font: font() }] }, { alignment: { vertical: 'middle', wrapText: true } }); }
+      ws.mergeCells(`E${satir}:F${satir}`);
+      yaz(`E${satir}`, sag[i][0], { font: font({ bold: true }), alignment: { horizontal: 'right' } });
+      yaz(`G${satir}`, sag[i][1], { font: font(), alignment: { horizontal: 'right' } });
+    }
+
+    // Kalem tablosu
+    r = 13;
+    const basliklar = ['Sıra', 'Açıklama', 'Miktar', 'Birim', 'Birim Fiyat', 'İsk. %', 'Tutar'];
+    basliklar.forEach((b, i) => {
+      const c = ws.getCell(r, i + 1);
+      c.value = b; c.font = font({ bold: true, color: { argb: 'FFFFFFFF' } });
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LACI } };
+      c.alignment = { horizontal: i === 1 ? 'left' : 'center', vertical: 'middle' };
+      c.border = { top: CIZGI, bottom: CIZGI, left: CIZGI, right: CIZGI };
+    });
+    ws.getRow(r).height = 20;
+    const ilk = r + 1;
+    (t.Kalemler || []).forEach((k, i) => {
+      const n = ilk + i, row = ws.getRow(n);
+      row.values = [i + 1, k.aciklama, Number(k.miktar), k.birim, Number(k.birimFiyat), Number(k.iskonto) || 0];
+      ws.getCell(`G${n}`).value = { formula: `ROUND(C${n}*E${n}*(1-F${n}/100),2)`, result: Number(k.tutar) };
+      for (let c = 1; c <= 7; c++) {
+        const h = ws.getCell(n, c);
+        h.font = font(); h.border = { top: CIZGI, bottom: CIZGI, left: CIZGI, right: CIZGI };
+        h.alignment = { vertical: 'top', horizontal: c === 2 ? 'left' : c === 4 ? 'center' : c === 1 ? 'center' : 'right', wrapText: c === 2 };
+      }
+      ws.getCell(`C${n}`).numFmt = '#,##0.###'; ws.getCell(`E${n}`).numFmt = PB; ws.getCell(`F${n}`).numFmt = '0.##'; ws.getCell(`G${n}`).numFmt = PB;
+      const satirSay = String(k.aciklama).split('\n').reduce((s, p) => s + Math.max(1, Math.ceil(p.length / 52)), 0);
+      row.height = Math.max(18, satirSay * 14);
+    });
+    const son = ilk + (t.Kalemler || []).length - 1;
+
+    // Toplamlar (formüllü)
+    r = son + 1;
+    const toplamSatir = (et, formul, sonuc, kalin) => {
+      ws.mergeCells(`E${r}:F${r}`);
+      yaz(`E${r}`, et, { font: font({ bold: !!kalin }), alignment: { horizontal: 'right' } });
+      const c = yaz(`G${r}`, { formula: formul, result: sonuc }, { font: font({ bold: !!kalin, size: kalin ? 11 : 10 }), numFmt: PB, alignment: { horizontal: 'right' } });
+      if (kalin) { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GRI } }; ws.getCell(`E${r}`).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: GRI } };
+        c.border = { top: { style: 'thin', color: { argb: LACI } }, bottom: { style: 'double', color: { argb: LACI } } }; }
+      return r++;
+    };
+    r++;
+    let araRef;
+    if (t.IskontoToplam > 0) {
+      const b = toplamSatir('Toplam', `SUMPRODUCT(ROUND(C${ilk}:C${son}*E${ilk}:E${son},2))`, t.BrutToplam);
+      toplamSatir('İskonto', `G${b}-SUM(G${ilk}:G${son})`, t.IskontoToplam);
+    }
+    araRef = toplamSatir('Ara Toplam', `SUM(G${ilk}:G${son})`, t.AraToplam);
+    const kdvRef = toplamSatir(`KDV (%${t.KdvOrani})`, `ROUND(G${araRef}*${t.KdvOrani}/100,2)`, t.Kdv);
+    toplamSatir('GENEL TOPLAM', `G${araRef}+G${kdvRef}`, t.Toplam, true);
+
+    // Şartlar, notlar, banka bilgileri
+    r += 1;
+    const blok = (baslik, metin) => {
+      if (!metin) return;
+      ws.mergeCells(`A${r}:G${r}`); yaz(`A${r}`, baslik, { font: font({ bold: true, color: { argb: LACI } }) }); r++;
+      ws.mergeCells(`A${r}:G${r}`);
+      yaz(`A${r}`, metin, { font: font(), alignment: { wrapText: true, vertical: 'top' } });
+      ws.getRow(r).height = Math.max(16, String(metin).split('\n').reduce((s, p) => s + Math.max(1, Math.ceil(p.length / 105)), 0) * 14);
+      r += 2;
+    };
+    blok('Ödeme Şartları', t.OdemeSartlari);
+    blok('Teslim Şartları', t.TeslimSartlari);
+    blok('Notlar', t.Notlar);
+    blok('Banka Bilgileri', a.Banka);
+    if (a.AltNot) { ws.mergeCells(`A${r}:G${r}`); yaz(`A${r}`, a.AltNot, { font: font({ italic: true, size: 9, color: { argb: 'FF6A7890' } }), alignment: { wrapText: true } }); r += 2; }
+
+    // Kapanış ve imza
+    ws.mergeCells(`E${r}:G${r}`); yaz(`E${r}`, 'Saygılarımızla,', { font: font(), alignment: { horizontal: 'center' } }); r++;
+    ws.mergeCells(`E${r}:G${r}`); yaz(`E${r}`, a.Unvan || 'Locus Mühendislik', { font: font({ bold: true }), alignment: { horizontal: 'center' } }); r += 3;
+    ws.mergeCells(`E${r}:G${r}`); yaz(`E${r}`, a.Imza || '', { font: font(), alignment: { horizontal: 'center' }, border: { top: { style: 'thin' } } });
+    ws.pageSetup.printArea = `A1:G${r}`;
+
+    const tampon = await wb.xlsx.writeBuffer();
+    dosyaIndir(new Blob([tampon], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${t.No}_${dosyaAdi(t.FirmaAd)}.xlsx`);
+    toast('Excel indirildi.');
+  } catch (e) { toast('Excel oluşturulamadı: ' + e.message, true); }
+}
+
+// ---------- PDF çıktısı ----------
+async function teklifYazdir(id) {
+  const t = teklifBul(id); if (!t) return;
+  const a = TEKLIF_AYAR || await teklifAyarYukle();
+  const iskVar = (t.Kalemler || []).some(k => Number(k.iskonto) > 0);
+  const firma = [a.Unvan ? `<b>${esc(a.Unvan)}</b>` : '', a.Adres ? esc(a.Adres).replace(/\n/g, '<br>') : '',
+    [a.Telefon && 'Tel: ' + esc(a.Telefon), a.Eposta && esc(a.Eposta)].filter(Boolean).join(' | '),
+    [a.Web && esc(a.Web), (a.VergiDairesi || a.VergiNo) && `V.D.: ${esc(a.VergiDairesi || '')} ${esc(a.VergiNo || '')}`].filter(Boolean).join(' | ')].filter(Boolean).join('<br>');
+  const blok = (b, m) => m ? `<div class="y-blok"><h3>${b}</h3><p>${esc(m).replace(/\n/g, '<br>')}</p></div>` : '';
+  yazdir(`
+    <div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering"><div class="y-bas-sag">${firma}</div></div>
+    <h1 class="y-baslik">Fiyat Teklifi</h1>
+    <table class="y-bilgi"><tr>
+      <td><span>Firma</span>${esc(t.FirmaAd)}</td><td><span>Sayın</span>${esc(t.YetkiliAd || '—')}</td>
+      <td><span>Teklif no</span>${esc(t.No)}</td><td><span>Tarih</span>${tarihKisa(t.Tarih)}</td></tr><tr>
+      <td colspan="2"><span>Konu</span>${esc(t.Konu || '—')}</td>
+      <td><span>Geçerlilik</span>${t.GecerlilikTarihi ? tarihKisa(t.GecerlilikTarihi) : '—'}</td><td><span>Para birimi</span>${PARA[t.ParaBirimi]}</td></tr></table>
+    <table class="y-tablo"><thead><tr><th class="y-no">#</th><th>Açıklama</th><th class="y-sayi">Miktar</th><th class="y-sayi">Birim fiyat</th>${iskVar ? '<th class="y-sayi">İsk.</th>' : ''}<th class="y-sayi">Tutar</th></tr></thead>
+      <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="y-no">${i + 1}</td><td>${esc(k.aciklama).replace(/\n/g, '<br>')}</td>
+        <td class="y-sayi y-nw">${sayiGoster(k.miktar)} ${esc(k.birim)}</td><td class="y-sayi y-nw">${para(k.birimFiyat, t.ParaBirimi)}</td>
+        ${iskVar ? `<td class="y-sayi">${Number(k.iskonto) ? '%' + sayiGoster(k.iskonto) : '—'}</td>` : ''}<td class="y-sayi y-nw">${para(k.tutar, t.ParaBirimi)}</td></tr>`).join('')}</tbody></table>
+    <table class="y-toplam">
+      ${t.IskontoToplam > 0 ? `<tr><td>Toplam</td><td>${para(t.BrutToplam, t.ParaBirimi)}</td></tr><tr><td>İskonto</td><td>−${para(t.IskontoToplam, t.ParaBirimi)}</td></tr>` : ''}
+      <tr><td>Ara toplam</td><td>${para(t.AraToplam, t.ParaBirimi)}</td></tr>
+      <tr><td>KDV (%${t.KdvOrani})</td><td>${para(t.Kdv, t.ParaBirimi)}</td></tr>
+      <tr class="genel"><td>Genel toplam</td><td>${para(t.Toplam, t.ParaBirimi)}</td></tr></table>
+    ${blok('Ödeme şartları', t.OdemeSartlari)}${blok('Teslim şartları', t.TeslimSartlari)}${blok('Notlar', t.Notlar)}${blok('Banka bilgileri', a.Banka)}
+    ${a.AltNot ? `<p class="y-altnot">${esc(a.AltNot)}</p>` : ''}
+    <div class="y-kapanis"><div>Saygılarımızla,<br><b>${esc(a.Unvan || 'Locus Mühendislik')}</b></div><div class="y-imza-cizgi">${esc(a.Imza || '')}</div></div>`,
+    `${t.No}, ${t.FirmaAd}`);
 }
 
 // ==================== ŞİFRE DEĞİŞTİR ====================
