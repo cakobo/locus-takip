@@ -459,6 +459,23 @@ a.btn{text-decoration:none}
 .m-satir.alt-satir{padding-left:30px}
 .m-satir.alt-satir .av{width:32px;height:32px;font-size:14px;background:var(--sel)}
 
+
+.gb-satir{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:10px;background:var(--inbg)}
+.gb-ust{display:flex;align-items:center;gap:8px}
+.gb-ust .girdi{margin:0;height:40px;flex:1;max-width:220px;background:var(--sf)}
+.gb-no{width:24px;height:24px;border-radius:50%;background:var(--sel);color:var(--sel-ink);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none}
+.gb-ust .k-sil{margin-left:auto}
+.gb-mlz{margin:8px 0 0 32px}
+.gb-mlz .girdi{background:var(--sf)}
+
+
+.ik-modeller{display:grid;grid-template-columns:1fr 1fr;gap:2px 10px;margin-top:8px;padding-top:8px;border-top:1px solid var(--line)}
+.ik-modeller span{font-size:12px;color:var(--ink);white-space:nowrap}
+.ik-modeller b{font-weight:600;margin-right:2px}
+.ik-modeller small{color:var(--mute)}
+.ik-modeller .bos-model{opacity:.45}
+.model-sec button{flex:1;padding:0 8px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -561,11 +578,13 @@ a.btn{text-decoration:none}
   .d-bas-sag .btn.ana{order:-1;flex-basis:100%}
   .istat{grid-template-columns:1fr 1fr;gap:8px}
   .istat-kart{padding:12px}
-  .istat-kart:last-child{grid-column:1/-1}
+  .istat-kart.genis{grid-column:1/-1;order:-1}
   .ik-deger{font-size:22px}
   .f-bas{flex-wrap:wrap;padding:12px 14px}
   .f-bas .btn{margin-left:auto}
   .m-satir.alt-satir{padding-left:14px}
+  .gb-ust .girdi{max-width:none}
+  .gb-mlz{margin-left:0;grid-template-columns:1fr 90px 32px}
 }
 </style>
 </head>
@@ -1089,6 +1108,7 @@ const FOTO_ONB = {};     // yüklenen fotoğrafların önbelleği: id -> dataURL
 const oxyMakineBul = id => (VERI.oxyMakine || []).find(m => m.Id === id);
 const oxyBakimBul = id => (VERI.oxyBakim || []).find(b => b.Id === id);
 const makineAdi = m => m ? `${m.Model}${m.Tanim ? ', ' + m.Tanim : ''}${m.SeriNo ? ' (' + m.SeriNo + ')' : ''}` : '—';
+const OXY_MODELLER = ['30000HD', '20000HD', '10000HD', '4600EP'];
 const oxyFirmaKayit = mid => (VERI.oxyFirma || []).find(f => f.MusteriId === mid);
 const firmaServisAktif = mid => { const f = oxyFirmaKayit(mid); return f ? f.Aktif : true; };
 const oxyBakimSirala = (a, b) => String(b.Tarih).localeCompare(String(a.Tarih)) || siraNo(b.No) - siraNo(a.No);
@@ -1145,13 +1165,23 @@ function oxySekmeCiz() {
   oxyListeYenile();
 }
 
+/** Aktif makine kartındaki model bazında aktif / toplam sayıları */
+function modelSayilariHTML(mk) {
+  const modeller = [...OXY_MODELLER, ...[...new Set(mk.map(m => m.Model))].filter(x => !OXY_MODELLER.includes(x)).sort(trSirala)];
+  return `<span class="ik-modeller">${modeller.map(md => {
+    const l = mk.filter(m => m.Model === md);
+    return `<span class="${l.length ? '' : 'bos-model'}"><b>${esc(md)}</b> ${l.filter(m => firmaServisAktif(m.MusteriId)).length}<small> / ${l.length}</small></span>`;
+  }).join('')}</span>`;
+}
+
 function oxyIstatHTML() {
   const mk = VERI.oxyMakine || [], bs = VERI.oxyBakim || [];
   const firmalar = [...new Set(mk.map(m => m.MusteriId))];
   const yil = bugun().slice(0, 4);
   const gelen = bakimiGelen().length;
   return [
-    ['Aktif makine', `${mk.filter(m => firmaServisAktif(m.MusteriId)).length}<small> / ${mk.length}</small>`, 'aktif / toplam', "OXY.sekme='makineler';OXY.mFiltre='aktif'", ''],
+    ['Aktif makine', `${mk.filter(m => firmaServisAktif(m.MusteriId)).length}<small> / ${mk.length}</small>`,
+      'aktif / toplam' + modelSayilariHTML(mk), "OXY.sekme='makineler';OXY.mFiltre='aktif'", 'genis'],
     ['Aktif firma', `${firmalar.filter(firmaServisAktif).length}<small> / ${firmalar.length}</small>`, 'aktif / toplam', "OXY.sekme='makineler';OXY.mFiltre='aktif'", ''],
     ['Açık bakım işi', bs.filter(b => b.Durum !== 'Tamamlandı').length, 'devam eden', "OXY.sekme='bakimlar';OXY.filtre='acik'", ''],
     ['Bakımı gelen', gelen, '30 gün içinde veya gecikmiş', "OXY.sekme='makineler';OXY.mFiltre='gelen'", gelen ? 'kirmizi' : ''],
@@ -1538,17 +1568,15 @@ function oxyMakineForm(id) {
        ${yetki('musteriler') === 'tam' ? `<button class="btn" type="button" onclick="git('musteriler')">Müşteriler</button>` : ''}`);
     return;
   }
-  const modeller = [...new Set((VERI.oxyMakine || []).map(x => x.Model))].sort(trSirala);
+  const modeller = m && !OXY_MODELLER.includes(m.Model) ? [...OXY_MODELLER, m.Model] : OXY_MODELLER;
   const per = m ? m.BakimPeriyodu || 0 : 6;
   modalAc(m ? 'Makineyi Düzenle' : 'Yeni Makine', `
     <label class="et" for="omMus">Müşteri *</label>
     <select class="girdi" id="omMus"><option value="">Seçin…</option>${musteriler.map(f =>
       `<option value="${f.Id}" ${m && m.MusteriId === f.Id ? 'selected' : ''}>${esc(f.Ad)}</option>`).join('')}</select>
-    <label class="et" for="omModelSec">Model *</label>
-    ${modeller.length ? `<select class="girdi" id="omModelSec" onchange="$('omModelYeniKutu').hidden=this.value!=='__yeni';if(this.value==='__yeni')$('omModelYeni').focus()">
-      <option value="">Seçin…</option>${modeller.map(x => `<option ${m && m.Model === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}
-      <option value="__yeni">+ Yeni model gir…</option></select>` : '<input type="hidden" id="omModelSec" value="__yeni">'}
-    <div id="omModelYeniKutu" ${modeller.length ? 'hidden' : ''}><input class="girdi" id="omModelYeni" placeholder="Yeni model adı, ör. OXY 1100"></div>
+    <label class="et">Model *</label>
+    <div class="cips model-sec" style="width:100%;margin-bottom:18px">${modeller.map(x =>
+      `<button type="button" data-model="${esc(x)}" class="${m && m.Model === x ? 'on' : ''}" onclick="document.querySelectorAll('[data-model]').forEach(b=>b.classList.toggle('on',b===this))">${esc(x)}</button>`).join('')}</div>
     <div class="iki">
       <div><label class="et" for="omTanim">Konum / tanım</label>
         <input class="girdi" id="omTanim" value="${m ? esc(m.Tanim) : ''}" placeholder="Ör. Hat 2, Kaynak 3"></div>
@@ -1567,15 +1595,12 @@ function oxyMakineForm(id) {
 }
 async function oxyMakineKaydet(id) {
   const hata = t => ($('mHata').textContent = t);
-  const sec = $('omModelSec').value;
-  const model = sec === '__yeni' ? $('omModelYeni').value.trim() : sec;
+  const secili = document.querySelector('[data-model].on');
+  const model = secili ? secili.dataset.model : '';
   const kayit = { Id: id || null, MusteriId: $('omMus').value, Model: model, Tanim: $('omTanim').value.trim(),
     SeriNo: $('omSeri').value.trim(), BakimPeriyodu: Number($('omPer').value) };
   if (!kayit.MusteriId) return hata('Müşteri seçin.');
-  if (!kayit.Model) return hata(sec === '__yeni' ? 'Yeni model adını yazın.' : 'Model seçin.');
-  // Yazım farkıyla aynı model iki kez oluşmasın (oxy 700 / OXY 700)
-  const ayni = (VERI.oxyMakine || []).find(x => trKucuk(x.Model) === trKucuk(kayit.Model));
-  if (ayni) kayit.Model = ayni.Model;
+  if (!kayit.Model) return hata('Model seçin.');
   const l = VERI.oxyMakine || [];
   if (kayit.SeriNo && l.some(x => x.Id !== kayit.Id && trKucuk(x.SeriNo) === trKucuk(kayit.SeriNo))) return hata('Bu seri numarasıyla kayıtlı bir makine zaten var.');
   if (!kayit.SeriNo && l.some(x => x.Id !== kayit.Id && x.MusteriId === kayit.MusteriId && trKucuk(x.Model) === trKucuk(kayit.Model) && !x.SeriNo && trKucuk(x.Tanim) === trKucuk(kayit.Tanim)))
@@ -1721,39 +1746,75 @@ async function oxyTamamlaKaydet() {
   } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = '✓ Tamamla'; }
 }
 
-// ---------- Geçmiş bakım ----------
+// ---------- Geçmiş bakım (toplu) ----------
+// Bir makineye birden fazla eski bakım: her satır bir bakım; fotoğraf ve malzeme zorunlu değil.
+const gbYeniSatir = () => ({ tarih: '', satirlar: [] });
+
 async function oxyGecmisModal(makineId) {
   if (!(VERI.oxyMakine || []).length) return makineYokModal();
-  OXF = { id: null, satirlar: [{ MalzemeId: '', Miktar: '' }], mlz: null };
+  OXF = { id: null, mlz: null, bakimlar: [gbYeniSatir()] };
   modalAc('Geçmiş Bakım Gir', `
-    <p class="bilgi-not" style="margin:0 0 14px">Daha önce yapılmış bir bakımı tamamlanmış olarak kaydeder. Kaydettikten sonra eski servis formunun fotoğrafını ekleyebilirsiniz.</p>
+    <p class="bilgi-not" style="margin:0 0 14px">Daha önce yapılmış bakımları tamamlanmış olarak kaydeder. Fotoğraf ve malzeme zorunlu değildir; istersen sonradan her bakıma eski formun fotoğrafını ekleyebilirsin.</p>
     <label class="et" for="obMakine">Makine *</label>${makineSecHTML(makineId)}
-    <label class="et" for="gbTarih">Bakım tarihi *</label><input class="girdi" type="date" id="gbTarih" max="${bugun()}">
-    <div class="bolum-et">Kullanılan malzemeler</div>
-    <div id="ofMalzemeler"></div>
-    <label class="anahtar" style="margin-top:12px"><input type="checkbox" id="gbStok"> Malzemeleri bugünkü stoktan düş</label>
+    <div class="bolum-et">Bakımlar</div>
+    <div id="gbListe"></div>
+    <button class="btn ikincil kucuk" type="button" onclick="OXF.bakimlar.push(gbYeniSatir());gbCiz();setTimeout(()=>{const l=document.querySelectorAll('.gb-tarih');l[l.length-1].focus()},30)">+ Bakım Tarihi Ekle</button>
+    <label class="anahtar" style="margin-top:18px"><input type="checkbox" id="gbStok"> Malzemeleri bugünkü stoktan düş</label>
     <p class="bilgi-not" style="margin-top:-10px">Genelde işaretlemeyin: eski bakımlarda kullanılan parçalar stok sayımına zaten yansımıştır.</p>
     <div class="hata-kutu" id="mHata"></div>`,
     `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
      <button class="btn" type="button" id="gbKaydet" onclick="oxyGecmisKaydet()">Kaydet</button>`, true);
-  oxyMlzCiz();
-  try { await oxyMalzemeListesi(); oxyMlzCiz(); } catch (e) { $('ofMalzemeler').innerHTML = `<p class="soluk">${esc(e.message)}</p>`; }
+  gbCiz();
+  try { await oxyMalzemeListesi(); gbCiz(); } catch (e) { OXF.mlz = []; gbCiz(); }
 }
+
+function gbCiz() {
+  const kutu = $('gbListe'); if (!kutu) return;
+  const mlzOpt = sec => (OXF.mlz || []).map(m => `<option value="${m.Id}" ${sec === m.Id ? 'selected' : ''}>${esc(m.Ad)} (stok ${miktarYaz(m.Stok)} ${esc(m.Birim)})</option>`).join('');
+  kutu.innerHTML = OXF.bakimlar.map((b, i) => `
+    <div class="gb-satir">
+      <div class="gb-ust">
+        <span class="gb-no">${i + 1}</span>
+        <input class="girdi gb-tarih" type="date" max="${bugun()}" value="${b.tarih}" aria-label="${i + 1}. bakım tarihi" oninput="OXF.bakimlar[${i}].tarih=this.value">
+        <button class="btn ikincil kucuk" type="button" ${OXF.mlz ? '' : 'disabled'} onclick="OXF.bakimlar[${i}].satirlar.push({MalzemeId:'',Miktar:''});gbCiz()">+ Malzeme</button>
+        <button class="k-sil" type="button" aria-label="Bu bakımı kaldır" ${OXF.bakimlar.length === 1 ? 'disabled' : ''} onclick="OXF.bakimlar.splice(${i},1);gbCiz()">×</button>
+      </div>
+      ${b.satirlar.map((s, j) => `
+        <div class="mlz-satir gb-mlz">
+          <select class="girdi" onchange="OXF.bakimlar[${i}].satirlar[${j}].MalzemeId=this.value"><option value="">Malzeme seçin…</option>${mlzOpt(s.MalzemeId)}</select>
+          <input class="girdi" inputmode="decimal" placeholder="Miktar" value="${esc(s.Miktar)}" oninput="OXF.bakimlar[${i}].satirlar[${j}].Miktar=this.value">
+          <button class="k-sil" type="button" aria-label="Malzemeyi kaldır" onclick="OXF.bakimlar[${i}].satirlar.splice(${j},1);gbCiz()">×</button>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
 async function oxyGecmisKaydet() {
   const hata = t => ($('mHata').textContent = t);
-  const makineId = $('obMakine').value, tarih = $('gbTarih').value, stoktanDus = $('gbStok').checked;
+  const makineId = $('obMakine').value, stoktanDus = $('gbStok').checked;
   if (!makineId) return hata('Makine seçin.');
-  if (!tarih) return hata('Bakım tarihi gerekli.');
-  if (!OXF.mlz) return hata('Malzeme listesi yükleniyor, birazdan tekrar deneyin.');
-  let malzemeler;
-  try { malzemeler = oxyMlzOku(stoktanDus); } catch (e) { return hata(e.message); }
+  const bgn = bugun(), toplam = {}, bakimlar = [];
+  for (let i = 0; i < OXF.bakimlar.length; i++) {
+    const b = OXF.bakimlar[i];
+    if (!b.tarih) return hata(`${i + 1}. bakımın tarihini seçin.`);
+    if (b.tarih > bgn) return hata(`${i + 1}. bakımın tarihi ileri bir tarih olamaz.`);
+    const malzemeler = [];
+    for (const s of b.satirlar) {
+      if (!s.MalzemeId) { if (String(s.Miktar).trim()) return hata(`${i + 1}. bakımda miktarı girilen satırda malzeme seçin.`); continue; }
+      const m = OXF.mlz.find(x => x.Id === s.MalzemeId), v = sayiOku(s.Miktar);
+      if (!(v > 0)) return hata(`${i + 1}. bakım, ${m.Ad}: miktar geçersiz.`);
+      toplam[m.Id] = (toplam[m.Id] || 0) + v;
+      if (stoktanDus && toplam[m.Id] > m.Stok) return hata(`${m.Ad}: stokta ${miktarYaz(m.Stok)} ${m.Birim} var.`);
+      malzemeler.push({ MalzemeId: m.Id, Miktar: v });
+    }
+    bakimlar.push({ Tarih: b.tarih, Malzemeler: malzemeler });
+  }
   const btn = $('gbKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
   try {
-    const r = await api('oxy.gecmis', { MakineId: makineId, Tarih: tarih, Malzemeler: malzemeler, stoktanDus });
-    veriGuncelle('oxyBakim', r); if (stoktanDus) stokOnbellegiSifirla();
+    const r = await api('oxy.gecmisToplu', { MakineId: makineId, bakimlar, stoktanDus });
+    r.forEach(x => veriGuncelle('oxyBakim', x)); if (stoktanDus) stokOnbellegiSifirla();
     modalKapat(); OXF = null;
-    toast(`${r.No} kaydedildi. Eski formun fotoğrafını ekleyebilirsiniz.`);
-    git('oxyweld/b.' + r.Id);
+    if (r.length === 1) { toast(`${r[0].No} kaydedildi. Eski formun fotoğrafını ekleyebilirsin.`); git('oxyweld/b.' + r[0].Id); }
+    else { toast(`${r.length} geçmiş bakım kaydedildi.`); git('oxyweld/m.' + makineId); }
   } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
 }
 
