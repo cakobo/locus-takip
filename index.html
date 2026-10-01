@@ -287,7 +287,7 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
 
 .sekmeler{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
 .sekmeler button{padding:10px 16px;font-size:15px;color:var(--mute);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
-.sekmeler .kisa{display:none}
+.sekmeler .kisa,.cips .kisa{display:none}
 .sekmeler button.on{color:var(--ink);font-weight:600;border-bottom-color:var(--acc)}
 .ozet{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;margin:0 2px 10px}
 .ozet .soluk{margin-right:4px}
@@ -433,6 +433,32 @@ a.btn{text-decoration:none}
   .y-nw{white-space:nowrap}
 }
 
+
+.sekme-say.kirmizi{background:var(--danger)}
+.uyari-kutu.tikla{cursor:pointer}
+.uyari-kutu.tikla:hover{filter:brightness(.97)}
+
+
+.istat{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px}
+.istat-kart{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;background:var(--sf);border:1px solid var(--line);border-radius:8px}
+.istat-kart:hover{border-color:var(--acc)}
+.ik-et{font-size:13px;color:var(--mute)}
+.ik-deger{font-size:26px;font-weight:600;font-variant-numeric:tabular-nums;line-height:1.2}
+.ik-deger small{font-size:15px;font-weight:400;color:var(--mute)}
+.ik-alt{font-size:12px;color:var(--mute)}
+.istat-kart.kirmizi .ik-deger{color:var(--danger)}
+.f-liste{display:flex;flex-direction:column;gap:14px}
+.f-grup{overflow:hidden}
+.f-bas{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--inbg);border-bottom:1px solid var(--line)}
+.f-bas .av{width:38px;height:38px;border-radius:8px;font-size:13px}
+.f-ic{flex:1;min-width:0}
+.f-ic b{display:block;font-size:16px}
+.f-ic small{color:var(--mute);font-size:13px}
+.f-grup.pasif .f-bas .av{background:var(--mute)}
+.f-grup.pasif .alt-satir{opacity:.6}
+.m-satir.alt-satir{padding-left:30px}
+.m-satir.alt-satir .av{width:32px;height:32px;font-size:14px;background:var(--sel)}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -512,8 +538,8 @@ a.btn{text-decoration:none}
   .kalem .k-sil{justify-self:end}
   .toplamlar{max-width:none}
   .ikili{grid-template-columns:1fr}
-  .sekmeler .uzun{display:none}
-  .sekmeler .kisa{display:inline}
+  .sekmeler .uzun,.cips .uzun{display:none}
+  .sekmeler .kisa,.cips .kisa{display:inline}
   .arac .girdi.sec{flex:1;min-width:0}
   .arac-sag{margin-left:0;width:100%}
   .arac-sag .btn{flex:1}
@@ -533,6 +559,13 @@ a.btn{text-decoration:none}
   .foto-btn .btn{flex:1}
   .d-bas-sag{flex-wrap:wrap}
   .d-bas-sag .btn.ana{order:-1;flex-basis:100%}
+  .istat{grid-template-columns:1fr 1fr;gap:8px}
+  .istat-kart{padding:12px}
+  .istat-kart:last-child{grid-column:1/-1}
+  .ik-deger{font-size:22px}
+  .f-bas{flex-wrap:wrap;padding:12px 14px}
+  .f-bas .btn{margin-left:auto}
+  .m-satir.alt-satir{padding-left:14px}
 }
 </style>
 </head>
@@ -1050,22 +1083,24 @@ function kurCiz(v) {
 
 // ==================== OXYWELD SERVİS ====================
 // Akış: bakım işi açılır (Açık) -> iş bitince fotoğraf + kullanılan malzemeler -> Tamamla (malzemeler stoktan düşer)
-const OXY = { sekme: 'bakimlar', arama: '', filtre: 'acik', mArama: '' };
+const OXY = { sekme: 'bakimlar', arama: '', filtre: 'acik', mArama: '', mFiltre: 'aktif' };
 let OXF = null;          // açık form (tamamla / geçmiş bakım)
 const FOTO_ONB = {};     // yüklenen fotoğrafların önbelleği: id -> dataURL
 const oxyMakineBul = id => (VERI.oxyMakine || []).find(m => m.Id === id);
 const oxyBakimBul = id => (VERI.oxyBakim || []).find(b => b.Id === id);
-const makineAdi = m => m ? `${m.Model}${m.SeriNo ? ' (' + m.SeriNo + ')' : ''}` : '—';
+const makineAdi = m => m ? `${m.Model}${m.Tanim ? ', ' + m.Tanim : ''}${m.SeriNo ? ' (' + m.SeriNo + ')' : ''}` : '—';
+const oxyFirmaKayit = mid => (VERI.oxyFirma || []).find(f => f.MusteriId === mid);
+const firmaServisAktif = mid => { const f = oxyFirmaKayit(mid); return f ? f.Aktif : true; };
 const oxyBakimSirala = (a, b) => String(b.Tarih).localeCompare(String(a.Tarih)) || siraNo(b.No) - siraNo(a.No);
 const oxyDurumRozet = b => `<span class="rozet ${b.Durum === 'Tamamlandı' ? 'ok' : 'uyari'}">${esc(b.Durum)}</span>${b.Gecmis ? ' <span class="rozet pasif">Geçmiş</span>' : ''}`;
 
 function oxyOnbellek() {
   let hazir = true;
-  ['oxyMakine', 'oxyBakim'].forEach(v => { if (!VERI[v]) VERI[v] = ls.al('locus_c_' + v) || undefined; if (!VERI[v]) hazir = false; });
+  ['oxyMakine', 'oxyBakim', 'oxyFirma'].forEach(v => { if (!VERI[v]) VERI[v] = ls.al('locus_c_' + v) || undefined; if (!VERI[v]) hazir = false; });
   if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
   return hazir;
 }
-const oxyVeriYukle = () => Promise.all([veriYukle('oxyMakine'), veriYukle('oxyBakim'), firmalarYukle().catch(() => null)]);
+const oxyVeriYukle = () => Promise.all([veriYukle('oxyMakine'), veriYukle('oxyBakim'), veriYukle('oxyFirma'), firmalarYukle().catch(() => null)]);
 
 SAYFA_CIZ.oxyweld = function (ic, s, y) {
   if (D.param && D.param.startsWith('b.')) return oxyBakimDetay(ic, s, y, D.param.slice(2));
@@ -1076,6 +1111,7 @@ SAYFA_CIZ.oxyweld = function (ic, s, y) {
        <button class="btn" type="button" onclick="oxyBakimAcModal()">+ Bakım Aç</button>`
     : `<button class="btn" type="button" onclick="oxyMakineForm()">+ Makine Ekle</button>`;
   ic.innerHTML = sayfaBasHTML(s, y, sag) + `
+    <div class="istat" id="oxyIstat"></div>
     <div class="sekmeler" role="tablist">${[['bakimlar', 'Bakımlar'], ['makineler', 'Makineler']].map(([k, a]) =>
       `<button type="button" role="tab" class="${OXY.sekme === k ? 'on' : ''}" onclick="OXY.sekme='${k}';rotaUygula()">${a}<span id="oxySay_${k}"></span></button>`).join('')}</div>
     <div id="oxyIcerik"></div>`;
@@ -1095,21 +1131,44 @@ function oxySekmeCiz() {
         <div class="cips">${[['acik', 'Açık'], ['tamam', 'Tamamlanan'], ['tumu', 'Tümü']].map(([k, a]) =>
           `<button type="button" data-f="${k}" onclick="OXY.filtre='${k}';oxyListeYenile()">${a}</button>`).join('')}</div>
       </div>
+      <div id="oxyUyari"></div>
       <div class="sayac" id="oxySayac"></div>
       <div class="kart" id="oxyListe"></div>`;
   } else {
     ic.innerHTML = `
-      <div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Müşteri, model veya seri no ara" value="${esc(OXY.mArama)}" oninput="OXY.mArama=this.value;oxyListeYenile()"></label></div>
+      <div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Müşteri, model veya seri no ara" value="${esc(OXY.mArama)}" oninput="OXY.mArama=this.value;oxyListeYenile()"></label>
+        <div class="cips">${[['aktif', 'Aktif'], ['pasif', 'Pasif'], ['gelen', '<span class="uzun">Bakımı Gelen</span><span class="kisa">Gelen</span>'], ['tumu', 'Tümü']].map(([k, a]) =>
+          `<button type="button" data-f="${k}" onclick="OXY.mFiltre='${k}';oxyListeYenile()">${a}</button>`).join('')}</div></div>
       <div class="sayac" id="oxySayac"></div>
-      <div class="kart" id="oxyListe"></div>`;
+      <div id="oxyListe"></div>`;
   }
   oxyListeYenile();
 }
 
+function oxyIstatHTML() {
+  const mk = VERI.oxyMakine || [], bs = VERI.oxyBakim || [];
+  const firmalar = [...new Set(mk.map(m => m.MusteriId))];
+  const yil = bugun().slice(0, 4);
+  const gelen = bakimiGelen().length;
+  return [
+    ['Aktif makine', `${mk.filter(m => firmaServisAktif(m.MusteriId)).length}<small> / ${mk.length}</small>`, 'aktif / toplam', "OXY.sekme='makineler';OXY.mFiltre='aktif'", ''],
+    ['Aktif firma', `${firmalar.filter(firmaServisAktif).length}<small> / ${firmalar.length}</small>`, 'aktif / toplam', "OXY.sekme='makineler';OXY.mFiltre='aktif'", ''],
+    ['Açık bakım işi', bs.filter(b => b.Durum !== 'Tamamlandı').length, 'devam eden', "OXY.sekme='bakimlar';OXY.filtre='acik'", ''],
+    ['Bakımı gelen', gelen, '30 gün içinde veya gecikmiş', "OXY.sekme='makineler';OXY.mFiltre='gelen'", gelen ? 'kirmizi' : ''],
+    [`${yil} bakımları`, bs.filter(b => b.Durum === 'Tamamlandı' && String(b.TamamlanmaTarihi || b.Tarih).startsWith(yil)).length, 'tamamlanan', "OXY.sekme='bakimlar';OXY.filtre='tamam'", '']
+  ].map(([et, deger, alt, git, cls]) => `<button type="button" class="istat-kart ${cls}" onclick="${git};rotaUygula()">
+      <span class="ik-et">${et}</span><span class="ik-deger">${deger}</span><span class="ik-alt">${alt}</span></button>`).join('');
+}
+
 function oxyListeYenile() {
+  if ($('oxyIstat')) $('oxyIstat').innerHTML = oxyIstatHTML();
   const kutu = $('oxyListe'); if (!kutu) return;
   const acikSay = (VERI.oxyBakim || []).filter(b => b.Durum !== 'Tamamlandı').length;
   if ($('oxySay_bakimlar')) $('oxySay_bakimlar').innerHTML = acikSay ? ` <span class="sekme-say">${acikSay}</span>` : '';
+  const gelen = bakimiGelen().length;
+  if ($('oxySay_makineler')) $('oxySay_makineler').innerHTML = gelen ? ` <span class="sekme-say kirmizi">${gelen}</span>` : '';
+  if ($('oxyUyari')) $('oxyUyari').innerHTML = gelen
+    ? `<div class="uyari-kutu tikla" onclick="OXY.sekme='makineler';OXY.mFiltre='gelen';rotaUygula()">🔔 ${gelen} makinenin bakım zamanı geldi veya 30 gün içinde gelecek. Görmek için dokunun.</div>` : '';
   if (OXY.sekme === 'bakimlar') oxyBakimListeCiz(kutu); else oxyMakineListeCiz(kutu);
 }
 
@@ -1142,28 +1201,93 @@ function oxyBakimListeCiz(kutu) {
     : `<div class="bos"><h3>${OXY.filtre === 'acik' && !q ? 'Açık bakım işi yok' : 'Sonuç yok'}</h3></div>`;
 }
 
+function oxyMakineSatirHTML(m, tam, firmaGoster) {
+  const bs = (VERI.oxyBakim || []).filter(b => b.MakineId === m.Id).sort(oxyBakimSirala);
+  const bd = bakimDurumu(m), aktif = firmaServisAktif(m.MusteriId);
+  return `<div class="m-satir ${firmaGoster ? '' : 'alt-satir'} ${aktif ? '' : 'pasif'}" onclick="git('oxyweld/m.${m.Id}')">
+    <span class="av">⚙️</span>
+    <span class="ms-ic"><span class="ms-ad">${esc(firmaGoster ? m.MusteriAd : m.Model + (m.Tanim ? ', ' + m.Tanim : ''))}</span>
+      <span class="ms-alt">${esc(firmaGoster ? makineAdi(m) : (m.SeriNo ? 'SN ' + m.SeriNo : 'Seri no yok'))}, ${periyotYaz(m.BakimPeriyodu).toLocaleLowerCase('tr-TR')}</span></span>
+    <span class="ms-tel">${bs.length ? `${bs.length} bakım, son ${tarihKisa(bs[0].Tarih)}` : 'Bakım yok'}${bd.sonraki ? `<br>sonraki ${tarihKisa(bd.sonraki)}` : ''}</span>
+    ${aktif ? bakimDurumRozet(bd) : ''}
+    <span class="m-btn">
+      <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('oxyweld/m.${m.Id}')">Görüntüle</button>
+      ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();oxyMakineForm('${m.Id}')">Düzenle</button>` : ''}
+    </span></div>`;
+}
+
 function oxyMakineListeCiz(kutu) {
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === OXY.mFiltre));
   const tum = VERI.oxyMakine || [], q = trKucuk(OXY.mArama), tam = yetki('oxyweld') === 'tam';
-  const bakimlar = VERI.oxyBakim || [];
-  const l = tum.filter(m => !q || [m.MusteriAd, m.Model, m.SeriNo].some(x => trKucuk(x).includes(q)))
-    .sort((a, b) => trSirala(a.MusteriAd, b.MusteriAd) || trSirala(a.Model, b.Model));
-  $('oxySayac').textContent = `${l.length} makine`;
   if (!tum.length) {
+    kutu.className = 'kart';
     kutu.innerHTML = `<div class="bos"><div class="b-ikon">⚙️</div><h3>Henüz makine yok</h3>
       <p>${tam ? 'Müşterideki Oxyweld makinelerini Makine Ekle ile tanımlayın.' : 'Makineler burada listelenecek.'}</p></div>`;
+    $('oxySayac').textContent = '';
     return;
   }
-  kutu.innerHTML = l.length ? l.map(m => {
-    const bs = bakimlar.filter(b => b.MakineId === m.Id).sort(oxyBakimSirala);
-    return `<div class="m-satir" onclick="git('oxyweld/m.${m.Id}')">
-      <span class="av">⚙️</span>
-      <span class="ms-ic"><span class="ms-ad">${esc(m.MusteriAd)}</span><span class="ms-alt">${esc(makineAdi(m))}</span></span>
-      <span class="ms-tel">${bs.length ? `${bs.length} bakım, son ${tarihKisa(bs[0].Tarih)}` : 'Bakım yok'}</span>
-      <span class="m-btn">
-        <button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();git('oxyweld/m.${m.Id}')">Görüntüle</button>
-        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();oxyMakineForm('${m.Id}')">Düzenle</button>` : ''}
-      </span></div>`;
-  }).join('') : '<div class="bos"><h3>Sonuç yok</h3></div>';
+  const ara = m => !q || [m.MusteriAd, m.Model, m.Tanim, m.SeriNo].some(x => trKucuk(x).includes(q));
+
+  // Bakımı gelenler: firmadan bağımsız, en acil olan üstte
+  if (OXY.mFiltre === 'gelen') {
+    const l = bakimiGelen().filter(ara).sort((a, b) => String(bakimDurumu(a).sonraki || '0').localeCompare(String(bakimDurumu(b).sonraki || '0')));
+    $('oxySayac').textContent = `${l.length} makine`;
+    kutu.className = 'kart';
+    kutu.innerHTML = l.length ? l.map(m => oxyMakineSatirHTML(m, tam, true)).join('')
+      : '<div class="bos"><div class="b-ikon">✅</div><h3>Bakımı gelen makine yok</h3><p>Önümüzdeki 30 gün içinde bakım zamanı gelen makine bulunmuyor.</p></div>';
+    return;
+  }
+
+  // Firmalara göre gruplu liste
+  const firmaIdler = [...new Set(tum.map(m => m.MusteriId))]
+    .filter(id => OXY.mFiltre === 'tumu' || (OXY.mFiltre === 'aktif') === firmaServisAktif(id));
+  const gruplar = firmaIdler.map(id => {
+    const makineler = tum.filter(m => m.MusteriId === id);
+    const adEslesir = !q || trKucuk(makineler[0].MusteriAd).includes(q);
+    return { id, ad: makineler[0].MusteriAd, makineler: adEslesir ? makineler : makineler.filter(ara) };
+  }).filter(g => g.makineler.length).sort((a, b) => trSirala(a.ad, b.ad));
+
+  const mSay = gruplar.reduce((t, g) => t + g.makineler.length, 0);
+  $('oxySayac').textContent = `${gruplar.length} firma, ${mSay} makine`;
+  kutu.className = 'f-liste';
+  if (!gruplar.length) {
+    kutu.innerHTML = `<div class="kart bos"><h3>${OXY.mFiltre === 'pasif' && !q ? 'Servisi pasif firma yok' : 'Sonuç yok'}</h3></div>`;
+    return;
+  }
+  kutu.innerHTML = gruplar.map(g => {
+    const f = oxyFirmaKayit(g.id), aktif = firmaServisAktif(g.id);
+    const durumTarihi = f && f.DurumTarihi ? `, ${tarihKisa(f.DurumTarihi)} tarihinden beri` : '';
+    return `<section class="kart f-grup ${aktif ? '' : 'pasif'}">
+      <div class="f-bas">
+        <span class="av">${esc(basHarf(g.ad))}</span>
+        <div class="f-ic"><b>${yetki('musteriler') !== 'yok' ? `<a class="firma-link" onclick="git('musteriler/${g.id}')">${esc(g.ad)}</a>` : esc(g.ad)}</b>
+          <small>${g.makineler.length} makine, servis ${aktif ? 'aktif' : 'pasif'}${durumTarihi}</small></div>
+        ${aktif ? '<span class="rozet ok">Servis aktif</span>' : '<span class="rozet pasif">Servis pasif</span>'}
+        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="oxyFirmaDurum('${g.id}', ${!aktif})">${aktif ? 'Pasif Yap' : 'Aktif Yap'}</button>` : ''}
+      </div>
+      ${g.makineler.sort((a, b) => trSirala(a.Model, b.Model) || trSirala(a.Tanim, b.Tanim) || trSirala(a.SeriNo, b.SeriNo)).map(m => oxyMakineSatirHTML(m, tam, false)).join('')}
+    </section>`;
+  }).join('');
+}
+
+function oxyFirmaDurum(musteriId, aktif) {
+  const ad = ((VERI.oxyMakine || []).find(m => m.MusteriId === musteriId) || {}).MusteriAd || '';
+  const kaydet = async () => {
+    const f = oxyFirmaKayit(musteriId);
+    try {
+      const r = await api('kayit.kaydet', { varlik: 'oxyFirma', kayit: { Id: f ? f.Id : null, MusteriId: musteriId, Aktif: aktif } });
+      veriGuncelle('oxyFirma', r); modalKapat(); oxyListeYenile();
+      toast(`${ad}: servis ${aktif ? 'aktif' : 'pasif'} yapıldı.`);
+      if (D.aktif === 'oxyweld' && D.param) rotaUygula();
+    } catch (e) { if ($('mHata')) $('mHata').textContent = e.message; else toast(e.message, true); }
+  };
+  if (aktif) return kaydet();
+  window.__oxyFirmaKaydet = kaydet;
+  modalAc('Servisi Pasif Yap', `<p><b>${esc(ad)}</b> servis pasif yapılacak.</p>
+    <p style="color:var(--mute);margin-top:10px;font-size:14px">Makineleri ve bakım geçmişi silinmez; sadece bakım uyarılarında ve aktif makine sayısında görünmez. Bu firmaya yeniden bakım açtığınızda kendiliğinden tekrar aktif olur.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
+     <button class="btn" type="button" onclick="this.disabled=true;window.__oxyFirmaKaydet()">Pasif Yap</button>`);
 }
 
 // ---------- Makine sayfası ----------
@@ -1179,7 +1303,8 @@ function oxyMakineDetay(ic, s, y, id) {
       <div class="d-bas">
         <span class="av buyuk">⚙️</span>
         <div class="d-bas-ic"><h2>${esc(m.Model)}</h2>
-          <div class="d-rozetler"><span class="rozet">${esc(m.MusteriAd)}</span>${m.SeriNo ? `<span class="rozet pasif">SN ${esc(m.SeriNo)}</span>` : ''}
+          <div class="d-rozetler"><span class="rozet">${esc(m.MusteriAd)}</span>${m.Tanim ? `<span class="rozet pasif">${esc(m.Tanim)}</span>` : ''}${m.SeriNo ? `<span class="rozet pasif">SN ${esc(m.SeriNo)}</span>` : ''}
+          ${firmaServisAktif(m.MusteriId) ? '' : '<span class="rozet tehlike">Firma servis pasif</span>'}
           ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
         <div class="d-bas-sag">
           <button class="btn ikincil" type="button" onclick="oxyGecmisYazdir('${m.Id}')">🖨 Bakım Geçmişi</button>
@@ -1191,8 +1316,12 @@ function oxyMakineDetay(ic, s, y, id) {
         <div class="bilgi-grid">
           <div><div class="de">Müşteri</div>${musteri}</div>
           <div><div class="de">Model</div>${esc(m.Model)}</div>
+          <div><div class="de">Konum / tanım</div>${m.Tanim ? esc(m.Tanim) : '<span class="soluk">Girilmemiş</span>'}</div>
           <div><div class="de">Seri no</div>${m.SeriNo ? esc(m.SeriNo) : '<span class="soluk">Girilmemiş</span>'}</div>
           <div><div class="de">Son bakım</div>${bs.length ? tarihKisa(bs[0].Tarih) : '<span class="soluk">Yok</span>'}</div>
+          <div><div class="de">Bakım periyodu</div>${periyotYaz(m.BakimPeriyodu)}</div>
+          <div><div class="de">Sonraki bakım</div>${!firmaServisAktif(m.MusteriId) ? '<span class="soluk">Firma servis pasif</span>' : (() => { const bd = bakimDurumu(m);
+            return bd.sonraki ? `${tarihKisa(bd.sonraki)} ${bakimDurumRozet(bd)}` : bd.durum === 'yok' ? '<span class="soluk">Periyot seçilmedi</span>' : bakimDurumRozet(bd); })()}</div>
         </div>
         ${tam ? `<div class="stok-btn">
           <button class="btn" type="button" onclick="oxyBakimAcModal('${m.Id}')">+ Bakım Aç</button>
@@ -1211,6 +1340,36 @@ function oxyMakineDetay(ic, s, y, id) {
   oxyVeriYukle().then(() => { if (D.aktif === 'oxyweld' && D.param === 'm.' + id && $('modal').hidden) ciz(); })
     .catch(e => { if (!hazir) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
 }
+
+// ---------- Periyodik bakım ----------
+const PERIYOTLAR = [0, 1, 2, 3, 4, 6, 12];
+const periyotYaz = n => !n ? 'Takip yok' : n === 1 ? 'Her ay' : `${n} ayda bir`;
+function ayEkle(tarih, ay) {
+  const [y, m, g] = String(tarih).slice(0, 10).split('-').map(Number);
+  const son = new Date(y, m - 1 + ay + 1, 0).getDate(); // hedef ayın son günü (31 Ocak + 1 ay = 28/29 Şubat)
+  const d = new Date(y, m - 1 + ay, Math.min(g, son));
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+const gunFarki = (a, b) => Math.round((new Date(a + 'T12:00:00') - new Date(b + 'T12:00:00')) / 86400000);
+/** Makinenin bakım durumu: { sonraki, durum: 'yok'|'ilk'|'acik'|'gecikti'|'yaklasiyor'|'normal', gun } */
+function bakimDurumu(m) {
+  const bs = (VERI.oxyBakim || []).filter(b => b.MakineId === m.Id);
+  if (!m.BakimPeriyodu) return { durum: 'yok' };
+  if (bs.some(b => b.Durum !== 'Tamamlandı')) return { durum: 'acik' };
+  const tamam = bs.filter(b => b.Durum === 'Tamamlandı').map(b => b.TamamlanmaTarihi || b.Tarih).sort();
+  if (!tamam.length) return { durum: 'ilk' };
+  const sonraki = ayEkle(tamam[tamam.length - 1], m.BakimPeriyodu);
+  const gun = gunFarki(sonraki, bugun());
+  return { sonraki, gun, durum: gun < 0 ? 'gecikti' : gun <= 30 ? 'yaklasiyor' : 'normal' };
+}
+function bakimDurumRozet(bd) {
+  if (bd.durum === 'gecikti') return `<span class="rozet tehlike">Bakım ${-bd.gun} gün gecikti</span>`;
+  if (bd.durum === 'yaklasiyor') return `<span class="rozet uyari">${bd.gun === 0 ? 'Bakım bugün' : `Bakıma ${bd.gun} gün`}</span>`;
+  if (bd.durum === 'ilk') return '<span class="rozet uyari">İlk bakım girilmedi</span>';
+  if (bd.durum === 'acik') return '<span class="rozet">Açık bakım işi var</span>';
+  return '';
+}
+const bakimiGelen = () => (VERI.oxyMakine || []).filter(m => firmaServisAktif(m.MusteriId) && ['gecikti', 'yaklasiyor', 'ilk'].includes(bakimDurumu(m).durum));
 
 const oxyMalzemeOzet = b => {
   const l = b.Malzemeler || [];
@@ -1380,17 +1539,27 @@ function oxyMakineForm(id) {
     return;
   }
   const modeller = [...new Set((VERI.oxyMakine || []).map(x => x.Model))].sort(trSirala);
+  const per = m ? m.BakimPeriyodu || 0 : 6;
   modalAc(m ? 'Makineyi Düzenle' : 'Yeni Makine', `
     <label class="et" for="omMus">Müşteri *</label>
     <select class="girdi" id="omMus"><option value="">Seçin…</option>${musteriler.map(f =>
       `<option value="${f.Id}" ${m && m.MusteriId === f.Id ? 'selected' : ''}>${esc(f.Ad)}</option>`).join('')}</select>
+    <label class="et" for="omModelSec">Model *</label>
+    ${modeller.length ? `<select class="girdi" id="omModelSec" onchange="$('omModelYeniKutu').hidden=this.value!=='__yeni';if(this.value==='__yeni')$('omModelYeni').focus()">
+      <option value="">Seçin…</option>${modeller.map(x => `<option ${m && m.Model === x ? 'selected' : ''}>${esc(x)}</option>`).join('')}
+      <option value="__yeni">+ Yeni model gir…</option></select>` : '<input type="hidden" id="omModelSec" value="__yeni">'}
+    <div id="omModelYeniKutu" ${modeller.length ? 'hidden' : ''}><input class="girdi" id="omModelYeni" placeholder="Yeni model adı, ör. OXY 1100"></div>
     <div class="iki">
-      <div><label class="et" for="omModel">Model *</label>
-        <input class="girdi" id="omModel" list="omModeller" value="${m ? esc(m.Model) : ''}" placeholder="Makine modeli">
-        <datalist id="omModeller">${modeller.map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>
+      <div><label class="et" for="omTanim">Konum / tanım</label>
+        <input class="girdi" id="omTanim" value="${m ? esc(m.Tanim) : ''}" placeholder="Ör. Hat 2, Kaynak 3"></div>
       <div><label class="et" for="omSeri">Seri no</label>
         <input class="girdi" id="omSeri" value="${m ? esc(m.SeriNo) : ''}" placeholder="İsteğe bağlı"></div>
     </div>
+    <p class="bilgi-not">Aynı firmada aynı modelden birden fazla makine varsa, seri no yoksa konum/tanım ile ayırt edin. Her makinenin bakım takibi ayrıdır.</p>
+    <label class="et" for="omPer">Bakım periyodu</label>
+    <select class="girdi" id="omPer">${[...new Set([...PERIYOTLAR, per])].sort((a, b) => a - b).map(n =>
+      `<option value="${n}" ${per === n ? 'selected' : ''}>${n ? periyotYaz(n) : 'Periyodik bakım takibi yok'}</option>`).join('')}</select>
+    <p class="bilgi-not">Sonraki bakım tarihi, son tamamlanan bakıma bu süre eklenerek hesaplanır.</p>
     <div class="hata-kutu" id="mHata"></div>`,
     `${m ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="oxyMakineSil('${m.Id}')">Sil</button>` : ''}
      <button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button>
@@ -1398,10 +1567,19 @@ function oxyMakineForm(id) {
 }
 async function oxyMakineKaydet(id) {
   const hata = t => ($('mHata').textContent = t);
-  const kayit = { Id: id || null, MusteriId: $('omMus').value, Model: $('omModel').value.trim(), SeriNo: $('omSeri').value.trim() };
+  const sec = $('omModelSec').value;
+  const model = sec === '__yeni' ? $('omModelYeni').value.trim() : sec;
+  const kayit = { Id: id || null, MusteriId: $('omMus').value, Model: model, Tanim: $('omTanim').value.trim(),
+    SeriNo: $('omSeri').value.trim(), BakimPeriyodu: Number($('omPer').value) };
   if (!kayit.MusteriId) return hata('Müşteri seçin.');
-  if (!kayit.Model) return hata('Model gerekli.');
-  if (kayit.SeriNo && (VERI.oxyMakine || []).some(m => m.Id !== kayit.Id && trKucuk(m.SeriNo) === trKucuk(kayit.SeriNo))) return hata('Bu seri numarasıyla kayıtlı bir makine zaten var.');
+  if (!kayit.Model) return hata(sec === '__yeni' ? 'Yeni model adını yazın.' : 'Model seçin.');
+  // Yazım farkıyla aynı model iki kez oluşmasın (oxy 700 / OXY 700)
+  const ayni = (VERI.oxyMakine || []).find(x => trKucuk(x.Model) === trKucuk(kayit.Model));
+  if (ayni) kayit.Model = ayni.Model;
+  const l = VERI.oxyMakine || [];
+  if (kayit.SeriNo && l.some(x => x.Id !== kayit.Id && trKucuk(x.SeriNo) === trKucuk(kayit.SeriNo))) return hata('Bu seri numarasıyla kayıtlı bir makine zaten var.');
+  if (!kayit.SeriNo && l.some(x => x.Id !== kayit.Id && x.MusteriId === kayit.MusteriId && trKucuk(x.Model) === trKucuk(kayit.Model) && !x.SeriNo && trKucuk(x.Tanim) === trKucuk(kayit.Tanim)))
+    return hata('Bu firmada aynı modelde başka bir makine var. Ayırt etmek için seri no ya da konum/tanım girin (ör. Hat 2).');
   const btn = $('omKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
   try {
     const r = await api('kayit.kaydet', { varlik: 'oxyMakine', kayit });
@@ -1416,9 +1594,10 @@ async function oxyMakineSil(id) {
 
 // ---------- Bakım aç / düzenle ----------
 function makineSecHTML(secili) {
-  const l = (VERI.oxyMakine || []).slice().sort((a, b) => trSirala(a.MusteriAd, b.MusteriAd) || trSirala(a.Model, b.Model));
+  const l = (VERI.oxyMakine || []).slice().sort((a, b) => (firmaServisAktif(b.MusteriId) - firmaServisAktif(a.MusteriId))
+    || trSirala(a.MusteriAd, b.MusteriAd) || trSirala(a.Model, b.Model) || trSirala(a.Tanim, b.Tanim));
   return `<select class="girdi" id="obMakine"><option value="">Seçin…</option>${l.map(m =>
-    `<option value="${m.Id}" ${secili === m.Id ? 'selected' : ''}>${esc(m.MusteriAd)}, ${esc(makineAdi(m))}</option>`).join('')}</select>`;
+    `<option value="${m.Id}" ${secili === m.Id ? 'selected' : ''}>${esc(m.MusteriAd)}, ${esc(makineAdi(m))}${firmaServisAktif(m.MusteriId) ? '' : ' (servis pasif)'}</option>`).join('')}</select>`;
 }
 function makineYokModal() {
   modalAc('Bakım', '<p>Bakım girmek için önce makine tanımlamalısınız.</p>',
@@ -1442,9 +1621,11 @@ async function oxyBakimAcKaydet(id) {
   if (!kayit.Tarih) return ($('mHata').textContent = 'Bakım tarihi gerekli.');
   const btn = $('obKaydet'); btn.disabled = true;
   try {
+    const mk = oxyMakineBul(kayit.MakineId), pasifti = !id && mk && !firmaServisAktif(mk.MusteriId);
     const r = await api('kayit.kaydet', { varlik: 'oxyBakim', kayit });
     veriGuncelle('oxyBakim', r); modalKapat();
-    toast(id ? 'Bakım güncellendi.' : `${r.No} açıldı.`);
+    if (pasifti) await veriYukle('oxyFirma').catch(() => null);
+    toast(id ? 'Bakım güncellendi.' : `${r.No} açıldı.${pasifti ? ` ${mk.MusteriAd} tekrar servis aktif yapıldı.` : ''}`);
     if (id) rotaUygula(); else git('oxyweld/b.' + r.Id);
   } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
 }
@@ -1587,8 +1768,9 @@ function oxyGecmisYazdir(makineId) {
   yazdir(`
     <div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering">
       <div class="y-bas-sag"><h1>Bakım Geçmişi</h1><div>Rapor tarihi: ${tarihKisa(bugun())}</div></div></div>
-    <table class="y-bilgi"><tr><td><span>Müşteri</span>${esc(m.MusteriAd)}</td><td><span>Model</span>${esc(m.Model)}</td>
-      <td><span>Seri no</span>${esc(m.SeriNo || '—')}</td><td><span>Bakım sayısı</span>${bs.length}</td></tr></table>
+    <table class="y-bilgi"><tr><td><span>Müşteri</span>${esc(m.MusteriAd)}</td><td><span>Model</span>${esc(m.Model)}${m.Tanim ? ', ' + esc(m.Tanim) : ''}</td>
+      <td><span>Seri no</span>${esc(m.SeriNo || '—')}</td><td><span>Bakım sayısı</span>${bs.length}</td>
+      <td><span>Bakım periyodu</span>${periyotYaz(m.BakimPeriyodu)}</td><td><span>Sonraki bakım</span>${bakimDurumu(m).sonraki ? tarihKisa(bakimDurumu(m).sonraki) : '—'}</td></tr></table>
     <table class="y-tablo"><thead><tr><th class="y-no">#</th><th>Servis no</th><th>Bakım tarihi</th><th>Tamamlanma</th>
       <th>Kullanılan malzemeler</th><th class="y-sayi">Fotoğraf</th><th>Durum</th></tr></thead>
       <tbody>${satirlar || '<tr><td colspan="7">Bu makineye ait bakım kaydı yok.</td></tr>'}</tbody></table>
