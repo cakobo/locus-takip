@@ -541,6 +541,38 @@ a.btn{text-decoration:none}
   .soluk-pdf{color:#5d6b80;font-size:8.5pt}
 }
 
+/* ---------- bildirimler ---------- */
+.zil{position:relative;width:36px;height:36px;border-radius:50%;font-size:17px;display:flex;align-items:center;justify-content:center}
+.zil:hover{background:var(--sel)}
+.zil-say,.nav-say{min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--warn);color:#fff;font-size:11px;font-weight:700;line-height:18px;text-align:center}
+.zil-say{position:absolute;top:-2px;right:-4px}
+.zil-say.kirmizi,.nav-say.kirmizi{background:var(--danger)}
+.nav-oge .nav-say{margin-left:auto}
+.alt .alt-say{position:absolute;top:6px;right:calc(50% - 22px);min-width:16px;height:16px;line-height:16px;font-size:10px}
+.daha-grid .nav-say{position:absolute;top:6px;right:10px}
+.b-istat{grid-template-columns:repeat(3,1fr)}
+.b-grup{margin-bottom:14px;overflow:hidden}
+.b-grup-bas{font-size:15px;font-weight:600;padding:12px 18px;background:var(--inbg);border-bottom:1px solid var(--line)}
+.b-satir{display:flex;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid var(--line);cursor:pointer;position:relative}
+.b-grup-bas+.b-satir{border-top:0}
+.b-satir:hover{background:color-mix(in srgb,var(--sel) 55%,transparent)}
+.b-isaret{width:4px;align-self:stretch;border-radius:2px;flex:none;background:var(--acc)}
+.b-satir.kirmizi .b-isaret{background:var(--danger)}
+.b-satir.sari .b-isaret{background:var(--warn)}
+.b-ic{flex:1;min-width:0}
+.b-ic b{display:block;font-weight:600}
+.b-ic small{display:block;color:var(--mute);font-size:13px}
+.b-satir.kompakt{padding:9px 0}
+.w-bas+.b-satir.kompakt{border-top:0}
+.b-kat{font-size:16px}
+.b-ertele{position:relative}
+.ertele-menu{position:absolute;right:0;top:calc(100% + 4px);z-index:15;background:var(--sf);border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:4px;min-width:140px}
+.ertele-menu button{display:block;width:100%;text-align:left;padding:8px 12px;border-radius:6px;font-size:14px}
+.ertele-menu button:hover{background:var(--sel)}
+.b-ertelenen summary{padding:12px 18px;cursor:pointer;color:var(--mute);font-weight:500}
+.b-ertelenen .b-satir{opacity:.75}
+.dikkat{margin-bottom:22px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -644,6 +676,13 @@ a.btn{text-decoration:none}
   .istat{grid-template-columns:1fr 1fr;gap:8px}
   .istat-kart{padding:12px}
   .istat-kart.genis{grid-column:1/-1;order:-1}
+  .b-istat{grid-template-columns:repeat(3,1fr)}
+  .ust .zil{color:#fff}
+  .b-satir{padding:12px 14px;flex-wrap:wrap}
+  .b-satir .b-ic{flex-basis:calc(100% - 20px)}
+  .b-satir .rozet{margin-left:16px}
+  .b-satir.kompakt{flex-wrap:nowrap}
+  .b-satir.kompakt .b-ic{flex-basis:auto}
   .tk-bas{display:none}
   .tk-kalem{grid-template-columns:1fr 1fr 1fr;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
   .tk-kalem .girdi{background:var(--sf)}
@@ -697,6 +736,7 @@ a.btn{text-decoration:none}
       <span class="ayrac"></span>
       <h1 id="sayfaBaslik">Ana Sayfa</h1>
       <div class="ust-sag">
+        <button class="zil" id="zilBtn" type="button" onclick="git('bildirimler')" aria-label="Bildirimler" hidden>🔔<span class="zil-say" id="zilSay" hidden></span></button>
         <button class="tema-btn" type="button" onclick="temaDegistir()" aria-label="Temayı değiştir"><span class="g">☀️</span><span class="k">🌙</span></button>
         <button class="kul-btn" type="button" onclick="kulMenu()" aria-haspopup="true"><span class="ad" id="kulAd"></span><span class="av" id="kulAv"></span></button>
       </div>
@@ -845,6 +885,7 @@ function uygulamayiAc() {
   $('kmRol').textContent = D.kul.rol === 'yonetici' ? 'Yönetici' : '@' + D.kul.kullaniciAdi;
   menuleriCiz();
   rotaUygula();
+  bildirimYukle();
 }
 
 function basHarf(s) {
@@ -857,16 +898,16 @@ function menuleriCiz() {
   $('yanMenu').innerHTML = D.sayfalar.map(s => {
     const y = yetki(s.kod);
     return `<button type="button" class="nav-oge ${y === 'yok' ? 'kapali' : ''}" data-k="${s.kod}" onclick="git('${s.kod}')">
-      <span>${s.ikon}</span>${esc(s.ad)}${y === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`;
+      <span>${s.ikon}</span>${esc(s.ad)}${y === 'yok' ? '<span class="kilit">🔒</span>' : s.kod === 'bildirimler' ? '<span class="nav-say" data-bsay hidden></span>' : ''}</button>`;
   }).join('');
 
   $('altMenu').innerHTML = ALT_MENU.map(k => {
     const s = D.sayfalar.find(x => x.kod === k);
     return `<button type="button" data-k="${k}" onclick="git('${k}')"><span>${s.ikon}</span><span>${esc(KISA_AD[k] || s.ad)}</span>${yetki(k) === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`;
-  }).join('') + `<button type="button" data-k="_daha" onclick="dahaAc()"><span>☰</span><span>Daha fazla</span></button>`;
+  }).join('') + `<button type="button" data-k="_daha" onclick="dahaAc()"><span>☰</span><span>Daha fazla</span><span class="nav-say alt-say" data-bsay hidden></span></button>`;
 
   $('dahaGrid').innerHTML = D.sayfalar.filter(s => !ALT_MENU.includes(s.kod)).map(s =>
-    `<button type="button" data-k="${s.kod}" onclick="dahaKapat();git('${s.kod}')"><span>${s.ikon}</span><span>${esc(s.ad)}</span>${yetki(s.kod) === 'yok' ? '<span class="kilit">🔒</span>' : ''}</button>`
+    `<button type="button" data-k="${s.kod}" onclick="dahaKapat();git('${s.kod}')"><span>${s.ikon}</span><span>${esc(s.ad)}</span>${yetki(s.kod) === 'yok' ? '<span class="kilit">🔒</span>' : s.kod === 'bildirimler' ? '<span class="nav-say" data-bsay hidden></span>' : ''}</button>`
   ).join('');
 }
 
@@ -885,6 +926,7 @@ function git(kod) {
 window.addEventListener('hashchange', () => { if (D.kul) rotaUygula(); });
 
 function rotaUygula() {
+  if (D.kul && Date.now() - (BILD.zaman || 0) > 5 * 60 * 1000) bildirimYukle();
   const eslesme = location.hash.match(/^#\/(\w+)(?:\/([\w.-]+))?/) || [];
   let kod = eslesme[1] || 'anasayfa';
   D.param = eslesme[2] || null;
@@ -930,6 +972,7 @@ const SAYFA_CIZ = {
     ic.innerHTML = `
       <div class="kart karsilama"><div><h2>Hoş geldin, ${esc(ad)}</h2><p>${esc(tarih)}</p></div>
         <img src="sembol-beyaz.png" alt=""></div>
+      <section class="kart panel dikkat" id="dikkatKart" hidden></section>
       <div class="widget-grid">
         <section class="kart panel" id="havaKart"><div class="bos kucuk-bos"><p>Hava durumu yükleniyor…</p></div></section>
         <section class="kart panel" id="kurKart"><div class="bos kucuk-bos"><p>Kurlar yükleniyor…</p></div></section>
@@ -941,11 +984,14 @@ const SAYFA_CIZ = {
         : `<div class="kart bos"><div class="b-ikon">🔒</div><h3>Henüz açık sayfanız yok</h3><p>Yöneticiniz size sayfa yetkisi verdiğinde burada görünecek.</p></div>`}`;
     havaYukle();
     kurYukle();
+    dikkatCiz();
   },
 
   async yonetim(ic, s) {
     ic.innerHTML = sayfaBasHTML(s, 'tam', `<button class="btn" type="button" onclick="kullaniciModal()">+ Kullanıcı Ekle</button>`) +
-      `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>`;
+      `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>
+       <section class="kart panel" id="epostaAyar" style="margin-top:22px"><div class="bos kucuk-bos"><p>E-posta ayarları yükleniyor…</p></div></section>`;
+    epostaAyarYukle();
     try {
       const liste = await api('kullanicilar.liste');
       YONETIM.liste = liste;
@@ -1911,6 +1957,187 @@ function oxyGecmisYazdir(makineId) {
       <tbody>${satirlar || '<tr><td colspan="7">Bu makineye ait bakım kaydı yok.</td></tr>'}</tbody></table>
     <div class="y-alt">Locus Mühendislik, Oxyweld yetkili servisi</div>`,
     `Bakım Geçmişi, ${m.MusteriAd}, ${makineAdi(m)}`);
+}
+
+// ==================== BİLDİRİMLER ====================
+// Bildirimler arka tarafta mevcut verilerden hesaplanır; kullanıcı sadece yetkili olduğu sayfaların bildirimlerini görür.
+const BILD = { liste: [], ertelenen: [], zaman: 0, filtre: 'tumu' };
+const BSEV = {
+  kirmizi: { ad: 'Acil', ikon: '🔴', sinif: 'tehlike' },
+  sari: { ad: 'Uyarı', ikon: '🟡', sinif: 'uyari' },
+  mavi: { ad: 'Bilgi', ikon: '🔵', sinif: '' }
+};
+const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝' };
+
+async function bildirimYukle() {
+  if (!D.kul) return;
+  BILD.zaman = Date.now();
+  if (!BILD.liste.length && !BILD.ertelenen.length) Object.assign(BILD, ls.al('locus_c_bildirim') || {});
+  bildirimRozet();
+  try {
+    const r = await api('bildirim.liste');
+    BILD.liste = r.liste; BILD.ertelenen = r.ertelenen;
+    ls.koy('locus_c_bildirim', { liste: r.liste, ertelenen: r.ertelenen });
+    bildirimRozet();
+    if (D.aktif === 'bildirimler' && $('bListe') && $('modal').hidden) bildirimListeCiz();
+    if (D.aktif === 'anasayfa') dikkatCiz();
+  } catch (e) { BILD.zaman = 0; }
+}
+setInterval(() => { if (D.kul && !document.hidden) bildirimYukle(); }, 10 * 60 * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && D.kul && Date.now() - BILD.zaman > 2 * 60 * 1000) bildirimYukle(); });
+
+function bildirimRozet() {
+  const acil = BILD.liste.filter(b => b.seviye !== 'mavi').length;
+  const kirmizi = BILD.liste.some(b => b.seviye === 'kirmizi');
+  const goster = yetki('bildirimler') !== 'yok';
+  if ($('zilBtn')) $('zilBtn').hidden = !goster;
+  const z = $('zilSay');
+  if (z) { z.hidden = !acil; z.textContent = acil > 99 ? '99+' : acil; z.classList.toggle('kirmizi', kirmizi); }
+  document.querySelectorAll('[data-bsay]').forEach(el => { el.hidden = !acil || !goster; el.textContent = acil; el.classList.toggle('kirmizi', kirmizi); });
+}
+
+function bildirimSatirHTML(b, ertelenmis) {
+  const s = BSEV[b.seviye];
+  return `<div class="b-satir ${b.seviye}" onclick="git('${b.rota}')">
+    <span class="b-isaret"></span>
+    <span class="b-ic"><b>${esc(b.baslik)}</b><small>${esc(b.aciklama)}${b.tutar ? ', ' + esc(b.tutar) : ''}${ertelenmis ? `, ${tarihKisa(b.erteleBitis)} tarihine kadar ertelendi` : ''}</small></span>
+    <span class="rozet ${s.sinif}">${s.ad}</span>
+    ${ertelenmis
+      ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();bildirimErtele('${esc(b.anahtar)}',0)">Geri al</button>`
+      : `<span class="b-ertele"><button class="btn ikincil kucuk" type="button" title="Bu bildirimi gizle" onclick="event.stopPropagation();erteleMenu(this,'${esc(b.anahtar)}')">Ertele ▾</button></span>`}
+  </div>`;
+}
+
+SAYFA_CIZ.bildirimler = function (ic, s, y) {
+  ic.innerHTML = sayfaBasHTML(s, y, `<button class="btn ikincil" type="button" onclick="bildirimYenile(this)">↻ Yenile</button>`) + `
+    <div class="istat b-istat" id="bIstat"></div>
+    <div class="arac"><div class="cips">${[['tumu', 'Tümü'], ['kirmizi', '🔴 Acil'], ['sari', '🟡 Uyarı'], ['mavi', '🔵 Bilgi']].map(([k, a]) =>
+      `<button type="button" data-f="${k}" onclick="BILD.filtre='${k}';bildirimListeCiz()">${a}</button>`).join('')}</div></div>
+    <div id="bListe"></div>`;
+  bildirimListeCiz();
+  if (Date.now() - BILD.zaman > 30 * 1000) bildirimYukle();
+};
+async function bildirimYenile(btn) { btn.disabled = true; BILD.zaman = 0; await bildirimYukle(); btn.disabled = false; toast('Bildirimler güncellendi.'); }
+
+function bildirimListeCiz() {
+  const kutu = $('bListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === BILD.filtre));
+  $('bIstat').innerHTML = ['kirmizi', 'sari', 'mavi'].map(sv => `<button type="button" class="istat-kart ${sv === 'kirmizi' && BILD.liste.some(b => b.seviye === sv) ? 'kirmizi' : ''}" onclick="BILD.filtre='${sv}';bildirimListeCiz()">
+      <span class="ik-et">${BSEV[sv].ikon} ${BSEV[sv].ad}</span><span class="ik-deger">${BILD.liste.filter(b => b.seviye === sv).length}</span></button>`).join('');
+  const l = BILD.liste.filter(b => BILD.filtre === 'tumu' || b.seviye === BILD.filtre);
+  const kategoriler = [...new Set(l.map(b => b.kategori))];
+  let html = l.length ? kategoriler.map(k => `<section class="kart b-grup">
+      <h3 class="b-grup-bas">${BKAT_IKON[k] || '•'} ${esc(k)} <span class="soluk">(${l.filter(b => b.kategori === k).length})</span></h3>
+      ${l.filter(b => b.kategori === k).map(b => bildirimSatirHTML(b)).join('')}</section>`).join('')
+    : `<div class="kart bos"><div class="b-ikon">✅</div><h3>${BILD.liste.length ? 'Bu seviyede bildirim yok' : 'Dikkat gerektiren bir şey yok'}</h3>
+       <p>${BILD.zaman ? 'Bakımlar, stoklar, siparişler ve teklifler kontrol edildi.' : 'Bildirimler yükleniyor…'}</p></div>`;
+  if (BILD.ertelenen.length) html += `<details class="kart b-grup b-ertelenen"><summary>Ertelenenler (${BILD.ertelenen.length})</summary>
+      ${BILD.ertelenen.map(b => bildirimSatirHTML(b, true)).join('')}</details>`;
+  kutu.innerHTML = html;
+}
+
+function erteleMenu(btn, anahtar) {
+  document.querySelectorAll('.ertele-menu').forEach(m => m.remove());
+  const m = document.createElement('div');
+  m.className = 'ertele-menu';
+  m.innerHTML = [[1, '1 gün'], [3, '3 gün'], [7, '1 hafta'], [30, '1 ay']].map(([g, a]) =>
+    `<button type="button" onclick="event.stopPropagation();this.parentNode.remove();bildirimErtele('${anahtar}',${g})">${a} gizle</button>`).join('');
+  btn.parentNode.appendChild(m);
+  setTimeout(() => document.addEventListener('click', function kapat() { m.remove(); document.removeEventListener('click', kapat); }), 0);
+}
+async function bildirimErtele(anahtar, gun) {
+  try {
+    const r = await api('bildirim.ertele', { anahtar, gun });
+    BILD.liste = r.liste; BILD.ertelenen = r.ertelenen; ls.koy('locus_c_bildirim', r);
+    bildirimRozet(); bildirimListeCiz();
+    toast(gun ? 'Bildirim ertelendi. Süre dolunca durum aynıysa tekrar görünür.' : 'Erteleme geri alındı.');
+  } catch (e) { toast(e.message, true); }
+}
+
+/** Ana Sayfa'daki "Dikkat Gerektirenler" kartı: en önemli 5 bildirim */
+function dikkatCiz() {
+  const k = $('dikkatKart'); if (!k) return;
+  if (yetki('bildirimler') === 'yok') { k.hidden = true; return; }
+  const l = BILD.liste.filter(b => b.seviye !== 'mavi');
+  k.hidden = false;
+  k.innerHTML = `<div class="w-bas"><h3>Dikkat Gerektirenler</h3><span class="soluk">${l.length ? `${l.filter(b => b.seviye === 'kirmizi').length} acil, ${l.filter(b => b.seviye === 'sari').length} uyarı` : ''}</span>
+      <button class="link-btn sag" type="button" onclick="git('bildirimler')">Tümünü gör ›</button></div>
+    ${l.length ? l.slice(0, 5).map(b => `<div class="b-satir ${b.seviye} kompakt" onclick="git('${b.rota}')"><span class="b-isaret"></span>
+        <span class="b-ic"><b>${esc(b.baslik)}</b><small>${esc(b.aciklama)}</small></span><span class="soluk b-kat">${BKAT_IKON[b.kategori] || ''}</span></div>`).join('')
+      : `<p class="soluk">${BILD.zaman ? '✅ Şu an dikkat gerektiren bir şey yok.' : 'Yükleniyor…'}</p>`}`;
+}
+
+// ---------- Yönetim: sabah e-posta özeti ayarları ----------
+let EP = null;
+async function epostaAyarYukle() {
+  const k = $('epostaAyar'); if (!k) return;
+  try { EP = await api('bildirimAyar.oku'); EP._aktif = EP.EpostaAktif; epostaAyarCiz(); }
+  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>E-posta ayarları alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+function epostaAyarCiz() {
+  const k = $('epostaAyar'); if (!k || !EP) return;
+  const E = EP.Esikler;
+  const esik = (id, et) => `<div><label class="et" for="ep${id}">${et}</label><input class="girdi" id="ep${id}" inputmode="numeric" value="${E[id]}"></div>`;
+  k.innerHTML = `
+    <div class="w-bas"><h3>📧 Sabah E-posta Özeti</h3>
+      <span class="rozet ${EP.EpostaAktif ? 'ok' : 'pasif'}">${EP.EpostaAktif ? 'Aktif' : 'Kapalı'}</span></div>
+    <p class="bilgi-not" style="margin:-6px 0 16px">Her sabah seçilen saatte acil ve uyarı bildirimlerinin özeti aşağıdaki adreslere gönderilir. Kapalıyken hiç e-posta gitmez.</p>
+    <label class="et">E-posta gönderimi</label>
+    <div class="cips" style="margin-bottom:18px"><button type="button" id="epA1" onclick="epDurum(true)">Aktif</button><button type="button" id="epA0" onclick="epDurum(false)">Kapalı</button></div>
+    <label class="et" for="epAlici">Alıcı e-posta adresleri (her satıra bir adres)</label>
+    <textarea class="girdi alan" id="epAlici" style="min-height:80px" placeholder="ornek@locusengineering.eu">${esc(EP.Alicilar.join('\n'))}</textarea>
+    <div class="iki">
+      <div><label class="et" for="epSaat">Gönderim saati</label>
+        <select class="girdi" id="epSaat">${Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${i === EP.Saat ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}</select></div>
+      <div><label class="et" for="epAdres">Uygulama adresi (e-postadaki bağlantılar için)</label>
+        <input class="girdi" id="epAdres" value="${esc(EP.UygulamaAdresi)}"></div>
+    </div>
+    <label class="anahtar"><input type="checkbox" id="epHafta" ${EP.HaftaSonu ? 'checked' : ''}> Hafta sonu da gönder</label>
+    <label class="anahtar"><input type="checkbox" id="epMavi" ${EP.MaviDahil ? 'checked' : ''}> Bilgi (mavi) bildirimlerini de ekle</label>
+    <label class="anahtar"><input type="checkbox" id="epBos" ${EP.BosGonderme ? 'checked' : ''}> Bildirim yoksa e-posta gönderme</label>
+    <div class="bolum-et" style="margin-top:8px">Bildirim eşikleri (gün)</div>
+    <div class="iki">${esik('BakimYaklasan', 'Bakım yaklaşıyor uyarısı (kaç gün önce)')}${esik('AcikBakimGun', 'Açık bakım işi uyarısı (kaç günden uzun)')}
+      ${esik('SiparisYaklasan', 'Sipariş teslimi yaklaşıyor (kaç gün önce)')}${esik('TeklifYaklasan', 'Teklif geçerliliği doluyor (kaç gün önce)')}
+      ${esik('TaslakGun', 'Taslak teklif hatırlatması (kaç günden uzun)')}</div>
+    <div class="hata-kutu" id="epHata"></div>
+    <div class="stok-btn" style="margin-top:6px">
+      <button class="btn ikincil" type="button" id="epTest" onclick="epostaTest()">Test e-postası gönder</button>
+      <button class="btn" type="button" id="epKaydet" onclick="epostaAyarKaydet()">Kaydet</button></div>`;
+  epDurum(EP._aktif);
+}
+function epDurum(a) { EP._aktif = a; $('epA1').classList.toggle('on', a); $('epA0').classList.toggle('on', !a); }
+function epostaAyarOku() {
+  const alicilar = $('epAlici').value.split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
+  const kotu = alicilar.find(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+  if (kotu) throw new Error('Geçersiz e-posta adresi: ' + kotu);
+  if (EP._aktif && !alicilar.length) throw new Error('E-posta özetini açmak için en az bir alıcı girin.');
+  const Esikler = {};
+  for (const id of Object.keys(EP.Esikler)) {
+    const n = Number($('ep' + id).value);
+    if (!(Number.isInteger(n) && n >= 0 && n <= 365)) throw new Error('Eşik değerleri 0-365 arasında tam sayı olmalı.');
+    Esikler[id] = n;
+  }
+  return { EpostaAktif: EP._aktif, Alicilar: alicilar, Saat: Number($('epSaat').value), UygulamaAdresi: $('epAdres').value.trim(),
+           HaftaSonu: $('epHafta').checked, MaviDahil: $('epMavi').checked, BosGonderme: $('epBos').checked, Esikler };
+}
+async function epostaAyarKaydet() {
+  $('epHata').textContent = '';
+  let veri; try { veri = epostaAyarOku(); } catch (e) { $('epHata').textContent = e.message; return; }
+  const btn = $('epKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    EP = await api('bildirimAyar.kaydet', veri); EP._aktif = EP.EpostaAktif; epostaAyarCiz();
+    toast(EP.EpostaAktif ? `E-posta özeti aktif: her ${EP.HaftaSonu ? 'gün' : 'iş günü'} ${String(EP.Saat).padStart(2, '0')}:00, ${EP.Alicilar.length} alıcı.` : 'E-posta özeti kapalı.');
+    BILD.zaman = 0; bildirimYukle();
+  } catch (e) { $('epHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+async function epostaTest() {
+  $('epHata').textContent = '';
+  const btn = $('epTest'); btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+  try {
+    const r = await api('bildirim.testMail');
+    toast(`Test e-postası ${r.alici} alıcıya gönderildi (${r.bildirim} bildirim).`);
+  } catch (e) { $('epHata').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Test e-postası gönder';
 }
 
 // ==================== GENEL VERİ ====================
@@ -3147,7 +3374,7 @@ async function stokIsleKaydet() {
 
 
 // ==================== TEKLİFLER ====================
-// Teklif no otomatik (TKL261001-1), revizyonlar TKL261001-1-R1 ... Para birimleri ayrı, çevrim yok.
+// Teklif no otomatik (LCT261001-1), revizyonlar LCT261001-1-R1 ... Para birimleri ayrı, çevrim yok.
 const TK = { arama: '', filtre: 'acik' };
 let TF = null;           // açık teklif formu
 let TEKLIF_AYAR = null;  // firma bilgileri, banka, varsayılan şartlar

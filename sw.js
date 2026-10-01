@@ -1,6 +1,6 @@
 // Locus Şirket Takip Sistemi - Service Worker
 // Yeni sürüm yayınladığında SURUM değerini artır (v5, v6...) ki telefonlar güncellemeyi alsın.
-const SURUM = 'locus-v19';
+const SURUM = 'locus-v20';
 const DOSYALAR = [
   './', './index.html', './manifest.json',
   './logo-renkli.png', './logo-beyaz.png', './sembol-beyaz.png',
