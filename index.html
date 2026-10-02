@@ -382,7 +382,7 @@ label.et{display:block;font-size:14px;color:var(--mute);margin-bottom:6px}
     @top-right{content:""}
     @bottom-left{content:var(--y-alt,"");font-family:'IBM Plex Sans',Arial,sans-serif;font-size:8.5pt;color:#555;vertical-align:middle}
     @bottom-center{content:""}
-    @bottom-right{content:"Sayfa " counter(page) " / " counter(pages);font-family:'IBM Plex Sans',Arial,sans-serif;font-size:8.5pt;color:#555;vertical-align:middle}
+    @bottom-right{content:var(--y-sayfa, "Sayfa ") counter(page) " / " counter(pages);font-family:'IBM Plex Sans',Arial,sans-serif;font-size:8.5pt;color:#555;vertical-align:middle}
   }
   html,body{background:#fff!important;color:#000!important;height:auto!important}
   body>*:not(#yazdirAlan){display:none!important}
@@ -3601,6 +3601,98 @@ function raporPdf() {
     ${V.not ? `<p class="y-altnot" style="margin:0 0 10px">${esc(V.not)}</p>` : ''}${govde || '<p>Bu dönem için veri yok.</p>'}`, `${V.baslik}, ${V.aralik}`);
 }
 
+// ==================== PURCHASE ORDER (PDF) ====================
+// Satın alma kaydından tedarikçiye gönderilecek sipariş formu. PO no: LCS261001-1 → LPO261001-1. Türkçe / English.
+const PO_DIL = {
+  tr: { baslik: 'SATIN ALMA SİPARİŞİ', no: 'Sipariş No', tarih: 'Tarih', teslim: 'İstenen teslim', veren: 'Sipariş Veren', tedarikci: 'Tedarikçi',
+        yetkili: 'Yetkili', vd: 'V.D. / No', vn: 'Vergi No', tel: 'Tel', pb: 'Para birimi', teslimYeri: 'Teslim yeri / şekli', odeme: 'Ödeme koşulları',
+        sutunlar: ['Sıra', 'Açıklama', 'Miktar', 'Birim Fiyat', 'Tutar'], ara: 'Ara toplam', kdv: 'KDV', genel: 'GENEL TOPLAM', notlar: 'Notlar',
+        onay: 'Lütfen siparişin alındığını ve teslim tarihini yazılı olarak teyit ediniz. Faturada sipariş numaramızı belirtiniz.',
+        adina: 'ADINA', tedOnay: 'TEDARİKÇİ ONAYI', imza: 'Tarih / Kaşe / İmza', yok: 'Belirtilmemiş', pesin: 'Peşin' },
+  en: { baslik: 'PURCHASE ORDER', no: 'PO No', tarih: 'Date', teslim: 'Requested delivery', veren: 'BUYER', tedarikci: 'SUPPLIER',
+        yetkili: 'Attn.', vd: 'Tax office / No', vn: 'Tax / VAT No', tel: 'Tel', pb: 'Currency', teslimYeri: 'Delivery terms / place', odeme: 'Payment terms',
+        sutunlar: ['No', 'Description', 'Qty', 'Unit Price', 'Amount'], ara: 'Subtotal', kdv: 'VAT', genel: 'TOTAL', notlar: 'Notes',
+        onay: 'Please confirm receipt of this order and the delivery date in writing. Please quote our PO number on your invoice.',
+        adina: '', tedOnay: 'SUPPLIER CONFIRMATION', imza: 'Date / Stamp / Signature', yok: 'Not specified', pesin: 'Advance' }
+};
+const PO_BIRIM_EN = { adet: 'pcs', kg: 'kg', m: 'm', 'm²': 'm²', lt: 'L', set: 'set', paket: 'pack', saat: 'hr', gün: 'day' };
+const PO_ASAMA_EN = { 'Peşinat': 'Advance payment', 'Teslim': 'On delivery', 'Test / Kabul': 'On acceptance', 'Vade': 'Deferred', 'Ara ödeme': 'Interim payment' };
+const poNo = no => String(no || '').replace(/^LCS/, 'LPO');
+
+async function poModal(id) {
+  const x = (VERI.satinalma || []).find(s => s.Id === id); if (!x) return;
+  if (!FIRMALAR) { try { await firmalarYukle(); } catch (e) { } }
+  const f = ((FIRMALAR || {}).tedarikciler || []).find(t => t.Id === x.FirmaId) || {};
+  const yetkililer = (f.Yetkililer || []).filter(y => y.adSoyad);
+  const a = TEKLIF_AYAR || await teklifAyarYukle().catch(() => ({})) || {};
+  const ilkDil = ls.al('locus_po_dil') || 'tr';
+  modalAc(`${poNo(x.No)}: Purchase Order`, `
+    <label class="et">Dil / Language</label>
+    <div class="cips" style="width:100%;margin-bottom:18px"><button type="button" style="flex:1" data-pdil="tr" class="${ilkDil === 'tr' ? 'on' : ''}" onclick="poDil('tr')">🇹🇷 Türkçe</button>
+      <button type="button" style="flex:1" data-pdil="en" class="${ilkDil === 'en' ? 'on' : ''}" onclick="poDil('en')">🇬🇧 English</button></div>
+    <label class="et" for="poYet">Tedarikçi yetkilisi</label>
+    <select class="girdi" id="poYet"><option value="">Belirtme</option>${yetkililer.map((y, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${esc(y.adSoyad)}${y.pozisyon ? ' (' + esc(y.pozisyon) + ')' : ''}</option>`).join('')}</select>
+    <label class="et" for="poTeslimYeri">Teslim yeri / şekli</label>
+    <input class="girdi" id="poTeslimYeri" value="${esc(ls.al('locus_po_teslim') || (a.Adres ? a.Adres.replace(/\n/g, ', ') : ''))}" placeholder="Ör. Locus Mühendislik, Nilüfer / Bursa (DAP) veya EXW">
+    <label class="et" for="poNot">Ek not (PDF'e yazılır)</label>
+    <textarea class="girdi alan" id="poNot" style="min-height:60px" placeholder="Ör. Lütfen sertifikaları sevkiyatla birlikte gönderin.">${esc(x.Notlar || '')}</textarea>
+    ${!f.Adres ? '<p class="bilgi-not">Tedarikçi kartında adres yok; Tedarikçiler sayfasından eklerseniz PO\'da görünür.</p>' : ''}
+    ${!a.Unvan ? '<p class="bilgi-not" style="color:var(--warn)">Firma bilgileriniz (unvan, adres, vergi no) Teklifler > Ayarlar\'dan girilir; PO da aynı bilgileri kullanır.</p>' : ''}`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" onclick="poYazdir('${id}')">🖨 PDF Oluştur</button>`);
+}
+function poDil(d) { document.querySelectorAll('[data-pdil]').forEach(b => b.classList.toggle('on', b.dataset.pdil === d)); }
+
+async function poYazdir(id) {
+  const x = (VERI.satinalma || []).find(s => s.Id === id); if (!x) return;
+  const dil = (document.querySelector('[data-pdil].on') || {}).dataset.pdil || 'tr', L = PO_DIL[dil], en = dil === 'en';
+  const f = ((FIRMALAR || {}).tedarikciler || []).find(t => t.Id === x.FirmaId) || {};
+  const yi = $('poYet').value, yet = yi === '' ? null : (f.Yetkililer || []).filter(y => y.adSoyad)[Number(yi)];
+  const teslimYeri = $('poTeslimYeri').value.trim(), ekNot = $('poNot').value.trim();
+  ls.koy('locus_po_dil', dil); if (teslimYeri) ls.koy('locus_po_teslim', teslimYeri);
+  const a = TEKLIF_AYAR || {};
+  const satir = (...p) => p.filter(Boolean).join(' &nbsp;|&nbsp; ');
+  const plan = (x.OdemePlani || []).map(r => `${en ? sayiGoster(r.oran) + '%' : '%' + sayiGoster(r.oran)} ${esc(en ? (PO_ASAMA_EN[r.asama] || r.asama) : r.asama)} (${tarihKisa(r.tarih)})`).join(', ');
+  const birim = b => en ? (PO_BIRIM_EN[b] || b) : b;
+  const kalemler = x.Kalemler || [];
+  modalKapat();
+  yazdir(`
+    <div class="tk-bas-pdf">
+      <img src="logo-renkli.png" alt="Locus Engineering">
+      <div class="tk-bas-sag"><h1>${L.baslik}</h1>
+        <table><tr><td>${L.no}</td><td>${esc(poNo(x.No))}</td></tr><tr><td>${L.tarih}</td><td>${tarihKisa(x.Tarih)}</td></tr>
+        <tr><td>${L.teslim}</td><td>${x.TeslimTarihi ? tarihKisa(x.TeslimTarihi) : L.yok}</td></tr></table></div>
+    </div>
+    <div class="tk-kutular">
+      <div><h4>${L.veren}</h4><b>${esc(a.Unvan || 'Locus Mühendislik')}</b>${a.Adres ? `<p>${esc(a.Adres)}</p>` : ''}
+        ${(a.VergiDairesi || a.VergiNo) ? `<p>${L.vd}: ${esc([a.VergiDairesi, a.VergiNo].filter(Boolean).join(' / '))}</p>` : ''}
+        <p>${satir(a.Telefon && L.tel + ': ' + esc(a.Telefon), esc(a.Eposta || ''))}</p>
+        ${a.Hazirlayan ? `<p>${satir(esc(a.Hazirlayan), esc(a.HazirlayanTelefon || ''), esc(a.HazirlayanEposta || ''))}</p>` : ''}</div>
+      <div><h4>${L.tedarikci}</h4><b>${esc(x.FirmaAd)}</b>${f.Adres ? `<p>${esc(f.Adres)}</p>` : ''}
+        ${f.VergiNo ? `<p>${L.vn}: ${esc(f.VergiNo)}</p>` : ''}
+        ${yet ? `<p>${L.yetkili}: ${esc(yet.adSoyad)}</p><p>${satir(yet.telefon && L.tel + ': ' + esc(yet.telefon), esc(yet.eposta || ''))}</p>` : ''}</div>
+    </div>
+    <table class="tk-serit"><tr>
+      <td><span>${L.pb}</span>${esc(x.ParaBirimi === 'TRY' ? 'TL' : x.ParaBirimi)}</td>
+      <td style="width:38%"><span>${L.teslimYeri}</span>${esc(teslimYeri || L.yok)}</td>
+      <td style="width:38%"><span>${L.odeme}</span>${plan || L.yok}</td></tr></table>
+    <table class="tk-tablo"><thead><tr><th class="o">${L.sutunlar[0]}</th><th>${L.sutunlar[1]}</th><th class="o">${L.sutunlar[2]}</th><th class="s">${L.sutunlar[3]}</th><th class="s">${L.sutunlar[4]}</th></tr></thead>
+      <tbody>${kalemler.map((k, i) => `<tr><td class="o">${i + 1}</td><td>${esc(k.aciklama).replace(/\n/g, '<br>')}</td>
+        <td class="o y-nw">${sayiGoster(k.miktar)} ${esc(birim(k.birim))}</td><td class="s y-nw">${para(k.birimFiyat, x.ParaBirimi)}</td>
+        <td class="s y-nw"><b>${para(Number(k.miktar) * Number(k.birimFiyat), x.ParaBirimi)}</b></td></tr>`).join('')}</tbody></table>
+    <table class="tk-toplam">
+      <tr><td>${L.ara}</td><td>${para(x.AraToplam, x.ParaBirimi)}</td></tr>
+      ${Number(x.KdvOrani) ? `<tr><td>${L.kdv} ${en ? x.KdvOrani + '%' : '%' + x.KdvOrani}</td><td>${para(x.Kdv, x.ParaBirimi)}</td></tr>` : ''}
+      <tr class="genel"><td>${L.genel}</td><td>${para(x.Toplam, x.ParaBirimi)}</td></tr></table>
+    ${ekNot ? `<div class="tk-bolum"><h3>${L.notlar}</h3><p>${esc(ekNot).replace(/\n/g, '<br>')}</p></div>` : ''}
+    <p class="y-altnot" style="font-style:normal">${L.onay}</p>
+    <div class="tk-imzalar">
+      <div><h4>${esc((a.Unvan || 'Locus Mühendislik').toLocaleUpperCase(en ? 'en-US' : 'tr-TR'))}${L.adina ? ' ' + L.adina : ''}</h4><b>${esc(a.Hazirlayan || '')}</b>
+        <p>${esc(a.HazirlayanUnvan || '')}</p></div>
+      <div><h4>${L.tedOnay}</h4><div class="tk-imza-alan"></div><p class="soluk-pdf">${L.imza}</p></div>
+    </div>`,
+    [poNo(x.No), x.FirmaAd].join(', '), dil);
+}
+
 // ==================== GENEL VERİ ====================
 const VERI = {};
 const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
@@ -4083,7 +4175,8 @@ function siparisDetay(ic, s, y, param) {
           <div class="d-rozetler"><span class="rozet">${c.ad}</span><span class="rozet ${durumSinif(t, x.Durum)}">${esc(x.Durum)}</span>
           ${gec ? '<span class="rozet" style="color:var(--danger)">Teslim gecikti</span>' : ''}
           ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
-        ${tam || stokIslenebilir(t, x.Durum) ? `<div class="d-bas-sag">
+        ${tam || stokIslenebilir(t, x.Durum) || t === 'satinalma' ? `<div class="d-bas-sag">
+          ${t === 'satinalma' ? `<button class="btn ikincil" type="button" onclick="poModal('${x.Id}')">🖨 Purchase Order</button>` : ''}
           ${yetki('stok') === 'tam' && stokIslenebilir(t, x.Durum) ? (VERI.stokHareket || []).some(hh => hh.SiparisId === x.Id)
             ? `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka işlendi</button>`
             : `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka İşle</button>` : ''}
@@ -4825,10 +4918,12 @@ function sayimYazdir() {
 }
 
 /** A4 çıktı: içerik #yazdirAlan'a konur; alt bilgi (sol) ve "Sayfa 1 / 3" (sağ) sayfa kenarına CSS ile basılır. */
-function yazdir(html, altYazi) {
+function yazdir(html, altYazi, dil) {
   let alan = $('yazdirAlan');
   if (!alan) { alan = document.createElement('div'); alan.id = 'yazdirAlan'; document.body.appendChild(alan); }
   document.documentElement.style.setProperty('--y-alt', JSON.stringify(String(altYazi || '')));
+  document.documentElement.style.setProperty('--y-sayfa', dil === 'en' ? '"Page "' : '"Sayfa "');
+  alan.lang = dil === 'en' ? 'en' : 'tr';
   alan.innerHTML = html;
   modalKapat();
   const img = alan.querySelector('img');
