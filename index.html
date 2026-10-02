@@ -653,6 +653,25 @@ a.btn{text-decoration:none}
 /* ---------- ekip ---------- */
 .fo-grid.dort{grid-template-columns:repeat(4,1fr)}
 
+/* ---------- raporlar ---------- */
+.rapor-kartlar{margin-bottom:22px}
+.rp-arac{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;margin-bottom:16px}
+.rp-arac .cips button{height:36px;padding:0 12px}
+.rp-ozel{display:flex;align-items:center;gap:8px;margin-left:auto}
+.rp-ozel .girdi{margin:0;height:36px;width:auto}
+.rp-grafik{position:relative;height:300px;margin-bottom:18px}
+.rp-grafik.pasta{height:280px}
+.rp-tablo tfoot td{font-weight:700;background:var(--inbg);border-top:2px solid var(--line)}
+.rp-tablo td.negatif{color:var(--danger)}
+@media print{
+  .rp-pdf-bolum{margin-bottom:14px}
+  .rp-pdf-bolum h3{font-size:11pt;color:#004085;border-bottom:1px solid #004085;padding-bottom:2px;margin:10px 0 6px}
+  .rp-pdf-bolum h4{font-size:9.5pt;margin:8px 0 4px}
+  .rp-pdf-grafik{display:block;max-width:100%;max-height:220px;margin:4px auto 8px;page-break-inside:avoid}
+  .rp-pdf-tablo td,.rp-pdf-tablo th{font-size:8.5pt;padding:3px 5px;height:auto}
+  .y-toplam-satir td{font-weight:700;background:#f2f5f9;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -758,6 +777,11 @@ a.btn{text-decoration:none}
   .istat-kart.genis{grid-column:1/-1;order:-1}
   .fo-kartlar{grid-template-columns:1fr}
   .fo-grid.dort{grid-template-columns:1fr 1fr}
+  .rp-ozel{margin-left:0;width:100%}
+  .rp-ozel .girdi{flex:1;min-width:0}
+  .rp-arac .cips{width:100%;overflow-x:auto}
+  .rp-grafik{height:240px}
+  .rp-grafik.pasta{height:300px}
   .fo-grid.uc,.fo-grid.cari{grid-template-columns:1fr 1fr}
   .fo-hucre b{font-size:16px}
   .f-satir{flex-wrap:wrap;padding:11px 14px;gap:4px 10px}
@@ -895,7 +919,7 @@ const ACIKLAMA = {
   musteriler: 'Firma kartları ve iletişim bilgileri', tedarikciler: 'Tedarikçi firmalar ve satın almalar', siparisler: 'Satın alma ve sipariş takibi', teklifler: 'Fiyat teklifleri, Excel ve PDF çıktısı',
   oxyweld: 'Makine bakım ve servis kayıtları', ajanda: 'Takvim, görev ve aktiviteler',
   ekip: 'Personel bilgileri ve takibi', stok: 'Malzeme giriş ve çıkışları', finans: 'Gelir, gider ve cari hesaplar',
-  raporlar: 'Özetler ve analizler', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
+  raporlar: 'Gelir-gider, satış, bakım, stok ve ekip raporları', bildirimler: 'Hatırlatma ve uyarılar', yonetim: 'Kullanıcılar ve yetkiler'
 };
 
 // ==================== DURUM ====================
@@ -3381,6 +3405,200 @@ async function ekKayitSil(varlik, id) {
   const btn = $('mSil'); btn.disabled = true;
   try { await api('kayit.sil', { varlik, id }); veriCikar(varlik, id); if (varlik === 'personelOdeme') FIN.zaman = 0; modalKapat(); if (varlik === 'personel') git('ekip'); else rotaUygula(); toast('Kayıt silindi.'); }
   catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ==================== RAPORLAR ====================
+// Raporlar arka tarafta hesaplanır (yetki orada da kontrol edilir). Grafik: Chart.js, Excel: ExcelJS, PDF: yazdırma.
+const RAPORLAR = [
+  { kod: 'gelirGider', grup: 'Finans', ad: 'Aylık Gelir - Gider', ikon: '📈', ack: 'Ay ay tahsilatlar, ödemeler, personel ve giderler; net sonuç', gerek: ['finans'], aralik: 'gecmis', varsayilan: 'son12' },
+  { kod: 'yaslandirma', grup: 'Finans', ad: 'Alacak / Borç Yaşlandırma', ikon: '⏳', ack: 'Vadesi geçen tutarlar 0-30, 31-60, 61-90, 90+ gün', gerek: ['finans'], aralik: 'yok' },
+  { kod: 'nakitAkisi', grup: 'Finans', ad: 'Nakit Akışı Tahmini', ikon: '💧', ack: 'Önümüzdeki aylarda beklenen giriş ve çıkışlar', gerek: ['finans'], aralik: 'gelecek', varsayilan: 'g3' },
+  { kod: 'giderDagilimi', grup: 'Finans', ad: 'Gider Dağılımı', ikon: '🥧', ack: 'Giderlerin türe ve kategoriye göre dağılımı', gerek: ['finans'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'musteriSatis', grup: 'Satış, Satın Alma ve Servis', ad: 'Müşteri Bazında Satış', ikon: '🤝', ack: 'Müşterilere göre sipariş adedi ve tutarı', gerek: ['siparisler'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'teklifBasarisi', grup: 'Satış, Satın Alma ve Servis', ad: 'Teklif Başarısı', ikon: '🎯', ack: 'Verilen, kabul ve red; başarı oranı', gerek: ['teklifler'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'tedarikciSatinalma', grup: 'Satış, Satın Alma ve Servis', ad: 'Tedarikçi Bazında Satın Alma', ikon: '🚚', ack: 'Tedarikçilere göre satın alma tutarları', gerek: ['siparisler'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'bakim', grup: 'Satış, Satın Alma ve Servis', ad: 'Bakım Raporu', ikon: '🔧', ack: 'Aylık bakım sayısı, zamanında oranı, kullanılan parçalar', gerek: ['oxyweld'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'stokTuketimi', grup: 'Stok ve Ekip', ad: 'Stok Tüketimi', ikon: '📦', ack: 'Malzeme bazında giriş, çıkış ve en çok tüketilenler', gerek: ['stok'], aralik: 'gecmis', varsayilan: 'son3' },
+  { kod: 'izinOzeti', grup: 'Stok ve Ekip', ad: 'İzin Özeti', ikon: '🏖️', ack: 'Kişi bazında kullanılan ve kalan izinler', gerek: ['ekip'], aralik: 'gecmis', varsayilan: 'buyil' },
+  { kod: 'personelMaliyeti', grup: 'Stok ve Ekip', ad: 'Personel Maliyeti', ikon: '💼', ack: 'Aylık maaş, avans, prim ve mesai toplamları', gerek: ['finans', 'ekip'], aralik: 'gecmis', varsayilan: 'buyil' }
+];
+const RP = { veri: null, kod: null, bas: null, bit: null, onayar: null, grafikler: [] };
+const raporYetkili = r => r.gerek.every(s => yetki(s) !== 'yok');
+const CHART_JS = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js';
+const EXCELJS = 'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js';
+
+function raporAralik(on) {
+  const b = bugun(), y = Number(b.slice(0, 4)), ayBas = b.slice(0, 8) + '01';
+  const ayBitis = a => ajTarihEkle(ayEkle(a, 1), -1);
+  return ({
+    buay: [ayBas, ayBitis(ayBas)], son3: [ayEkle(ayBas, -2), ayBitis(ayBas)], buyil: [`${y}-01-01`, `${y}-12-31`],
+    gecenyil: [`${y - 1}-01-01`, `${y - 1}-12-31`], son12: [ayEkle(ayBas, -11), ayBitis(ayBas)],
+    g1: [b, ayBitis(ayBas)], g3: [b, ayBitis(ayEkle(ayBas, 2))], g6: [b, ayBitis(ayEkle(ayBas, 5))]
+  })[on];
+}
+
+SAYFA_CIZ.raporlar = function (ic, s, y) {
+  if (D.param) return raporSayfa(ic, D.param);
+  const gorunen = RAPORLAR.filter(raporYetkili);
+  const gruplar = [...new Set(RAPORLAR.map(r => r.grup))];
+  ic.innerHTML = sayfaBasHTML(s, y) + (gorunen.length ? gruplar.map(g => {
+    const l = gorunen.filter(r => r.grup === g); if (!l.length) return '';
+    return `<h3 class="bolum-bas" style="margin-top:6px">${g}</h3><div class="hizli rapor-kartlar">${l.map(r => `
+      <button type="button" class="kart" onclick="git('raporlar/${r.kod}')"><span class="hi">${r.ikon}</span>
+        <span><span class="ha">${r.ad}</span><br><span class="hs">${r.ack}</span></span></button>`).join('')}</div>`;
+  }).join('') : '<div class="kart bos"><div class="b-ikon">📊</div><h3>Görebileceğiniz rapor yok</h3><p>Raporlar ilgili sayfaların yetkisine göre açılır.</p></div>');
+};
+
+function raporSayfa(ic, kod) {
+  const r = RAPORLAR.find(x => x.kod === kod);
+  const geri = `<button class="geri" type="button" onclick="git('raporlar')">‹ Raporlar</button>`;
+  if (!r) { ic.innerHTML = geri + '<div class="kart bos"><h3>Rapor bulunamadı</h3></div>'; return; }
+  if (!raporYetkili(r)) { ic.innerHTML = geri + yetkiYokHTML({ ad: r.ad }); return; }
+  if (RP.kod !== kod) { RP.kod = kod; RP.onayar = r.varsayilan || null; RP.veri = null; if (r.varsayilan) [RP.bas, RP.bit] = raporAralik(r.varsayilan); else RP.bas = RP.bit = bugun(); }
+  const onayarlar = r.aralik === 'gelecek' ? [['g1', 'Bu ay'], ['g3', '3 ay'], ['g6', '6 ay']]
+    : [['buay', 'Bu ay'], ['son3', 'Son 3 ay'], ['buyil', 'Bu yıl'], ['gecenyil', 'Geçen yıl'], ['son12', 'Son 12 ay']];
+  ic.innerHTML = geri + `
+    <div class="d-bas"><span class="av buyuk">${r.ikon}</span>
+      <div class="d-bas-ic"><h2>${r.ad}</h2><div class="d-rozetler"><span class="rozet pasif" id="rpAralik">…</span></div></div>
+      <div class="d-bas-sag"><button class="btn ikincil" type="button" onclick="raporPdf()">🖨 PDF</button><button class="btn" type="button" onclick="raporExcel()">⬇ Excel</button></div></div>
+    ${r.aralik === 'yok' ? '' : `<div class="rp-arac kart">
+      <div class="cips">${onayarlar.map(([k, a]) => `<button type="button" class="${RP.onayar === k ? 'on' : ''}" onclick="RP.onayar='${k}';[RP.bas,RP.bit]=raporAralik('${k}');rotaUygula()">${a}</button>`).join('')}</div>
+      <div class="rp-ozel"><input class="girdi" type="date" id="rpBas" value="${RP.bas}"><span>–</span><input class="girdi" type="date" id="rpBit" value="${RP.bit}">
+        <button class="btn ikincil kucuk" type="button" onclick="raporOzelAralik()">Uygula</button></div></div>`}
+    <div id="rpIcerik"><div class="kart bos"><p>Rapor hazırlanıyor…</p></div></div>`;
+  raporYukle(r);
+}
+function raporOzelAralik() {
+  const b = $('rpBas').value, e = $('rpBit').value;
+  if (!b || !e || e < b) return toast('Geçerli bir tarih aralığı seçin.', true);
+  RP.bas = b; RP.bit = e; RP.onayar = null; rotaUygula();
+}
+
+async function raporYukle(r) {
+  try {
+    const [veri] = await Promise.all([api('rapor.olustur', { kod: r.kod, bas: RP.bas, bit: RP.bit }), scriptYukle(CHART_JS).catch(() => null)]);
+    if (D.aktif !== 'raporlar' || D.param !== r.kod) return;
+    RP.veri = veri; raporCiz();
+  } catch (e) { if ($('rpIcerik')) $('rpIcerik').innerHTML = `<div class="kart bos"><h3>Rapor hazırlanamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+
+function raporHucre(v, s) {
+  if (v === '' || v == null) return '';
+  if (s.tip === 'para') return para(v, s.pb);
+  if (s.tip === 'sayi') return sayiGoster(v);
+  if (s.tip === 'yuzde') return '%' + Number(v).toLocaleString('tr-TR', { maximumFractionDigits: 1 });
+  if (s.tip === 'tarih') return tarihKisa(v);
+  return esc(v);
+}
+const sayisalTip = t => t === 'para' || t === 'sayi' || t === 'yuzde';
+
+function raporCiz() {
+  const V = RP.veri, kutu = $('rpIcerik'); if (!kutu) return;
+  $('rpAralik').textContent = V.aralik;
+  RP.grafikler.forEach(g => g.destroy()); RP.grafikler = [];
+  kutu.innerHTML = (V.not ? `<p class="bilgi-not" style="margin:0 0 14px">${esc(V.not)}</p>` : '') + (V.bolumler.length ? V.bolumler.map((b, i) => `
+    <section class="kart panel rp-bolum">
+      <h3 class="panel-bas">${esc(b.baslik)}</h3>
+      ${b.grafik && b.grafik.etiketler.length ? `<div class="rp-grafik ${b.grafik.tip === 'doughnut' ? 'pasta' : ''}" style="${b.grafik.tip === 'yatay' ? `height:${Math.max(180, b.grafik.etiketler.length * 34 + 60)}px` : ''}"><canvas id="rpG${i}"></canvas></div>` : ''}
+      ${(b.tablolar || []).map(t => `${t.baslik ? `<h4 class="panel-alt">${esc(t.baslik)}</h4>` : ''}
+        ${t.satirlar.length ? `<div class="tablo-kap"><table class="tablo rp-tablo"><thead><tr>${t.sutunlar.map(s => `<th class="${sayisalTip(s.tip) ? 'sag' : ''}">${esc(s.ad)}</th>`).join('')}</tr></thead>
+          <tbody>${t.satirlar.map(r => `<tr>${r.map((v, j) => `<td class="${sayisalTip((t.sutunlar[j] || {}).tip) ? 'sag' : ''} ${(t.sutunlar[j] || {}).tip === 'para' && Number(v) < 0 ? 'negatif' : ''}">${raporHucre(v, t.sutunlar[j] || {})}</td>`).join('')}</tr>`).join('')}</tbody>
+          ${t.toplam ? `<tfoot><tr>${t.toplam.map((v, j) => `<td class="${sayisalTip((t.sutunlar[j] || {}).tip) ? 'sag' : ''}">${j === 0 ? esc(v) : raporHucre(v, t.sutunlar[j] || {})}</td>`).join('')}</tr></tfoot>` : ''}
+        </table></div>` : '<p class="soluk">Bu dönemde kayıt yok.</p>'}`).join('')}
+    </section>`).join('') : '<div class="kart bos"><div class="b-ikon">📭</div><h3>Bu dönem için veri yok</h3><p>Farklı bir tarih aralığı seçmeyi deneyin.</p></div>');
+  if (window.Chart) V.bolumler.forEach((b, i) => { if (b.grafik && b.grafik.etiketler.length && $('rpG' + i)) RP.grafikler.push(raporGrafik($('rpG' + i), b.grafik)); });
+}
+
+function raporGrafik(canvas, g) {
+  const st = getComputedStyle(document.documentElement);
+  const v = n => st.getPropertyValue(n).trim();
+  const RENK = { gelir: v('--ok') || '#1E8E5A', gider: v('--danger') || '#C0392B', net: '#004085', notr: '#8C9AB0' };
+  const PALET = ['#004085', '#2F6FC0', '#0F8B8D', '#1E8E5A', '#B8860B', '#D9822B', '#C0392B', '#7B4FC9', '#6A7890', '#4C9BE8', '#9CB86F', '#E0A84A'];
+  Chart.defaults.color = v('--mute'); Chart.defaults.font.family = getComputedStyle(document.body).fontFamily;
+  const kisa = n => Math.abs(n) >= 1e6 ? (n / 1e6).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' Mn' : Math.abs(n) >= 1e3 ? (n / 1e3).toLocaleString('tr-TR', { maximumFractionDigits: 1 }) + ' B' : n.toLocaleString('tr-TR');
+  const deger = n => g.pb ? para(n, g.pb) : sayiGoster(n);
+  if (g.tip === 'doughnut') {
+    return new Chart(canvas, { type: 'doughnut', data: { labels: g.etiketler, datasets: [{ data: g.seriler[0].veri, backgroundColor: g.etiketler.map((_, i) => PALET[i % PALET.length]), borderWidth: 1, borderColor: v('--sf') }] },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' }, tooltip: { callbacks: { label: c => `${c.label}: ${deger(c.parsed)}` } } } } });
+  }
+  const yatay = g.tip === 'yatay';
+  return new Chart(canvas, {
+    type: 'bar',
+    data: { labels: g.etiketler, datasets: g.seriler.map((s, i) => {
+      const r = RENK[s.renk] || PALET[i % PALET.length];
+      return s.tip === 'line' ? { type: 'line', label: s.ad, data: s.veri, borderColor: r, backgroundColor: r, tension: .3, pointRadius: 3, order: 0 }
+        : { label: s.ad, data: s.veri, backgroundColor: r + 'CC', borderColor: r, borderWidth: 1, borderRadius: 3, order: 1, maxBarThickness: 46 };
+    }) },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: yatay ? 'y' : 'x',
+      plugins: { legend: { display: g.seriler.length > 1 }, tooltip: { callbacks: { label: c => `${c.dataset.label}: ${deger(yatay ? c.parsed.x : c.parsed.y)}` } } },
+      scales: { x: { stacked: !!g.yigin, grid: { color: v('--line'), display: yatay }, ticks: yatay ? { callback: n => kisa(n) } : {} },
+                y: { stacked: !!g.yigin, grid: { color: v('--line'), display: !yatay }, ticks: yatay ? {} : { callback: n => kisa(n), precision: 0 } } } }
+  });
+}
+
+// ---------- Excel ----------
+async function raporExcel() {
+  const V = RP.veri; if (!V) return toast('Rapor henüz hazırlanmadı.', true);
+  toast('Excel hazırlanıyor…');
+  try {
+    await scriptYukle(EXCELJS);
+    const PBF = { TRY: '#,##0.00 "₺"', EUR: '#,##0.00 "€"', USD: '"$"#,##0.00' };
+    const LACI = 'FF004085';
+    const wb = new ExcelJS.Workbook(); wb.creator = 'Locus Şirket Takip Sistemi';
+    const adlar = new Set();
+    const logo = wb.addImage({ base64: await resimBase64('logo-renkli.png'), extension: 'png' });
+    V.bolumler.forEach((b, bi) => {
+      let ad = b.baslik.replace(/[\\/*?:\[\]]/g, '').slice(0, 28) || 'Bölüm'; while (adlar.has(ad)) ad = ad.slice(0, 25) + ' ' + (bi + 1); adlar.add(ad);
+      const ws = wb.addWorksheet(ad, { views: [{ showGridLines: false }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+      ws.addImage(logo, { tl: { col: 0, row: 0 }, ext: { width: 170, height: 46 } });
+      ws.getRow(1).height = 22; ws.getRow(2).height = 18;
+      ws.getCell('C1').value = V.baslik; ws.getCell('C1').font = { bold: true, size: 15, color: { argb: LACI } };
+      ws.getCell('C2').value = `${b.baslik}, ${V.aralik}`; ws.getCell('C2').font = { size: 10, color: { argb: 'FF5D6B80' } };
+      let r = 4;
+      const genislik = [];
+      (b.tablolar || []).forEach(t => {
+        if (t.baslik) { ws.getCell(r, 1).value = t.baslik; ws.getCell(r, 1).font = { bold: true, color: { argb: LACI } }; r++; }
+        t.sutunlar.forEach((s, j) => { const c = ws.getCell(r, j + 1); c.value = s.ad; c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+          c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LACI } }; c.alignment = { horizontal: sayisalTip(s.tip) ? 'right' : 'left', vertical: 'middle', wrapText: true };
+          genislik[j] = Math.max(genislik[j] || 0, String(s.ad).length + 2); });
+        ws.getRow(r).height = 20; r++;
+        const yaz = (satir, kalin) => { satir.forEach((v, j) => {
+          const s = t.sutunlar[j] || {}, c = ws.getCell(r, j + 1);
+          c.value = s.tip === 'tarih' && v ? tarihKisa(v) : (v === '' ? null : v);
+          if (s.tip === 'para') c.numFmt = PBF[s.pb] || '#,##0.00'; else if (s.tip === 'sayi') c.numFmt = '#,##0.###'; else if (s.tip === 'yuzde') c.numFmt = '0.0"%"';
+          c.font = { bold: !!kalin }; c.border = { bottom: { style: 'thin', color: { argb: 'FFDFE5EE' } } };
+          if (kalin) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F5F9' } };
+          c.alignment = { horizontal: sayisalTip(s.tip) ? 'right' : 'left' };
+          genislik[j] = Math.max(genislik[j] || 0, Math.min(45, String(s.tip === 'para' ? para(v, s.pb) : v ?? '').length + 2));
+        }); r++; };
+        t.satirlar.forEach(s => yaz(s)); if (t.toplam) yaz(t.toplam, true);
+        r += 2;
+      });
+      genislik.forEach((w, j) => ws.getColumn(j + 1).width = Math.max(10, w));
+      const cv = $('rpG' + bi);
+      if (cv) { const img = wb.addImage({ base64: cv.toDataURL('image/png'), extension: 'png' }); ws.addImage(img, { tl: { col: 0, row: r }, ext: { width: Math.min(900, cv.width), height: Math.round(Math.min(900, cv.width) * cv.height / cv.width) } }); }
+    });
+    if (!V.bolumler.length) wb.addWorksheet('Rapor').getCell('A1').value = 'Bu dönem için veri yok.';
+    const buf = await wb.xlsx.writeBuffer();
+    dosyaIndir(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${dosyaAdi(V.baslik)}_${bugun()}.xlsx`);
+    toast('Excel indirildi.');
+  } catch (e) { toast('Excel oluşturulamadı: ' + e.message, true); }
+}
+
+// ---------- PDF ----------
+function raporPdf() {
+  const V = RP.veri; if (!V) return toast('Rapor henüz hazırlanmadı.', true);
+  const govde = V.bolumler.map((b, i) => {
+    const cv = $('rpG' + i);
+    return `<div class="rp-pdf-bolum"><h3>${esc(b.baslik)}</h3>
+      ${cv ? `<img class="rp-pdf-grafik" src="${cv.toDataURL('image/png')}" alt="">` : ''}
+      ${(b.tablolar || []).map(t => `${t.baslik ? `<h4>${esc(t.baslik)}</h4>` : ''}
+        <table class="y-tablo rp-pdf-tablo"><thead><tr>${t.sutunlar.map(s => `<th class="${sayisalTip(s.tip) ? 'y-sayi' : ''}">${esc(s.ad)}</th>`).join('')}</tr></thead>
+        <tbody>${t.satirlar.map(r => `<tr>${r.map((v, j) => `<td class="${sayisalTip((t.sutunlar[j] || {}).tip) ? 'y-sayi y-nw' : ''}">${raporHucre(v, t.sutunlar[j] || {})}</td>`).join('')}</tr>`).join('')}
+        ${t.toplam ? `<tr class="y-toplam-satir">${t.toplam.map((v, j) => `<td class="${sayisalTip((t.sutunlar[j] || {}).tip) ? 'y-sayi y-nw' : ''}">${j === 0 ? esc(v) : raporHucre(v, t.sutunlar[j] || {})}</td>`).join('')}</tr>` : ''}</tbody></table>`).join('')}</div>`;
+  }).join('');
+  yazdir(`<div class="y-bas"><img src="logo-renkli.png" alt="Locus Engineering"><div class="y-bas-sag"><h1>${esc(V.baslik)}</h1><div>${esc(V.aralik)}</div><div>Hazırlanma: ${tarihKisa(bugun())}</div></div></div>
+    ${V.not ? `<p class="y-altnot" style="margin:0 0 10px">${esc(V.not)}</p>` : ''}${govde || '<p>Bu dönem için veri yok.</p>'}`, `${V.baslik}, ${V.aralik}`);
 }
 
 // ==================== GENEL VERİ ====================
