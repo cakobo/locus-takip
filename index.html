@@ -650,6 +650,9 @@ a.btn{text-decoration:none}
 .plan-satir .girdi{margin:0;height:40px;padding:0 10px}
 .plan-sablon{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 
+/* ---------- ekip ---------- */
+.fo-grid.dort{grid-template-columns:repeat(4,1fr)}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -754,6 +757,7 @@ a.btn{text-decoration:none}
   .istat-kart{padding:12px}
   .istat-kart.genis{grid-column:1/-1;order:-1}
   .fo-kartlar{grid-template-columns:1fr}
+  .fo-grid.dort{grid-template-columns:1fr 1fr}
   .fo-grid.uc,.fo-grid.cari{grid-template-columns:1fr 1fr}
   .fo-hucre b{font-size:16px}
   .f-satir{flex-wrap:wrap;padding:11px 14px;gap:4px 10px}
@@ -2063,7 +2067,7 @@ const BSEV = {
   sari: { ad: 'Uyarı', ikon: '🟡', sinif: 'uyari' },
   mavi: { ad: 'Bilgi', ikon: '🔵', sinif: '' }
 };
-const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝', 'Ajanda': '📅', 'Finans': '💰' };
+const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝', 'Ajanda': '📅', 'Finans': '💰', 'Ekip': '👥' };
 
 async function bildirimYukle() {
   if (!D.kul) return;
@@ -2199,7 +2203,7 @@ function epostaAyarCiz() {
     <div class="bolum-et" style="margin-top:8px">Bildirim eşikleri (gün)</div>
     <div class="iki">${esik('BakimYaklasan', 'Bakım yaklaşıyor uyarısı (kaç gün önce)')}${esik('AcikBakimGun', 'Açık bakım işi uyarısı (kaç günden uzun)')}
       ${esik('SiparisYaklasan', 'Sipariş teslimi yaklaşıyor (kaç gün önce)')}${esik('TeklifYaklasan', 'Teklif geçerliliği doluyor (kaç gün önce)')}
-      ${esik('TaslakGun', 'Taslak teklif hatırlatması (kaç günden uzun)')}${esik('OdemeYaklasan', 'Tahsilat / ödeme vadesi yaklaşıyor (kaç gün önce)')}</div>
+      ${esik('TaslakGun', 'Taslak teklif hatırlatması (kaç günden uzun)')}${esik('OdemeYaklasan', 'Tahsilat / ödeme vadesi yaklaşıyor (kaç gün önce)')}${esik('BelgeYaklasan', 'Personel belgesi bitiyor (kaç gün önce)')}</div>
     <div class="hata-kutu" id="epHata"></div>
     <div class="stok-btn" style="margin-top:6px">
       <button class="btn ikincil" type="button" id="epTest" onclick="epostaTest()">Test e-postası gönder</button>
@@ -2250,10 +2254,11 @@ const AJT = {
   bakim: { ad: 'Bakım', ikon: '🔧', renk: '#D9822B' },
   gelen: { ad: 'Gelecek sipariş', ikon: '📥', renk: '#0F8B8D' },
   giden: { ad: 'Gidecek sipariş', ikon: '📤', renk: '#1E8E5A' },
+  izin: { ad: 'İzin', ikon: '🏖️', renk: '#6A7890' },
   tahsilat: { ad: 'Tahsilat vadesi', ikon: '💰', renk: '#B8860B' },
   odeme: { ad: 'Ödeme vadesi', ikon: '💸', renk: '#C0392B' }
 };
-const AJ = { gorunum: 'ay', ay: null, secili: null, filtre: { toplanti: 1, hatirlatma: 1, bakim: 1, gelen: 1, giden: 1, tahsilat: 1, odeme: 1 }, oto: {} };
+const AJ = { gorunum: 'ay', ay: null, secili: null, filtre: { toplanti: 1, hatirlatma: 1, bakim: 1, gelen: 1, giden: 1, izin: 1, tahsilat: 1, odeme: 1 }, oto: {} };
 const AY_ADLARI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 const GUN_KISA = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const TEKRAR_AD = { yok: 'Tekrar yok', hafta: 'Her hafta', ay: 'Her ay', yil: 'Her yıl' };
@@ -2622,12 +2627,13 @@ function finOzet(ic) {
     const gecB = topla(sa, s => topla(s.plan.filter(r => r.kalan > 0.005 && r.tarih < bgn), r => r.kalan));
     const gelen = topla(V.odemeler.filter(o => o.Tur === 'Tahsilat' && o.HesapParaBirimi === pb && String(o.Tarih).startsWith(ay)), o => o.HesapTutar);
     const giden = topla(V.odemeler.filter(o => o.Tur === 'Ödeme' && o.HesapParaBirimi === pb && String(o.Tarih).startsWith(ay)), o => o.HesapTutar)
-      + topla(V.giderler.filter(g => g.ParaBirimi === pb && String(g.Tarih).startsWith(ay)), g => g.Tutar);
+      + topla(V.giderler.filter(g => g.ParaBirimi === pb && String(g.Tarih).startsWith(ay)), g => g.Tutar)
+      + topla((V.personelOdemeleri || []).filter(o => o.ParaBirimi === pb && String(o.Tarih).startsWith(ay)), o => o.Tutar);
     const h = (et, v, cls, alt) => `<div class="fo-hucre ${cls || ''}"><span>${et}</span><b>${para(v, pb)}</b>${alt ? `<small>${alt}</small>` : ''}</div>`;
     return `<section class="kart fo-kart"><h3><span class="kod">${PARA[pb]}</span></h3><div class="fo-grid">
       ${h('Toplam alacak', topla(ms, s => s.kalan), 'gelir')}${h('Vadesi geçmiş alacak', gecA, gecA > 0 ? 'kirmizi' : '')}
       ${h('Toplam borç', topla(sa, s => s.kalan), 'gider')}${h('Vadesi geçmiş borç', gecB, gecB > 0 ? 'kirmizi' : '')}
-      ${h('Bu ay gelen', gelen, 'gelir')}${h('Bu ay giden', giden, 'gider', 'ödemeler + giderler')}</div></section>`;
+      ${h('Bu ay gelen', gelen, 'gelir')}${h('Bu ay giden', giden, 'gider', 'ödemeler, giderler, personel')}</div></section>`;
   };
   const sinir = ajTarihEkle(bgn, 30);
   const yaklasan = [];
@@ -2792,6 +2798,8 @@ function finHareketSatirlar() {
   const l = V.odemeler.map(o => ({ id: o.Id, varlik: 'odeme', tur: o.Tur === 'Tahsilat' ? 'gelir' : 'gider', tarih: o.Tarih, baslik: `${o.Tur}: ${o.FirmaAd}`,
       alt: [o.SiparisNo, o.HesapParaBirimi !== o.ParaBirimi ? `kapattığı ${para(o.Tutar, o.ParaBirimi)}` : '', o.OdemeSekli, o.Aciklama].filter(Boolean).join(', '),
       pb: o.HesapParaBirimi, tutar: o.HesapTutar, rota: `finans/${o.SiparisTur === 'musteriSiparis' ? 'ms' : 'sa'}.${o.SiparisId}` }))
+    .concat((V.personelOdemeleri || []).map(o => ({ id: o.Id, varlik: 'personelOdeme', tur: 'gider', tarih: o.Tarih, baslik: `${o.Tur}: ${o.PersonelAd}`,
+      alt: ['Personel', ayAdi(o.Donem), o.OdemeSekli, o.Aciklama].filter(Boolean).join(', '), pb: o.ParaBirimi, tutar: o.Tutar, rota: `ekip/${o.PersonelId}` })))
     .concat(V.giderler.map(g => ({ id: g.Id, varlik: 'gider', tur: 'gider', tarih: g.Tarih, baslik: g.Aciklama,
       alt: [g.Tur === 'duzenli' ? 'Düzenli gider' : 'Genel gider', g.Kategori, g.OdemeSekli, g.Notlar].filter(Boolean).join(', '), pb: g.ParaBirimi, tutar: g.Tutar })))
     .filter(x => FIN.hTur === 'tumu' || x.tur === FIN.hTur)
@@ -2803,7 +2811,7 @@ function finHareketSatirlar() {
       <span class="f-tarih">${tarihKisa(x.tarih)}</span>
       <span class="f-ic"><b>${esc(x.baslik)}</b><small>${esc(x.alt)}</small></span>
       <span class="f-tutar ${x.tur}">${x.tur === 'gelir' ? '+' : '−'}${para(x.tutar, x.pb)}</span>
-      ${tam ? `<button class="k-sil" type="button" title="Sil" aria-label="Kaydı sil" onclick="event.stopPropagation();${x.varlik === 'odeme' ? `odemeSilOnay('${x.id}')` : `giderSilOnay('${x.id}')`}">×</button>` : ''}</div>`).join('')
+      ${tam ? `<button class="k-sil" type="button" title="Sil" aria-label="Kaydı sil" onclick="event.stopPropagation();${x.varlik === 'odeme' ? `odemeSilOnay('${x.id}')` : x.varlik === 'personelOdeme' ? `ekKayitSilOnay('personelOdeme','${x.id}')` : `giderSilOnay('${x.id}')`}">×</button>` : ''}</div>`).join('')
     : '<div class="bos"><h3>Hareket yok</h3></div>';
 }
 
@@ -2978,6 +2986,401 @@ function planToplam() {
   const oranTop = Math.round(SF.plan.reduce((t, r) => t + (sayiOku(r.oran) || 0), 0) * 100) / 100;
   SF.plan.forEach((r, i) => { const el = document.querySelector(`[data-pt="${i}"]`); const o = sayiOku(r.oran); if (el) el.textContent = o > 0 ? para(toplam * o / 100, SF.pb) : '—'; });
   $('sfPlanDurum').innerHTML = !SF.plan.length ? '' : Math.abs(oranTop - 100) < 0.01 ? '<span class="rozet ok">%100 ✓</span>' : `<span class="rozet tehlike">%${sayiGoster(oranTop)}, ${oranTop < 100 ? 'eksik %' + sayiGoster(100 - oranTop) : 'fazla %' + sayiGoster(oranTop - 100)}</span>`;
+}
+
+// ==================== EKİP ====================
+// Kişi kartı, izinler, belgeler: Ekip yetkisi. Maaş/IBAN ve personel ödemeleri: Finans yetkisi (ayrı tablolar).
+const EK = { sekme: 'personel', arama: '', filtre: 'calisan', ay: null, bFiltre: 'uyari' };
+const IZIN_TURLERI = ['Yıllık', 'Mazeret', 'Raporlu', 'Ücretsiz'];
+const P_ODEME_TURLERI = ['Maaş', 'Avans', 'Prim', 'Fazla mesai'];
+const BELGE_ONERI = ['İSG temel eğitimi', 'Yüksekte çalışma eğitimi', 'Ehliyet', 'Forklift operatör belgesi', 'Mesleki yeterlilik belgesi', 'SRC belgesi', 'Elektrik iş güvenliği eğitimi', 'İlk yardım sertifikası'];
+const maasGor = () => yetki('finans') !== 'yok';
+const personelBul = id => (VERI.personel || []).find(x => x.Id === id);
+const ayAdi = d => { const [y, m] = d.split('-').map(Number); return `${AY_ADLARI[m - 1]} ${y}`; };
+
+/** Yıllık izin hakkı (İş Kanunu): kıdem 1-5 yıl 14 gün, 5-15 yıl 20 gün, 15 yıl ve üstü 26 gün; her işe giriş yıldönümünde hak edilir.
+ *  Devir tarihi varsa: o tarihteki devreden izin + sonraki yıldönümlerinde hak edilenler − o tarihten sonra kullanılanlar. */
+function izinHakki(p) {
+  const son = p.Durum === 'Ayrıldı' && p.AyrilisTarihi ? p.AyrilisTarihi : bugun();
+  const devirTarihi = p.IzinDevirTarihi || '';
+  const hak = n => n <= 5 ? 14 : n < 15 ? 20 : 26;
+  let kazanilan = 0, yil = 0;
+  for (let n = 1; n < 80; n++) {
+    const yd = ayEkle(p.IseGiris, n * 12);
+    if (yd > son) break;
+    yil = n;
+    if (!devirTarihi || yd > devirTarihi) kazanilan += hak(n);
+  }
+  const kullanilan = (VERI.izin || []).filter(i => i.PersonelId === p.Id && i.Tur === 'Yıllık' && (!devirTarihi || i.Baslangic >= devirTarihi))
+    .reduce((t, i) => t + Number(i.Gun), 0);
+  const devir = devirTarihi ? Number(p.IzinDuzeltme) || 0 : 0;
+  return { yil, kazanilan, kullanilan, devir, devirTarihi, kalan: devir + kazanilan - kullanilan, sonraki: ayEkle(p.IseGiris, (yil + 1) * 12), sonrakiHak: hak(yil + 1) };
+}
+const isGunu = (bas, bit) => { let n = 0; for (let t = bas; t <= bit; t = ajTarihEkle(t, 1)) { const g = new Date(t + 'T12:00:00').getDay(); if (g !== 0 && g !== 6) n++; } return n; };
+const belgeDurum = b => { if (!b.Bitis) return ['Süresiz', 'pasif']; const g = gunFarki(b.Bitis, bugun()); return g < 0 ? ['Süresi doldu', 'tehlike'] : g <= 30 ? [`${g} gün kaldı`, 'uyari'] : ['Geçerli', 'ok']; };
+
+function ekipOnbellek() {
+  let hazir = true;
+  ['personel', 'izin', 'belge'].concat(maasGor() ? ['personelMaas', 'personelOdeme'] : []).forEach(v => {
+    if (!VERI[v]) VERI[v] = ls.al('locus_c_' + v) || undefined; if (!VERI[v]) hazir = false;
+  });
+  return hazir;
+}
+const ekipVeriYukle = () => Promise.all(['personel', 'izin', 'belge'].concat(maasGor() ? ['personelMaas', 'personelOdeme'] : []).map(v => veriYukle(v)));
+
+SAYFA_CIZ.ekip = function (ic, s, y) {
+  if (!EK.ay) EK.ay = bugun().slice(0, 7);
+  if (D.param) return personelDetay(ic, s, y, D.param);
+  const tam = y === 'tam';
+  const sekmeler = [['personel', 'Personel'], ['izin', 'İzinler'], ['belge', 'Belgeler']].concat(maasGor() ? [['maas', 'Maaşlar']] : []);
+  if (!sekmeler.some(x => x[0] === EK.sekme)) EK.sekme = 'personel';
+  const sag = !tam ? '' : EK.sekme === 'izin' ? `<button class="btn" type="button" onclick="izinForm()">+ İzin</button>`
+    : EK.sekme === 'belge' ? `<button class="btn" type="button" onclick="belgeForm()">+ Belge</button>`
+    : `<button class="btn" type="button" onclick="personelForm()">+ Personel</button>`;
+  ic.innerHTML = sayfaBasHTML(s, y, sag) + `
+    <div class="sekmeler" role="tablist">${sekmeler.map(([k, a]) => `<button type="button" role="tab" class="${EK.sekme === k ? 'on' : ''}" onclick="EK.sekme='${k}';EK.arama='';rotaUygula()">${a}</button>`).join('')}</div>
+    <div id="ekIcerik"></div>`;
+  const hazir = ekipOnbellek();
+  if (hazir) ekipSekmeCiz(); else $('ekIcerik').innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  ekipVeriYukle().then(() => { if (D.aktif === 'ekip' && !D.param && $('modal').hidden) ekipSekmeCiz(); })
+    .catch(e => { if (!hazir) $('ekIcerik').innerHTML = `<div class="kart bos"><h3>Veriler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function ekipSekmeCiz() {
+  const ic = $('ekIcerik'); if (!ic) return;
+  ({ personel: ekPersonelListe, izin: ekIzinListe, belge: ekBelgeListe, maas: ekMaaslar }[EK.sekme] || ekPersonelListe)(ic);
+}
+
+// ---------- Personel listesi ----------
+function ekPersonelListe(ic) {
+  ic.innerHTML = `<div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Ad, görev veya telefon ara" value="${esc(EK.arama)}" oninput="EK.arama=this.value;ekPersonelSatirlar()"></label>
+    <div class="cips">${[['calisan', 'Çalışanlar'], ['ayrildi', 'Ayrılanlar'], ['tumu', 'Tümü']].map(([k, a]) => `<button type="button" data-f="${k}" onclick="EK.filtre='${k}';ekPersonelSatirlar()">${a}</button>`).join('')}</div></div>
+    <div class="sayac" id="ekSayac"></div><div class="kart" id="ekListe"></div>`;
+  ekPersonelSatirlar();
+}
+function ekPersonelSatirlar() {
+  const kutu = $('ekListe'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === EK.filtre));
+  const q = trKucuk(EK.arama), tum = VERI.personel || [], bgn = bugun();
+  const l = tum.filter(p => EK.filtre === 'tumu' || (EK.filtre === 'calisan') === (p.Durum !== 'Ayrıldı'))
+    .filter(p => !q || [p.Ad, p.Gorev, p.Telefon].some(x => trKucuk(x).includes(q))).sort((a, b) => trSirala(a.Ad, b.Ad));
+  $('ekSayac').textContent = `${l.length} personel`;
+  if (!tum.length) { kutu.innerHTML = `<div class="bos"><div class="b-ikon">👥</div><h3>Henüz personel yok</h3><p>${yetki('ekip') === 'tam' ? 'Personel ekleyerek başlayın.' : ''}</p></div>`; return; }
+  kutu.innerHTML = l.length ? l.map(p => {
+    const iz = izinHakki(p), izinde = (VERI.izin || []).find(i => i.PersonelId === p.Id && i.Baslangic <= bgn && i.Bitis >= bgn);
+    const belgeUyari = (VERI.belge || []).filter(b => b.PersonelId === p.Id && b.Bitis && gunFarki(b.Bitis, bgn) <= 30).length;
+    return `<div class="m-satir ${p.Durum === 'Ayrıldı' ? 'pasif' : ''}" onclick="git('ekip/${p.Id}')">
+      <span class="av">${esc(basHarf(p.Ad))}</span>
+      <span class="ms-ic"><span class="ms-ad">${esc(p.Ad)}</span><span class="ms-alt">${esc([p.Gorev, p.Telefon].filter(Boolean).join(', ') || '—')}</span></span>
+      <span class="ms-tel">${p.Durum === 'Ayrıldı' ? 'Ayrıldı ' + tarihKisa(p.AyrilisTarihi) : `${sayiGoster(iz.kalan)} gün izin hakkı`}</span>
+      ${izinde ? '<span class="rozet uyari">İzinde</span>' : ''}${belgeUyari ? `<span class="rozet tehlike">${belgeUyari} belge</span>` : ''}
+      ${p.Durum === 'Ayrıldı' ? '<span class="rozet pasif">Ayrıldı</span>' : ''}<span class="ok-ic">›</span></div>`;
+  }).join('') : '<div class="bos"><h3>Sonuç yok</h3></div>';
+}
+
+// ---------- Personel sayfası ----------
+function personelDetay(ic, s, y, id) {
+  const tam = y === 'tam';
+  const ciz = () => {
+    const p = personelBul(id);
+    const geri = `<button class="geri" type="button" onclick="EK.sekme='personel';git('ekip')">‹ Ekip</button>`;
+    if (!p) { ic.innerHTML = geri + '<div class="kart bos"><h3>Personel bulunamadı</h3></div>'; return; }
+    const iz = izinHakki(p), bgn = bugun();
+    const izinler = (VERI.izin || []).filter(i => i.PersonelId === id).sort((a, b) => String(b.Baslangic).localeCompare(String(a.Baslangic)));
+    const belgeler = (VERI.belge || []).filter(b => b.PersonelId === id).sort((a, b) => String(a.Bitis || '9').localeCompare(String(b.Bitis || '9')));
+    const kidem = (() => { const ay = Math.max(0, (Number(bgn.slice(0, 4)) - Number(p.IseGiris.slice(0, 4))) * 12 + Number(bgn.slice(5, 7)) - Number(p.IseGiris.slice(5, 7))); return `${Math.floor(ay / 12)} yıl ${ay % 12} ay`; })();
+    ic.innerHTML = geri + `
+      <div class="d-bas"><span class="av buyuk">${esc(basHarf(p.Ad))}</span>
+        <div class="d-bas-ic"><h2>${esc(p.Ad)}</h2><div class="d-rozetler">${p.Gorev ? `<span class="rozet">${esc(p.Gorev)}</span>` : ''}
+          ${p.Durum === 'Ayrıldı' ? '<span class="rozet pasif">Ayrıldı</span>' : '<span class="rozet ok">Çalışıyor</span>'}
+          ${y === 'goruntule' ? '<span class="rozet uyari">👁 Sadece görüntüleme</span>' : ''}</div></div>
+        ${tam ? `<div class="d-bas-sag"><button class="btn ikincil" type="button" onclick="personelForm('${p.Id}')">Düzenle</button></div>` : ''}</div>
+      <section class="kart panel"><h3 class="panel-bas">Kişi Bilgileri</h3><div class="bilgi-grid">
+        <div><div class="de">Telefon</div>${p.Telefon ? `<a class="link" href="tel:${esc(p.Telefon.replace(/[^\d+]/g, ''))}">📞 ${esc(p.Telefon)}</a>` : '<span class="soluk">—</span>'}</div>
+        <div><div class="de">E-posta</div>${p.Eposta ? `<a class="link" href="mailto:${esc(p.Eposta)}">${esc(p.Eposta)}</a>` : '<span class="soluk">—</span>'}</div>
+        <div><div class="de">İşe giriş</div>${tarihKisa(p.IseGiris)}<span class="soluk">, ${kidem}</span></div>
+        <div><div class="de">Acil durumda</div>${p.AcilKisi || p.AcilTelefon ? `${esc(p.AcilKisi || '')}${p.AcilTelefon ? ` <a class="link" href="tel:${esc(p.AcilTelefon.replace(/[^\d+]/g, ''))}">${esc(p.AcilTelefon)}</a>` : ''}` : '<span class="soluk">—</span>'}</div>
+        ${p.Adres ? `<div style="grid-column:1/-1"><div class="de">Adres</div>${esc(p.Adres)}</div>` : ''}
+        ${p.Notlar ? `<div style="grid-column:1/-1"><div class="de">Notlar</div><div class="d-not">${esc(p.Notlar)}</div></div>` : ''}</div></section>
+      <section class="kart panel"><div class="w-bas"><h3>Yıllık İzin</h3>${tam ? `<button class="btn kucuk sag" type="button" onclick="izinForm('${p.Id}')">+ İzin Ekle</button>` : ''}</div>
+        <div class="fo-grid dort">
+          <div class="fo-hucre"><span>${iz.devirTarihi ? 'Devreden + hak edilen' : `Hak edilen (${iz.yil} yıl)`}</span><b>${sayiGoster(iz.devir + iz.kazanilan)} gün</b>${iz.devirTarihi ? `<small>${tarihKisa(iz.devirTarihi)} devir ${sayiGoster(iz.devir)} + ${sayiGoster(iz.kazanilan)} gün</small>` : ''}</div>
+          <div class="fo-hucre"><span>Kullanılan</span><b>${sayiGoster(iz.kullanilan)} gün</b></div>
+          <div class="fo-hucre ${iz.kalan < 0 ? 'kirmizi' : 'gelir'}"><span>Kalan</span><b>${sayiGoster(iz.kalan)} gün</b></div>
+          <div class="fo-hucre"><span>Sonraki hak</span><b>+${iz.sonrakiHak} gün</b><small>${tarihKisa(iz.sonraki)}</small></div></div>
+        <h4 class="panel-alt">İzinler</h4>
+        ${izinler.length ? izinler.map(i => izinSatirHTML(i, false, tam)).join('') : '<p class="soluk">İzin kaydı yok.</p>'}
+        <p class="bilgi-not" style="margin-top:10px">İzin hakkı İş Kanunu'na göre kıdemden hesaplanır (her işe giriş yıldönümünde 14 / 20 / 26 gün). Eski çalışanlar için Düzenle'den sisteme geçiş tarihindeki kalan izni "Devreden izin" olarak girin.</p></section>
+      <section class="kart panel"><div class="w-bas"><h3>Belgeler ve Sertifikalar</h3>${tam ? `<button class="btn kucuk sag" type="button" onclick="belgeForm('${p.Id}')">+ Belge Ekle</button>` : ''}</div>
+        ${belgeler.length ? belgeler.map(b => belgeSatirHTML(b, false, tam)).join('') : '<p class="soluk">Belge kaydı yok.</p>'}</section>
+      ${maasGor() ? `<section class="kart panel" id="pMaas">${personelMaasHTML(p)}</section>` : ''}`;
+  };
+  const hazir = ekipOnbellek();
+  if (hazir) ciz(); else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  ekipVeriYukle().then(() => { if (D.aktif === 'ekip' && D.param === id && $('modal').hidden) ciz(); })
+    .catch(e => { if (!hazir) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+function izinSatirHTML(i, adGoster, tam) {
+  const bgn = bugun(), simdi = i.Baslangic <= bgn && i.Bitis >= bgn, gelecek = i.Baslangic > bgn;
+  return `<div class="f-satir" ${tam ? `onclick="izinForm('${i.PersonelId}','${i.Id}')"` : ''}>
+    <span class="f-tarih">${tarihKisa(i.Baslangic)}${i.Bitis !== i.Baslangic ? `<small>${tarihKisa(i.Bitis)}</small>` : ''}</span>
+    <span class="f-ic"><b>${adGoster ? esc(i.PersonelAd) + ', ' : ''}${esc(i.Tur)} izin, ${sayiGoster(i.Gun)} gün</b><small>${esc(i.Aciklama || '')}</small></span>
+    ${simdi ? '<span class="rozet uyari">Şu an izinde</span>' : gelecek ? '<span class="rozet">Planlandı</span>' : ''}
+    ${tam ? `<button class="k-sil" type="button" aria-label="Sil" onclick="event.stopPropagation();ekKayitSilOnay('izin','${i.Id}')">×</button>` : ''}</div>`;
+}
+function belgeSatirHTML(b, adGoster, tam) {
+  const [dAd, dCls] = belgeDurum(b);
+  return `<div class="f-satir" ${tam ? `onclick="belgeForm('${b.PersonelId}','${b.Id}')"` : adGoster ? `onclick="git('ekip/${b.PersonelId}')"` : ''}>
+    <span class="f-tarih">${b.Bitis ? tarihKisa(b.Bitis) : '—'}<small>${b.Bitis ? 'bitiş' : ''}</small></span>
+    <span class="f-ic"><b>${adGoster ? esc(b.PersonelAd) + ', ' : ''}${esc(b.Ad)}</b><small>${[b.BelgeNo && 'No: ' + b.BelgeNo, b.Alinis && 'Alınış ' + tarihKisa(b.Alinis), b.Notlar].filter(Boolean).map(esc).join(', ')}</small></span>
+    <span class="rozet ${dCls}">${dAd}</span>
+    ${tam ? `<button class="k-sil" type="button" aria-label="Sil" onclick="event.stopPropagation();ekKayitSilOnay('belge','${b.Id}')">×</button>` : ''}</div>`;
+}
+
+// ---------- Maaş bölümü (sadece Finans yetkisi) ----------
+function personelMaasHTML(p) {
+  const m = (VERI.personelMaas || []).find(x => x.PersonelId === p.Id), ft = yetki('finans') === 'tam';
+  const od = (VERI.personelOdeme || []).filter(o => o.PersonelId === p.Id).sort((a, b) => String(b.Tarih).localeCompare(String(a.Tarih)));
+  const ay = bugun().slice(0, 7), buAyMaas = od.find(o => o.Tur === 'Maaş' && o.Donem === ay);
+  return `<div class="w-bas"><h3>💰 Maaş ve Ödemeler</h3><span class="soluk">sadece Finans yetkisi olanlar görür</span>
+      ${ft ? `<button class="btn ikincil kucuk sag" type="button" onclick="maasTanimForm('${p.Id}')">${m ? 'Maaş Bilgisi' : '+ Maaş Tanımla'}</button>` : ''}</div>
+    ${m ? `<div class="fo-grid uc">
+      <div class="fo-hucre"><span>Net maaş</span><b>${para(m.NetMaas, m.ParaBirimi)}</b></div>
+      <div class="fo-hucre"><span>Maaş günü</span><b>Her ayın ${m.MaasGunu}. günü</b></div>
+      <div class="fo-hucre"><span>IBAN</span><b style="font-size:13.5px">${m.Iban ? esc(m.Iban.replace(/(.{4})/g, '$1 ').trim()) : '—'}</b></div></div>` : '<p class="soluk">Maaş bilgisi tanımlanmamış.</p>'}
+    ${ft && p.Durum !== 'Ayrıldı' ? `<div class="stok-btn">
+      ${m && !buAyMaas ? `<button class="btn" type="button" onclick="personelOdemeForm('${p.Id}','Maaş')">✓ ${ayAdi(ay)} maaşını öde</button>` : ''}
+      <button class="btn ikincil" type="button" onclick="personelOdemeForm('${p.Id}','Avans')">+ Avans</button>
+      <button class="btn ikincil" type="button" onclick="personelOdemeForm('${p.Id}','Prim')">+ Prim</button>
+      <button class="btn ikincil" type="button" onclick="personelOdemeForm('${p.Id}','Fazla mesai')">+ Fazla mesai</button></div>` : ''}
+    <h4 class="panel-alt">Ödemeler</h4>
+    ${od.length ? od.slice(0, 36).map(o => `<div class="f-satir">
+      <span class="f-tarih">${tarihKisa(o.Tarih)}</span>
+      <span class="f-ic"><b>${esc(o.Tur)}, ${ayAdi(o.Donem)}</b><small>${[o.OdemeSekli, o.Aciklama, '@' + (o.Olusturan || '?')].filter(Boolean).map(esc).join(', ')}</small></span>
+      <span class="f-tutar gider">${para(o.Tutar, o.ParaBirimi)}</span>
+      ${ft ? `<button class="k-sil" type="button" aria-label="Sil" onclick="ekKayitSilOnay('personelOdeme','${o.Id}')">×</button>` : ''}</div>`).join('') : '<p class="soluk">Ödeme kaydı yok.</p>'}`;
+}
+
+// ---------- İzinler ve belgeler sekmeleri ----------
+function ekIzinListe(ic) {
+  const tam = yetki('ekip') === 'tam', bgn = bugun();
+  const l = (VERI.izin || []).slice().sort((a, b) => String(b.Baslangic).localeCompare(String(a.Baslangic)));
+  const simdi = l.filter(i => i.Baslangic <= bgn && i.Bitis >= bgn), gelecek = l.filter(i => i.Baslangic > bgn).reverse(), gecmis = l.filter(i => i.Bitis < bgn);
+  const bolum = (b, x) => x.length ? `<section class="kart b-grup"><h3 class="b-grup-bas">${b} <span class="soluk">(${x.length})</span></h3>${x.map(i => izinSatirHTML(i, true, tam)).join('')}</section>` : '';
+  ic.innerHTML = l.length ? bolum('Şu an izinde', simdi) + bolum('Planlanan izinler', gelecek) + bolum('Geçmiş izinler', gecmis.slice(0, 100))
+    : `<div class="kart bos"><div class="b-ikon">🏖️</div><h3>İzin kaydı yok</h3></div>`;
+}
+function ekBelgeListe(ic) {
+  const tam = yetki('ekip') === 'tam';
+  const calisan = id => { const p = personelBul(id); return p && p.Durum !== 'Ayrıldı'; };
+  ic.innerHTML = `<div class="arac"><div class="cips">${[['uyari', 'Süresi dolan / yaklaşan'], ['tumu', 'Tümü']].map(([k, a]) => `<button type="button" class="${EK.bFiltre === k ? 'on' : ''}" onclick="EK.bFiltre='${k}';ekipSekmeCiz()">${a}</button>`).join('')}</div></div><div class="kart" id="ekListe"></div>`;
+  const l = (VERI.belge || []).filter(b => calisan(b.PersonelId))
+    .filter(b => EK.bFiltre === 'tumu' || (b.Bitis && gunFarki(b.Bitis, bugun()) <= 30))
+    .sort((a, b) => String(a.Bitis || '9').localeCompare(String(b.Bitis || '9')) || trSirala(a.PersonelAd, b.PersonelAd));
+  $('ekListe').innerHTML = l.length ? l.map(b => belgeSatirHTML(b, true, tam)).join('')
+    : `<div class="bos"><div class="b-ikon">📄</div><h3>${EK.bFiltre === 'uyari' ? 'Süresi dolan ya da yaklaşan belge yok' : 'Belge kaydı yok'}</h3></div>`;
+}
+
+// ---------- Maaşlar sekmesi (aylık tablo) ----------
+function ekMaaslar(ic) {
+  const ft = yetki('finans') === 'tam', ay = EK.ay, ayBitis = ayEkle(ay + '-01', 1);
+  const l = (VERI.personel || []).filter(p => p.IseGiris < ayBitis && (p.Durum !== 'Ayrıldı' || (p.AyrilisTarihi || '') >= ay + '-01')).sort((a, b) => trSirala(a.Ad, b.Ad));
+  const od = (VERI.personelOdeme || []).filter(o => o.Donem === ay);
+  const top = {};
+  const satirlar = l.map(p => {
+    const m = (VERI.personelMaas || []).find(x => x.PersonelId === p.Id);
+    const pb = m ? m.ParaBirimi : 'TRY', po = od.filter(o => o.PersonelId === p.Id);
+    const avans = po.filter(o => o.Tur === 'Avans').reduce((t, o) => t + Number(o.Tutar), 0);
+    const ek = po.filter(o => o.Tur === 'Prim' || o.Tur === 'Fazla mesai').reduce((t, o) => t + Number(o.Tutar), 0);
+    const maas = po.find(o => o.Tur === 'Maaş');
+    const odenecek = m ? Math.max(0, m.NetMaas - avans) : 0;
+    top[pb] = top[pb] || { net: 0, odenen: 0, kalan: 0 };
+    top[pb].net += m ? m.NetMaas : 0; top[pb].odenen += po.reduce((t, o) => t + Number(o.Tutar), 0); if (m && !maas) top[pb].kalan += odenecek;
+    return `<tr><td><a class="link" onclick="git('ekip/${p.Id}')">${esc(p.Ad)}</a><small class="soluk" style="display:block">${m ? `Maaş günü ${m.MaasGunu}` : 'Maaş tanımlı değil'}</small></td>
+      <td class="sag">${m ? para(m.NetMaas, pb) : '—'}</td><td class="sag">${avans ? '−' + para(avans, pb) : '—'}</td><td class="sag">${ek ? para(ek, pb) : '—'}</td>
+      <td class="sag"><b>${maas ? para(maas.Tutar, pb) : m ? para(odenecek, pb) : '—'}</b></td>
+      <td>${maas ? `<span class="rozet ok">Ödendi ${tarihKisa(maas.Tarih)}</span>` : m ? (ft ? `<button class="btn kucuk" type="button" onclick="personelOdemeForm('${p.Id}','Maaş','${ay}')">Öde</button>` : '<span class="rozet pasif">Bekliyor</span>') : ''}</td></tr>`;
+  }).join('');
+  ic.innerHTML = `<div class="aj-nav" style="margin-bottom:14px"><button class="btn ikincil kucuk" type="button" onclick="EK.ay=ayEkle(EK.ay+'-01',-1).slice(0,7);ekipSekmeCiz()">‹</button>
+      <h3>${ayAdi(ay)}</h3><button class="btn ikincil kucuk" type="button" onclick="EK.ay=ayEkle(EK.ay+'-01',1).slice(0,7);ekipSekmeCiz()">›</button></div>
+    <div class="ozet">${Object.keys(top).map(pb => `<span class="ozet-tutar">Toplam net ${para(top[pb].net, pb)}</span><span class="ozet-tutar">Ödenen ${para(top[pb].odenen, pb)}</span><span class="ozet-tutar">Kalan ${para(top[pb].kalan, pb)}</span>`).join('')}</div>
+    ${l.length ? `<div class="tablo-kap kart"><table class="tablo"><thead><tr><th>Personel</th><th class="sag">Net maaş</th><th class="sag">Avans</th><th class="sag">Prim / mesai</th><th class="sag">Ödenecek maaş</th><th></th></tr></thead><tbody>${satirlar}</tbody></table></div>
+      <p class="bilgi-not" style="margin-top:10px">Ödenecek maaş = net maaş − o ay verilen avanslar. Prim ve fazla mesai ayrı ödeme olarak kaydedilir. Bütün personel ödemeleri Finans'ta gider olarak görünür.</p>`
+      : '<div class="kart bos"><h3>Bu ay için personel yok</h3></div>'}`;
+}
+
+// ---------- Formlar ----------
+function personelForm(id) {
+  const p = id ? personelBul(id) : null;
+  modalAc(p ? 'Personeli Düzenle' : 'Yeni Personel', `
+    <div class="iki">
+      <div><label class="et" for="pfAd">Ad soyad *</label><input class="girdi" id="pfAd" value="${p ? esc(p.Ad) : ''}"></div>
+      <div><label class="et" for="pfGorev">Görev / ünvan</label><input class="girdi" id="pfGorev" list="pfGorevListe" value="${p ? esc(p.Gorev) : ''}" placeholder="Ör. Servis teknisyeni">
+        <datalist id="pfGorevListe">${[...new Set((VERI.personel || []).map(x => x.Gorev).filter(Boolean))].map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>
+      <div><label class="et" for="pfTel">Telefon</label><input class="girdi" id="pfTel" type="tel" value="${p ? esc(p.Telefon) : ''}"></div>
+      <div><label class="et" for="pfEposta">E-posta</label><input class="girdi" id="pfEposta" type="email" value="${p ? esc(p.Eposta) : ''}"></div>
+      <div><label class="et" for="pfGiris">İşe giriş tarihi *</label><input class="girdi" type="date" id="pfGiris" value="${p ? p.IseGiris : ''}"></div>
+      <div><label class="et">Durum</label><div class="cips" style="width:100%;margin-bottom:18px">
+        <button type="button" style="flex:1" data-pd="Çalışıyor" onclick="pfDurum('Çalışıyor')">Çalışıyor</button><button type="button" style="flex:1" data-pd="Ayrıldı" onclick="pfDurum('Ayrıldı')">Ayrıldı</button></div></div>
+      <div id="pfAyrKutu" hidden><label class="et" for="pfAyr">Ayrılış tarihi</label><input class="girdi" type="date" id="pfAyr" value="${p ? p.AyrilisTarihi || '' : ''}"></div>
+    </div>
+    <label class="et" for="pfAdres">Adres</label><input class="girdi" id="pfAdres" value="${p ? esc(p.Adres) : ''}">
+    <div class="iki">
+      <div><label class="et" for="pfAcil">Acil durumda aranacak kişi</label><input class="girdi" id="pfAcil" value="${p ? esc(p.AcilKisi) : ''}" placeholder="Ad soyad, yakınlığı"></div>
+      <div><label class="et" for="pfAcilTel">Acil durum telefonu</label><input class="girdi" id="pfAcilTel" type="tel" value="${p ? esc(p.AcilTelefon) : ''}"></div>
+    </div>
+    <div class="bolum-et">Yıllık izin devri <span class="soluk" style="font-weight:400;font-size:13px;margin-left:6px">(eski çalışanlar için)</span></div>
+    <div class="iki">
+      <div><label class="et" for="pfIzinDuz">Devreden izin (gün)</label><input class="girdi" id="pfIzinDuz" inputmode="decimal" value="${p && p.IzinDevirTarihi ? sayiYaz(p.IzinDuzeltme || 0) : ''}" placeholder="Bugün itibarıyla kalan izni"></div>
+      <div><label class="et" for="pfDevir">Devir tarihi</label><input class="girdi" type="date" id="pfDevir" value="${p ? p.IzinDevirTarihi || '' : ''}"></div>
+    </div>
+    <p class="bilgi-not" style="margin-top:-8px">Sisteme geçerken kişinin kalan iznini ve o günün tarihini girin; sonraki hak ve kullanımlar buna eklenir. Yeni işe girenlerde boş bırakın.</p>
+    <label class="et" for="pfNot">Notlar</label><textarea class="girdi alan" id="pfNot" style="min-height:60px">${p ? esc(p.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `${p ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="ekKayitSilOnay('personel','${p.Id}')">Sil</button>` : ''}
+     <button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="pfKaydet" onclick="personelKaydet('${p ? p.Id : ''}')">Kaydet</button>`, true);
+  pfDurum(p ? p.Durum : 'Çalışıyor');
+}
+function pfDurum(d) { document.querySelectorAll('[data-pd]').forEach(b => b.classList.toggle('on', b.dataset.pd === d)); $('pfAyrKutu').hidden = d !== 'Ayrıldı'; if (d === 'Ayrıldı' && !$('pfAyr').value) $('pfAyr').value = bugun(); }
+async function personelKaydet(id) {
+  const durum = (document.querySelector('[data-pd].on') || {}).dataset.pd || 'Çalışıyor';
+  const duz = $('pfIzinDuz').value.trim() ? sayiOku($('pfIzinDuz').value) : 0;
+  const devir = $('pfIzinDuz').value.trim() ? ($('pfDevir').value || bugun()) : $('pfDevir').value;
+  const kayit = { Id: id || null, Ad: $('pfAd').value.trim(), Gorev: $('pfGorev').value.trim(), Telefon: $('pfTel').value.trim(), Eposta: $('pfEposta').value.trim(),
+    IseGiris: $('pfGiris').value, Durum: durum, AyrilisTarihi: durum === 'Ayrıldı' ? $('pfAyr').value : '', Adres: $('pfAdres').value.trim(),
+    AcilKisi: $('pfAcil').value.trim(), AcilTelefon: $('pfAcilTel').value.trim(), IzinDuzeltme: duz, IzinDevirTarihi: devir, Notlar: $('pfNot').value.trim() };
+  if (!kayit.Ad) return ($('mHata').textContent = 'Ad soyad gerekli.');
+  if (!kayit.IseGiris) return ($('mHata').textContent = 'İşe giriş tarihi gerekli (izin hakkı buna göre hesaplanır).');
+  if (isNaN(duz)) return ($('mHata').textContent = 'Devreden izin geçersiz. Örnek: 12 veya 7,5');
+  const btn = $('pfKaydet'); btn.disabled = true;
+  try { const r = await api('kayit.kaydet', { varlik: 'personel', kayit }); veriGuncelle('personel', r); modalKapat(); if (id) rotaUygula(); else git('ekip/' + r.Id); toast(id ? 'Personel güncellendi.' : 'Personel eklendi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+function izinForm(personelId, id) {
+  const i = id ? (VERI.izin || []).find(x => x.Id === id) : null;
+  const calisanlar = (VERI.personel || []).filter(p => p.Durum !== 'Ayrıldı' || p.Id === personelId).sort((a, b) => trSirala(a.Ad, b.Ad));
+  if (!calisanlar.length) return toast('Önce personel ekleyin.', true);
+  modalAc(i ? 'İzni Düzenle' : 'Yeni İzin', `
+    <label class="et" for="izPer">Personel *</label>
+    <select class="girdi" id="izPer" onchange="izBilgi()" ${i ? 'disabled' : ''}><option value="">Seçin…</option>${calisanlar.map(p => `<option value="${p.Id}" ${(i ? i.PersonelId : personelId) === p.Id ? 'selected' : ''}>${esc(p.Ad)}</option>`).join('')}</select>
+    <div class="cips" style="width:100%;margin-bottom:18px">${IZIN_TURLERI.map(t => `<button type="button" style="flex:1" data-it="${t}" class="${(i ? i.Tur : 'Yıllık') === t ? 'on' : ''}" onclick="document.querySelectorAll('[data-it]').forEach(b=>b.classList.toggle('on',b===this));izBilgi()">${t}</button>`).join('')}</div>
+    <div class="iki">
+      <div><label class="et" for="izBas">Başlangıç *</label><input class="girdi" type="date" id="izBas" value="${i ? i.Baslangic : bugun()}" oninput="izGunHesapla()"></div>
+      <div><label class="et" for="izBit">Bitiş *</label><input class="girdi" type="date" id="izBit" value="${i ? i.Bitis : bugun()}" oninput="izGunHesapla()"></div>
+      <div><label class="et" for="izGun">Gün sayısı *</label><input class="girdi" id="izGun" inputmode="decimal" value="${i ? sayiYaz(i.Gun) : '1'}"></div>
+    </div>
+    <p class="bilgi-not" id="izBilgi"></p>
+    <label class="et" for="izAck">Açıklama</label><input class="girdi" id="izAck" value="${i ? esc(i.Aciklama) : ''}">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="izKaydet" onclick="izinKaydet('${i ? i.Id : ''}')">Kaydet</button>`);
+  if (!i) izGunHesapla(); izBilgi();
+}
+function izGunHesapla() { const b = $('izBas').value, e = $('izBit').value; if (b && e && e >= b) $('izGun').value = isGunu(b, e); izBilgi(); }
+function izBilgi() {
+  const p = personelBul($('izPer').value), tur = (document.querySelector('[data-it].on') || {}).dataset.it;
+  $('izBilgi').textContent = [p && tur === 'Yıllık' ? `${p.Ad}: kalan yıllık izin ${sayiGoster(izinHakki(p).kalan)} gün.` : '', 'Gün sayısı hafta sonları düşülerek hesaplanır; resmi tatil veya yarım gün varsa düzeltin.'].filter(Boolean).join(' ');
+}
+async function izinKaydet(id) {
+  const kayit = { Id: id || null, PersonelId: $('izPer').value, Tur: (document.querySelector('[data-it].on') || {}).dataset.it,
+    Baslangic: $('izBas').value, Bitis: $('izBit').value, Gun: sayiOku($('izGun').value), Aciklama: $('izAck').value.trim() };
+  if (!kayit.PersonelId) return ($('mHata').textContent = 'Personel seçin.');
+  if (!(kayit.Gun > 0)) return ($('mHata').textContent = 'Gün sayısı geçersiz. Örnek: 5 veya 0,5');
+  const btn = $('izKaydet'); btn.disabled = true;
+  try { const r = await api('kayit.kaydet', { varlik: 'izin', kayit }); veriGuncelle('izin', r); modalKapat(); rotaUygula(); toast('İzin kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+function belgeForm(personelId, id) {
+  const b = id ? (VERI.belge || []).find(x => x.Id === id) : null;
+  const calisanlar = (VERI.personel || []).filter(p => p.Durum !== 'Ayrıldı' || p.Id === personelId).sort((a, c) => trSirala(a.Ad, c.Ad));
+  if (!calisanlar.length) return toast('Önce personel ekleyin.', true);
+  modalAc(b ? 'Belgeyi Düzenle' : 'Yeni Belge', `
+    <label class="et" for="bfPer">Personel *</label>
+    <select class="girdi" id="bfPer" ${b ? 'disabled' : ''}><option value="">Seçin…</option>${calisanlar.map(p => `<option value="${p.Id}" ${(b ? b.PersonelId : personelId) === p.Id ? 'selected' : ''}>${esc(p.Ad)}</option>`).join('')}</select>
+    <label class="et" for="bfAd">Belge adı *</label><input class="girdi" id="bfAd" list="bfListe" value="${b ? esc(b.Ad) : ''}">
+    <datalist id="bfListe">${[...new Set([...BELGE_ONERI, ...(VERI.belge || []).map(x => x.Ad)])].map(x => `<option value="${esc(x)}">`).join('')}</datalist>
+    <div class="iki">
+      <div><label class="et" for="bfNo">Belge no</label><input class="girdi" id="bfNo" value="${b ? esc(b.BelgeNo) : ''}"></div>
+      <div><label class="et" for="bfAl">Alınış tarihi</label><input class="girdi" type="date" id="bfAl" value="${b ? b.Alinis || '' : ''}"></div>
+      <div><label class="et" for="bfBit">Geçerlilik bitiş tarihi</label><input class="girdi" type="date" id="bfBit" value="${b ? b.Bitis || '' : ''}"></div>
+    </div>
+    <p class="bilgi-not">Bitiş tarihi girilirse süresi dolmadan (varsayılan 30 gün önce) Bildirimler'de ve sabah e-postasında uyarı gelir. Süresiz belgelerde boş bırakın.</p>
+    <label class="et" for="bfNot">Notlar</label><input class="girdi" id="bfNot" value="${b ? esc(b.Notlar) : ''}">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="bfKaydet" onclick="belgeKaydet('${b ? b.Id : ''}')">Kaydet</button>`);
+}
+async function belgeKaydet(id) {
+  const kayit = { Id: id || null, PersonelId: $('bfPer').value, Ad: $('bfAd').value.trim(), BelgeNo: $('bfNo').value.trim(), Alinis: $('bfAl').value, Bitis: $('bfBit').value, Notlar: $('bfNot').value.trim() };
+  if (!kayit.PersonelId) return ($('mHata').textContent = 'Personel seçin.');
+  if (!kayit.Ad) return ($('mHata').textContent = 'Belge adı gerekli.');
+  const btn = $('bfKaydet'); btn.disabled = true;
+  try { const r = await api('kayit.kaydet', { varlik: 'belge', kayit }); veriGuncelle('belge', r); modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast('Belge kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+function maasTanimForm(personelId) {
+  const p = personelBul(personelId), m = (VERI.personelMaas || []).find(x => x.PersonelId === personelId);
+  modalAc(`${p.Ad}: Maaş Bilgisi`, `
+    <div class="iki">
+      <div><label class="et" for="mtNet">Net maaş *</label><input class="girdi" id="mtNet" inputmode="decimal" value="${m ? sayiYaz(m.NetMaas) : ''}"></div>
+      <div><label class="et" for="mtGun">Maaş günü (ayın kaçı)</label><input class="girdi" id="mtGun" inputmode="numeric" value="${m ? m.MaasGunu : 1}"></div>
+    </div>
+    <label class="et" for="mtIban">IBAN</label><input class="girdi" id="mtIban" value="${m ? esc(m.Iban) : ''}" placeholder="TR00 0000 0000 0000 0000 0000 00">
+    <p class="bilgi-not">Bu bilgileri sadece Finans yetkisi olanlar görebilir. Maaş günü yaklaşınca ve geçince Finans uyarısı gelir.</p>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="mtKaydet" onclick="maasTanimKaydet('${personelId}','${m ? m.Id : ''}')">Kaydet</button>`);
+}
+async function maasTanimKaydet(personelId, id) {
+  const net = sayiOku($('mtNet').value);
+  if (!(net >= 0)) return ($('mHata').textContent = 'Net maaş geçersiz. Örnek: 45.000');
+  const btn = $('mtKaydet'); btn.disabled = true;
+  try { const r = await api('kayit.kaydet', { varlik: 'personelMaas', kayit: { Id: id || null, PersonelId: personelId, NetMaas: net, MaasGunu: Number($('mtGun').value), Iban: $('mtIban').value, ParaBirimi: 'TRY' } });
+    veriGuncelle('personelMaas', r); modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast('Maaş bilgisi kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+function personelOdemeForm(personelId, tur, donem) {
+  const p = personelBul(personelId), m = (VERI.personelMaas || []).find(x => x.PersonelId === personelId);
+  donem = donem || bugun().slice(0, 7);
+  const avans = (VERI.personelOdeme || []).filter(o => o.PersonelId === personelId && o.Donem === donem && o.Tur === 'Avans').reduce((t, o) => t + Number(o.Tutar), 0);
+  const varsayilan = tur === 'Maaş' && m ? Math.max(0, m.NetMaas - avans) : '';
+  const aylar = Array.from({ length: 6 }, (_, i) => ayEkle(bugun().slice(0, 7) + '-01', 1 - i).slice(0, 7));
+  if (!aylar.includes(donem)) aylar.push(donem);
+  modalAc(`${p.Ad}: ${tur}`, `
+    <div class="cips" style="width:100%;margin-bottom:18px">${P_ODEME_TURLERI.map(t => `<button type="button" style="flex:1" data-pot="${t}" class="${t === tur ? 'on' : ''}" onclick="document.querySelectorAll('[data-pot]').forEach(b=>b.classList.toggle('on',b===this))">${t}</button>`).join('')}</div>
+    <div class="iki">
+      <div><label class="et" for="poDonem">Dönem (ait olduğu ay)</label><select class="girdi" id="poDonem">${aylar.map(a => `<option value="${a}" ${a === donem ? 'selected' : ''}>${ayAdi(a)}</option>`).join('')}</select></div>
+      <div><label class="et" for="poTarih">Ödeme tarihi</label><input class="girdi" type="date" id="poTarih" value="${bugun()}"></div>
+      <div><label class="et" for="poTutar">Tutar (TL) *</label><input class="girdi" id="poTutar" inputmode="decimal" value="${varsayilan === '' ? '' : sayiYaz(varsayilan)}"></div>
+      <div><label class="et" for="poSekil">Ödeme şekli</label><select class="girdi" id="poSekil"><option value="">Seçilmedi</option>${ODEME_SEKILLERI.map(x => `<option ${x === 'Havale / EFT' ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    </div>
+    ${tur === 'Maaş' && avans ? `<p class="bilgi-not">Bu ay ${para(avans, 'TRY')} avans verilmiş; ödenecek maaş net maaştan düşülerek önerildi.</p>` : ''}
+    <label class="et" for="poAck">Açıklama</label><input class="girdi" id="poAck">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="poKaydet" onclick="personelOdemeKaydet('${personelId}')">Kaydet</button>`);
+}
+async function personelOdemeKaydet(personelId) {
+  const t = sayiOku($('poTutar').value);
+  if (!(t > 0)) return ($('mHata').textContent = 'Tutar geçersiz. Örnek: 45.000');
+  const btn = $('poKaydet'); btn.disabled = true;
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'personelOdeme', kayit: { PersonelId: personelId, Tur: (document.querySelector('[data-pot].on') || {}).dataset.pot,
+      Donem: $('poDonem').value, Tarih: $('poTarih').value, Tutar: t, ParaBirimi: 'TRY', OdemeSekli: $('poSekil').value, Aciklama: $('poAck').value.trim() } });
+    veriGuncelle('personelOdeme', r); FIN.zaman = 0; modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast(`${r.Tur} kaydedildi.`);
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+function ekKayitSilOnay(varlik, id) {
+  const ad = { personel: 'personel', izin: 'izin kaydı', belge: 'belge', personelOdeme: 'ödeme kaydı' }[varlik];
+  modalAc('Kaydı Sil', `<p>Bu ${ad} kalıcı olarak silinecek.${varlik === 'personel' ? ' İzin, belge veya ödeme kaydı olan personel silinemez; işten ayrıldıysa durumunu "Ayrıldı" yapın.' : ''}</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="ekKayitSil('${varlik}','${id}')">Sil</button>`);
+}
+async function ekKayitSil(varlik, id) {
+  const btn = $('mSil'); btn.disabled = true;
+  try { await api('kayit.sil', { varlik, id }); veriCikar(varlik, id); if (varlik === 'personelOdeme') FIN.zaman = 0; modalKapat(); if (varlik === 'personel') git('ekip'); else rotaUygula(); toast('Kayıt silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
 }
 
 // ==================== GENEL VERİ ====================
