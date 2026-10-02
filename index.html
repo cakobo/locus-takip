@@ -608,12 +608,47 @@ a.btn{text-decoration:none}
 .aj-olay{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;margin-bottom:6px;border-radius:6px;background:var(--inbg);border-left:4px solid var(--r);cursor:pointer}
 .aj-olay:hover{background:var(--sel)}
 .aj-olay.tamam{opacity:.55}
+.aj-olay.baglantisiz{cursor:default}
+.aj-olay.baglantisiz:hover{background:var(--inbg)}
 .aj-saat{font-size:12px;font-weight:600;color:var(--mute);width:46px;flex:none;font-variant-numeric:tabular-nums}
 .aj-olay-ic{flex:1;min-width:0}
 .aj-olay-ic b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .aj-olay-ic small{display:block;color:var(--mute);font-size:12.5px}
 .aj-liste-gun{margin-bottom:12px;overflow:hidden}
 .aj-liste-gun .aj-olay{margin:8px 12px}
+
+/* ---------- finans ---------- */
+.fo-kartlar{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-bottom:18px}
+.fo-kart{padding:16px 18px}
+.fo-kart h3{margin-bottom:10px}
+.fo-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fo-grid.uc{grid-template-columns:repeat(3,1fr)}
+.fo-grid.cari{grid-template-columns:repeat(4,1fr);margin-bottom:10px}
+.fo-hucre{background:var(--inbg);border-radius:8px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.fo-hucre span{font-size:12.5px;color:var(--mute)}
+.fo-hucre b{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.fo-hucre small{font-size:11px;color:var(--mute)}
+.fo-hucre.gelir b,.f-tutar.gelir,.gelir-y{color:var(--ok)}
+.fo-hucre.gider b,.f-tutar.gider,.gider-y{color:var(--danger)}
+.fo-hucre.kirmizi{box-shadow:inset 3px 0 0 var(--danger)}
+.fo-hucre.kirmizi b{color:var(--danger)}
+.f-satir{display:flex;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer}
+.f-satir:first-child,.panel-bas+.f-satir,.bolum-et+.f-satir{border-top:0}
+.f-satir:hover{background:color-mix(in srgb,var(--sel) 55%,transparent)}
+.f-satir.gecikti-satir .f-tarih{color:var(--danger);font-weight:600}
+.f-tarih{width:84px;flex:none;font-size:13px;color:var(--mute);font-variant-numeric:tabular-nums}
+.f-tarih small{display:block;font-size:11px}
+.f-ic{flex:1;min-width:0}
+.f-ic b{display:block;font-weight:600}
+.f-ic small{display:block;color:var(--mute);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.f-tutar{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.f-kalan{display:flex;flex-direction:column;align-items:flex-end;white-space:nowrap;font-variant-numeric:tabular-nums}
+.f-kalan small{font-size:12px;color:var(--mute)}
+.f-bar{display:block;height:4px;border-radius:2px;background:var(--line);margin-top:6px;max-width:220px;overflow:hidden}
+.f-bar span{display:block;height:100%;background:var(--ok)}
+.plan-satir{display:grid;grid-template-columns:minmax(0,1fr) 70px 150px 120px 32px;gap:8px;align-items:center;margin-bottom:8px}
+.plan-satir .girdi{margin:0;height:40px;padding:0 10px}
+.plan-sablon{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
 
 /* ---------- mobil ---------- */
 @media (max-width:820px){
@@ -718,6 +753,16 @@ a.btn{text-decoration:none}
   .istat{grid-template-columns:1fr 1fr;gap:8px}
   .istat-kart{padding:12px}
   .istat-kart.genis{grid-column:1/-1;order:-1}
+  .fo-kartlar{grid-template-columns:1fr}
+  .fo-grid.uc,.fo-grid.cari{grid-template-columns:1fr 1fr}
+  .fo-hucre b{font-size:16px}
+  .f-satir{flex-wrap:wrap;padding:11px 14px;gap:4px 10px}
+  .f-satir .f-ic{flex-basis:100%;order:3}
+  .f-satir .f-tutar{margin-left:auto}
+  .s-satir .f-kalan{order:4;grid-column:1/-1;align-items:flex-start}
+  .plan-satir{grid-template-columns:1fr 64px 32px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
+  .plan-satir input[type=date]{grid-column:1/3}
+  .plan-satir .k-tutar{text-align:left;font-weight:600}
   .aj-duzen{grid-template-columns:1fr}
   .aj-gun{position:static}
   .aj-hucre{min-height:52px;padding:4px 2px;align-items:center}
@@ -2018,7 +2063,7 @@ const BSEV = {
   sari: { ad: 'Uyarı', ikon: '🟡', sinif: 'uyari' },
   mavi: { ad: 'Bilgi', ikon: '🔵', sinif: '' }
 };
-const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝', 'Ajanda': '📅' };
+const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝', 'Ajanda': '📅', 'Finans': '💰' };
 
 async function bildirimYukle() {
   if (!D.kul) return;
@@ -2135,8 +2180,13 @@ function epostaAyarCiz() {
     <p class="bilgi-not" style="margin:-6px 0 16px">Her sabah seçilen saatte acil ve uyarı bildirimlerinin özeti aşağıdaki adreslere gönderilir. Kapalıyken hiç e-posta gitmez.</p>
     <label class="et">E-posta gönderimi</label>
     <div class="cips" style="margin-bottom:18px"><button type="button" id="epA1" onclick="epDurum(true)">Aktif</button><button type="button" id="epA0" onclick="epDurum(false)">Kapalı</button></div>
-    <label class="et" for="epAlici">Alıcı e-posta adresleri (her satıra bir adres)</label>
-    <textarea class="girdi alan" id="epAlici" style="min-height:80px" placeholder="ornek@locusengineering.eu">${esc(EP.Alicilar.join('\n'))}</textarea>
+    <div class="iki">
+      <div><label class="et" for="epAlici">Alıcılar (her satıra bir adres)</label>
+        <textarea class="girdi alan" id="epAlici" style="min-height:90px" placeholder="ornek@locusengineering.eu">${esc(EP.Alicilar.join('\n'))}</textarea></div>
+      <div><label class="et" for="epFinAlici">Finans bildirimlerini de alacak adresler</label>
+        <textarea class="girdi alan" id="epFinAlici" style="min-height:90px" placeholder="Sadece finans yetkisi olanlar">${esc((EP.FinansAlicilar || []).join('\n'))}</textarea></div>
+    </div>
+    <p class="bilgi-not">Tahsilat/ödeme vadeleri ve düzenli gider uyarıları sadece sağdaki adreslere gider; soldaki alıcılara finans bilgisi içermeyen özet gider. Bir adresi iki listeye yazmanıza gerek yok.</p>
     <div class="iki">
       <div><label class="et" for="epSaat">Gönderim saati</label>
         <select class="girdi" id="epSaat">${Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${i === EP.Saat ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}</select></div>
@@ -2149,7 +2199,7 @@ function epostaAyarCiz() {
     <div class="bolum-et" style="margin-top:8px">Bildirim eşikleri (gün)</div>
     <div class="iki">${esik('BakimYaklasan', 'Bakım yaklaşıyor uyarısı (kaç gün önce)')}${esik('AcikBakimGun', 'Açık bakım işi uyarısı (kaç günden uzun)')}
       ${esik('SiparisYaklasan', 'Sipariş teslimi yaklaşıyor (kaç gün önce)')}${esik('TeklifYaklasan', 'Teklif geçerliliği doluyor (kaç gün önce)')}
-      ${esik('TaslakGun', 'Taslak teklif hatırlatması (kaç günden uzun)')}</div>
+      ${esik('TaslakGun', 'Taslak teklif hatırlatması (kaç günden uzun)')}${esik('OdemeYaklasan', 'Tahsilat / ödeme vadesi yaklaşıyor (kaç gün önce)')}</div>
     <div class="hata-kutu" id="epHata"></div>
     <div class="stok-btn" style="margin-top:6px">
       <button class="btn ikincil" type="button" id="epTest" onclick="epostaTest()">Test e-postası gönder</button>
@@ -2158,17 +2208,18 @@ function epostaAyarCiz() {
 }
 function epDurum(a) { EP._aktif = a; $('epA1').classList.toggle('on', a); $('epA0').classList.toggle('on', !a); }
 function epostaAyarOku() {
-  const alicilar = $('epAlici').value.split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
-  const kotu = alicilar.find(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
+  const oku = id => $(id).value.split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
+  const alicilar = oku('epAlici'), finansAlicilar = oku('epFinAlici');
+  const kotu = alicilar.concat(finansAlicilar).find(e => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e));
   if (kotu) throw new Error('Geçersiz e-posta adresi: ' + kotu);
-  if (EP._aktif && !alicilar.length) throw new Error('E-posta özetini açmak için en az bir alıcı girin.');
+  if (EP._aktif && !alicilar.length && !finansAlicilar.length) throw new Error('E-posta özetini açmak için en az bir alıcı girin.');
   const Esikler = {};
   for (const id of Object.keys(EP.Esikler)) {
     const n = Number($('ep' + id).value);
     if (!(Number.isInteger(n) && n >= 0 && n <= 365)) throw new Error('Eşik değerleri 0-365 arasında tam sayı olmalı.');
     Esikler[id] = n;
   }
-  return { EpostaAktif: EP._aktif, Alicilar: alicilar, Saat: Number($('epSaat').value), UygulamaAdresi: $('epAdres').value.trim(),
+  return { EpostaAktif: EP._aktif, Alicilar: alicilar, FinansAlicilar: finansAlicilar, Saat: Number($('epSaat').value), UygulamaAdresi: $('epAdres').value.trim(),
            HaftaSonu: $('epHafta').checked, MaviDahil: $('epMavi').checked, BosGonderme: $('epBos').checked, Esikler };
 }
 async function epostaAyarKaydet() {
@@ -2177,7 +2228,7 @@ async function epostaAyarKaydet() {
   const btn = $('epKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
   try {
     EP = await api('bildirimAyar.kaydet', veri); EP._aktif = EP.EpostaAktif; epostaAyarCiz();
-    toast(EP.EpostaAktif ? `E-posta özeti aktif: her ${EP.HaftaSonu ? 'gün' : 'iş günü'} ${String(EP.Saat).padStart(2, '0')}:00, ${EP.Alicilar.length} alıcı.` : 'E-posta özeti kapalı.');
+    toast(EP.EpostaAktif ? `E-posta özeti aktif: her ${EP.HaftaSonu ? 'gün' : 'iş günü'} ${String(EP.Saat).padStart(2, '0')}:00, ${EP.Alicilar.length + EP.FinansAlicilar.length} alıcı (${EP.FinansAlicilar.length} finans).` : 'E-posta özeti kapalı.');
     BILD.zaman = 0; bildirimYukle();
   } catch (e) { $('epHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Kaydet'; }
 }
@@ -2198,9 +2249,11 @@ const AJT = {
   hatirlatma: { ad: 'Hatırlatma', ikon: '🔔', renk: '#7B4FC9' },
   bakim: { ad: 'Bakım', ikon: '🔧', renk: '#D9822B' },
   gelen: { ad: 'Gelecek sipariş', ikon: '📥', renk: '#0F8B8D' },
-  giden: { ad: 'Gidecek sipariş', ikon: '📤', renk: '#1E8E5A' }
+  giden: { ad: 'Gidecek sipariş', ikon: '📤', renk: '#1E8E5A' },
+  tahsilat: { ad: 'Tahsilat vadesi', ikon: '💰', renk: '#B8860B' },
+  odeme: { ad: 'Ödeme vadesi', ikon: '💸', renk: '#C0392B' }
 };
-const AJ = { gorunum: 'ay', ay: null, secili: null, filtre: { toplanti: 1, hatirlatma: 1, bakim: 1, gelen: 1, giden: 1 }, oto: {} };
+const AJ = { gorunum: 'ay', ay: null, secili: null, filtre: { toplanti: 1, hatirlatma: 1, bakim: 1, gelen: 1, giden: 1, tahsilat: 1, odeme: 1 }, oto: {} };
 const AY_ADLARI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
 const GUN_KISA = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
 const TEKRAR_AD = { yok: 'Tekrar yok', hafta: 'Her hafta', ay: 'Her ay', yil: 'Her yıl' };
@@ -2330,8 +2383,8 @@ function ajandaCiz() {
 
 function ajandaOlayHTML(x) {
   const t = AJT[x.tur];
-  const tik = x.kaynak === 'ajanda' ? `ajandaDetay('${x.id}')` : `git('${x.rota}')`;
-  return `<div class="aj-olay ${x.tamam ? 'tamam' : ''}" style="--r:${t.renk}" onclick="${tik}">
+  const tik = x.kaynak === 'ajanda' ? `ajandaDetay('${x.id}')` : x.rota ? `git('${x.rota}')` : '';
+  return `<div class="aj-olay ${x.tamam ? 'tamam' : ''} ${tik ? '' : 'baglantisiz'}" style="--r:${t.renk}" ${tik ? `onclick="${tik}"` : ''}>
     <span class="aj-saat">${x.saat || (x.kaynak === 'ajanda' ? 'Tüm gün' : '')}</span>
     <span class="aj-olay-ic"><b>${t.ikon} ${esc(x.baslik)}${x.tekrar ? ' <span class="soluk">↻</span>' : ''}</b>
       <small>${esc(x.aciklama || t.ad)}${x.tamam && x.kaynak === 'ajanda' ? ', tamamlandı' : ''}</small></span>
@@ -2511,6 +2564,422 @@ async function takvimTumunuEsitle() {
   btn.disabled = false; btn.textContent = 'Mevcut kayıtları Google Takvim\'e aktar';
 }
 
+// ==================== FİNANS ====================
+// Gelir: müşteri siparişlerine tahsilatlar. Gider: satın alma ödemeleri, düzenli giderler, genel giderler.
+// Para birimleri ayrı; döviz siparişe TL gelirse "kapattığı döviz" ve "hesaba geçen TL" ayrı tutulur.
+const FIN = { veri: null, zaman: 0, sekme: 'ozet', arama: '', filtre: 'acik', hTur: 'tumu' };
+const ODEME_SEKILLERI = ['Havale / EFT', 'Nakit', 'Kredi kartı', 'Çek', 'Senet', 'Diğer'];
+const PERIYOT_AD = { ay: 'Her ay', '3ay': '3 ayda bir', '6ay': '6 ayda bir', yil: 'Her yıl' };
+const ASAMALAR = ['Peşinat', 'Teslim', 'Test / Kabul', 'Vade', 'Ara ödeme'];
+const GIDER_KATEGORI = ['Malzeme', 'Yakıt', 'Yemek', 'Kırtasiye', 'Kargo / Nakliye', 'Konaklama / Yol', 'Bakım / Onarım', 'Diğer'];
+
+async function finansYukle(zorla) {
+  if (!FIN.veri) FIN.veri = ls.al('locus_c_finans');
+  if (!zorla && FIN.veri && Date.now() - FIN.zaman < 60 * 1000) return FIN.veri;
+  FIN.veri = await api('finans.veri'); FIN.zaman = Date.now(); ls.koy('locus_c_finans', FIN.veri);
+  return FIN.veri;
+}
+const finSiparis = (kisa, id) => ((FIN.veri || {}).siparisler || []).find(s => s.kisa === kisa && s.Id === id);
+function sonrakiVade(s) {
+  const r = (s.plan || []).find(x => x.kalan > 0.005);
+  return r ? Object.assign({ gecikti: r.tarih < bugun() }, r) : null;
+}
+const odemeDurum = s => s.kalan <= 0.005 ? ['Ödendi', 'ok'] : s.odenen > 0 ? ['Kısmi ödendi', 'uyari'] : ['Ödenmedi', 'pasif'];
+
+SAYFA_CIZ.finans = function (ic, s, y) {
+  if (D.param && /^(ms|sa)\./.test(D.param)) return finansSiparisSayfa(ic, s, y, D.param.slice(0, 2), D.param.slice(3));
+  if (D.param && D.param.startsWith('d.')) { FIN.sekme = 'duzenli'; FIN._ac = D.param.slice(2); }
+  const tam = y === 'tam';
+  const sekmeler = [['ozet', 'Özet'], ['alacak', 'Alacaklar'], ['borc', 'Borçlar'], ['hareket', 'Hareketler'], ['duzenli', 'Düzenli Giderler'], ['genel', 'Genel Giderler']];
+  ic.innerHTML = sayfaBasHTML(s, y, tam ? `<button class="btn ikincil" type="button" onclick="duzenliForm()">+ Düzenli Gider</button>
+      <button class="btn" type="button" onclick="genelGiderForm()">+ Genel Gider</button>` : '') + `
+    <div class="sekmeler" role="tablist">${sekmeler.map(([k, a]) => `<button type="button" role="tab" class="${FIN.sekme === k ? 'on' : ''}" onclick="FIN.sekme='${k}';FIN.arama='';rotaUygula()">${a}</button>`).join('')}</div>
+    <div id="finIcerik"></div>`;
+  if (FIN.veri || ls.al('locus_c_finans')) { FIN.veri = FIN.veri || ls.al('locus_c_finans'); finansSekmeCiz(); }
+  else $('finIcerik').innerHTML = '<div class="kart bos"><p>Finans verileri yükleniyor…</p></div>';
+  finansYukle(true).then(() => {
+    if (D.aktif !== 'finans' || !$('finIcerik') || !$('modal').hidden) return;
+    finansSekmeCiz();
+    if (FIN._ac) { const id = FIN._ac; FIN._ac = null; duzenliOdeForm(id); }
+  }).catch(e => { if (!FIN.veri) $('finIcerik').innerHTML = `<div class="kart bos"><h3>Finans verileri alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function finansSekmeCiz() {
+  const ic = $('finIcerik'); if (!ic || !FIN.veri) return;
+  ({ ozet: finOzet, alacak: () => finSiparisListe('ms'), borc: () => finSiparisListe('sa'), hareket: finHareketler, duzenli: finDuzenli, genel: finGenel }[FIN.sekme] || finOzet)(ic);
+}
+
+// ---------- Özet ----------
+function finOzet(ic) {
+  const V = FIN.veri, bgn = bugun(), ay = bgn.slice(0, 7);
+  const pbs = Object.keys(PARA).filter(pb => V.siparisler.some(s => s.ParaBirimi === pb) || V.odemeler.some(o => o.HesapParaBirimi === pb) || V.giderler.some(g => g.ParaBirimi === pb));
+  if (!pbs.length) pbs.push('TRY');
+  const topla = (l, f) => l.reduce((t, x) => t + f(x), 0);
+  const gecikmis = (v) => topla(V.siparisler.filter(s => s.v === v), s => topla(s.plan.filter(r => r.kalan > 0.005 && r.tarih < bgn), r => r.kalan));
+  const kart = pb => {
+    const ms = V.siparisler.filter(s => s.ParaBirimi === pb && s.v === 'musteriSiparis'), sa = V.siparisler.filter(s => s.ParaBirimi === pb && s.v === 'satinalma');
+    const gecA = topla(ms, s => topla(s.plan.filter(r => r.kalan > 0.005 && r.tarih < bgn), r => r.kalan));
+    const gecB = topla(sa, s => topla(s.plan.filter(r => r.kalan > 0.005 && r.tarih < bgn), r => r.kalan));
+    const gelen = topla(V.odemeler.filter(o => o.Tur === 'Tahsilat' && o.HesapParaBirimi === pb && String(o.Tarih).startsWith(ay)), o => o.HesapTutar);
+    const giden = topla(V.odemeler.filter(o => o.Tur === 'Ödeme' && o.HesapParaBirimi === pb && String(o.Tarih).startsWith(ay)), o => o.HesapTutar)
+      + topla(V.giderler.filter(g => g.ParaBirimi === pb && String(g.Tarih).startsWith(ay)), g => g.Tutar);
+    const h = (et, v, cls, alt) => `<div class="fo-hucre ${cls || ''}"><span>${et}</span><b>${para(v, pb)}</b>${alt ? `<small>${alt}</small>` : ''}</div>`;
+    return `<section class="kart fo-kart"><h3><span class="kod">${PARA[pb]}</span></h3><div class="fo-grid">
+      ${h('Toplam alacak', topla(ms, s => s.kalan), 'gelir')}${h('Vadesi geçmiş alacak', gecA, gecA > 0 ? 'kirmizi' : '')}
+      ${h('Toplam borç', topla(sa, s => s.kalan), 'gider')}${h('Vadesi geçmiş borç', gecB, gecB > 0 ? 'kirmizi' : '')}
+      ${h('Bu ay gelen', gelen, 'gelir')}${h('Bu ay giden', giden, 'gider', 'ödemeler + giderler')}</div></section>`;
+  };
+  const sinir = ajTarihEkle(bgn, 30);
+  const yaklasan = [];
+  V.siparisler.forEach(s => s.plan.forEach(r => { if (r.kalan > 0.005 && r.tarih <= sinir) yaklasan.push({ tarih: r.tarih, tur: s.v === 'musteriSiparis' ? 'gelir' : 'gider', baslik: `${s.tur}: ${s.FirmaAd}`, alt: `${s.No}, ${r.asama} (%${r.oran})`, tutar: para(r.kalan, s.ParaBirimi), rota: `finans/${s.kisa}.${s.Id}` }); }));
+  V.duzenli.filter(d => d.Aktif).forEach(d => (d.bekleyen || []).filter(t => t <= sinir).forEach(t => yaklasan.push({ tarih: t, tur: 'gider', baslik: d.Ad, alt: 'Düzenli gider, ' + PERIYOT_AD[d.Periyot].toLocaleLowerCase('tr-TR'), tutar: para(d.Tutar, d.ParaBirimi), rota: `finans/d.${d.Id}` })));
+  yaklasan.sort((a, b) => a.tarih.localeCompare(b.tarih));
+  ic.innerHTML = `<div class="fo-kartlar">${pbs.map(kart).join('')}</div>
+    <section class="kart panel"><h3 class="panel-bas">Vadesi gelen ve önümüzdeki 30 gün</h3>
+      ${yaklasan.length ? yaklasan.map(x => `<div class="f-satir ${x.tarih < bgn ? 'gecikti-satir' : ''}" onclick="git('${x.rota}')">
+          <span class="f-tarih">${tarihKisa(x.tarih)}${x.tarih < bgn ? '<small>Gecikti</small>' : ''}</span>
+          <span class="f-ic"><b>${esc(x.baslik)}</b><small>${esc(x.alt)}</small></span>
+          <span class="f-tutar ${x.tur}">${x.tur === 'gelir' ? '+' : '−'}${x.tutar}</span></div>`).join('')
+        : '<p class="soluk">Önümüzdeki 30 günde vadesi gelen tahsilat ya da ödeme yok.</p>'}</section>`;
+}
+
+// ---------- Alacaklar / Borçlar ----------
+function finSiparisListe(kisa) {
+  const ic = $('finIcerik'), alacak = kisa === 'ms';
+  ic.innerHTML = `<div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Sipariş no veya firma ara" value="${esc(FIN.arama)}" oninput="FIN.arama=this.value;finSiparisSatirlar('${kisa}')"></label>
+    <div class="cips">${[['acik', 'Ödenmemiş'], ['gecikti', 'Vadesi geçen'], ['tumu', 'Tümü']].map(([k, a]) => `<button type="button" data-f="${k}" onclick="FIN.filtre='${k}';finSiparisSatirlar('${kisa}')">${a}</button>`).join('')}</div></div>
+    <div class="ozet" id="finOzetSat"></div><div class="kart" id="finSatirlar"></div>`;
+  finSiparisSatirlar(kisa);
+}
+function finSiparisSatirlar(kisa) {
+  const kutu = $('finSatirlar'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === FIN.filtre));
+  const q = trKucuk(FIN.arama);
+  const l = FIN.veri.siparisler.filter(s => s.kisa === kisa)
+    .filter(s => FIN.filtre === 'tumu' || (FIN.filtre === 'acik' && s.kalan > 0.005) || (FIN.filtre === 'gecikti' && (sonrakiVade(s) || {}).gecikti))
+    .filter(s => !q || [s.No, s.FirmaAd].some(x => trKucuk(x).includes(q)))
+    .sort((a, b) => String((sonrakiVade(a) || {}).tarih || '9').localeCompare(String((sonrakiVade(b) || {}).tarih || '9')) || String(b.Tarih).localeCompare(String(a.Tarih)));
+  const top = {}; l.forEach(s => top[s.ParaBirimi] = (top[s.ParaBirimi] || 0) + s.kalan);
+  $('finOzetSat').innerHTML = `<span class="soluk">${l.length} sipariş, kalan</span>` + Object.keys(PARA).filter(p => top[p]).map(p => `<span class="ozet-tutar">${para(top[p], p)}</span>`).join('');
+  kutu.innerHTML = l.length ? l.map(s => {
+    const v = sonrakiVade(s), [dAd, dCls] = odemeDurum(s), oran = s.Toplam > 0 ? Math.min(100, s.odenen / s.Toplam * 100) : 0;
+    return `<div class="m-satir s-satir" onclick="git('finans/${s.kisa}.${s.Id}')">
+      <span class="s-no"><b>${esc(s.No)}</b><small>${tarihKisa(s.Tarih)}</small></span>
+      <span class="ms-ic"><span class="ms-ad">${esc(s.FirmaAd)}</span>
+        <span class="ms-alt">${v ? `Sıradaki: ${esc(v.asama)}, ${tarihKisa(v.tarih)}${v.gecikti ? ' <span class="gecikti">Gecikti</span>' : ''}` : s.plan.length ? 'Plan tamamlandı' : 'Ödeme planı yok'}</span>
+        <span class="f-bar"><span style="width:${oran}%"></span></span></span>
+      <span class="f-kalan"><b>${para(s.kalan, s.ParaBirimi)}</b><small>/ ${para(s.Toplam, s.ParaBirimi)}</small></span>
+      <span class="rozet ${dCls}">${dAd}</span></div>`;
+  }).join('') : `<div class="bos"><div class="b-ikon">${kisa === 'ms' ? '💰' : '💸'}</div><h3>${FIN.filtre === 'gecikti' ? 'Vadesi geçen yok' : 'Kayıt yok'}</h3></div>`;
+}
+
+// ---------- Sipariş ödeme sayfası (plan + ödemeler) ----------
+function finansPlanHTML(s) {
+  if (!s.plan.length) return `<p class="soluk">Bu siparişte ödeme planı yok. ${yetki('siparisler') === 'tam' ? 'Sipariş formundan plan ekleyebilirsiniz.' : ''}</p>`;
+  return `<div class="tablo-kap"><table class="tablo"><thead><tr><th>Aşama</th><th class="sag">Oran</th><th>Vade</th><th class="sag">Tutar</th><th class="sag">Ödenen</th><th class="sag">Kalan</th><th>Durum</th></tr></thead>
+    <tbody>${s.plan.map(r => { const gec = r.kalan > 0.005 && r.tarih < bugun();
+      return `<tr><td>${esc(r.asama)}</td><td class="sag">%${sayiGoster(r.oran)}</td><td class="y-nw">${tarihKisa(r.tarih)}${gec ? ' <span class="gecikti">Gecikti</span>' : ''}</td>
+        <td class="sag">${para(r.tutar, s.ParaBirimi)}</td><td class="sag">${para(r.odenen, s.ParaBirimi)}</td><td class="sag"><b>${para(r.kalan, s.ParaBirimi)}</b></td>
+        <td>${r.kalan <= 0.005 ? '<span class="rozet ok">Ödendi</span>' : r.odenen > 0 ? '<span class="rozet uyari">Kısmi</span>' : gec ? '<span class="rozet tehlike">Bekliyor</span>' : '<span class="rozet pasif">Bekliyor</span>'}</td></tr>`; }).join('')}</tbody></table></div>`;
+}
+function finansOdemelerHTML(s) {
+  const l = FIN.veri.odemeler.filter(o => o.SiparisId === s.Id).sort((a, b) => String(b.Tarih).localeCompare(String(a.Tarih)));
+  const tam = yetki('finans') === 'tam';
+  return l.length ? l.map(o => `<div class="f-satir">
+      <span class="f-tarih">${tarihKisa(o.Tarih)}</span>
+      <span class="f-ic"><b>${para(o.Tutar, o.ParaBirimi)}${o.HesapParaBirimi !== o.ParaBirimi ? ` <span class="soluk">→ hesaba ${para(o.HesapTutar, o.HesapParaBirimi)} geçti</span>` : ''}</b>
+        <small>${[o.OdemeSekli, o.Aciklama, '@' + (o.Olusturan || '?')].filter(Boolean).map(esc).join(', ')}${o.HesapParaBirimi !== o.ParaBirimi ? `, kur ${sayiGoster(Math.round(o.HesapTutar / o.Tutar * 10000) / 10000)}` : ''}</small></span>
+      ${tam ? `<button class="k-sil" type="button" title="Sil" aria-label="Ödemeyi sil" onclick="odemeSilOnay('${o.Id}')">×</button>` : ''}</div>`).join('')
+    : `<p class="soluk">Henüz ${s.v === 'musteriSiparis' ? 'tahsilat' : 'ödeme'} girilmedi.</p>`;
+}
+function finansSiparisSayfa(ic, sy, y, kisa, id) {
+  const ciz = () => {
+    const s = finSiparis(kisa, id), tam = y === 'tam';
+    const geri = `<button class="geri" type="button" onclick="FIN.sekme='${kisa === 'ms' ? 'alacak' : 'borc'}';git('finans')">‹ Finans</button>`;
+    if (!s) { ic.innerHTML = geri + '<div class="kart bos"><h3>Sipariş bulunamadı</h3><p>Silinmiş ya da iptal edilmiş olabilir.</p></div>'; return; }
+    const [dAd, dCls] = odemeDurum(s), gelen = s.v === 'musteriSiparis';
+    ic.innerHTML = geri + `
+      <div class="d-bas"><span class="av buyuk">${gelen ? '💰' : '💸'}</span>
+        <div class="d-bas-ic"><h2>${esc(s.No)}</h2><div class="d-rozetler"><span class="rozet">${esc(s.FirmaAd)}</span><span class="rozet ${dCls}">${dAd}</span></div></div>
+        <div class="d-bas-sag">${yetki('siparisler') !== 'yok' ? `<button class="btn ikincil" type="button" onclick="git('siparisler/${s.kisa}.${s.Id}')">Siparişi Aç</button>` : ''}
+          ${tam && s.kalan > 0.005 ? `<button class="btn ana" type="button" onclick="odemeForm('${s.kisa}','${s.Id}')">+ ${gelen ? 'Tahsilat' : 'Ödeme'} Ekle</button>` : ''}</div></div>
+      <section class="kart panel"><div class="fo-grid uc">
+        <div class="fo-hucre"><span>Sipariş toplamı</span><b>${para(s.Toplam, s.ParaBirimi)}</b></div>
+        <div class="fo-hucre ${gelen ? 'gelir' : 'gider'}"><span>${gelen ? 'Tahsil edilen' : 'Ödenen'}</span><b>${para(s.odenen, s.ParaBirimi)}</b></div>
+        <div class="fo-hucre"><span>Kalan</span><b>${para(s.kalan, s.ParaBirimi)}</b></div></div>
+        <h4 class="panel-alt">Ödeme planı</h4>${finansPlanHTML(s)}
+        <h4 class="panel-alt">${gelen ? 'Tahsilatlar' : 'Ödemeler'}</h4>${finansOdemelerHTML(s)}</section>`;
+  };
+  if (FIN.veri) ciz(); else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
+  finansYukle(true).then(() => { if (D.aktif === 'finans' && D.param === kisa + '.' + id && $('modal').hidden) ciz(); })
+    .catch(e => { if (!FIN.veri) ic.innerHTML = `<div class="kart bos"><h3>Veriler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+// ---------- Tahsilat / ödeme formu ----------
+let OF = null;
+function odemeForm(kisa, id) {
+  const s = finSiparis(kisa, id); if (!s) return;
+  const gelen = s.v === 'musteriSiparis', v = sonrakiVade(s), doviz = s.ParaBirimi !== 'TRY';
+  OF = { kisa, id, mod: 'doviz' };
+  const varsayilan = sayiYaz(v ? v.kalan : s.kalan);
+  modalAc(`${s.No}: ${gelen ? 'Tahsilat' : 'Ödeme'} Ekle`, `
+    <p class="bilgi-not" style="margin:0 0 14px">${esc(s.FirmaAd)}, kalan ${para(s.kalan, s.ParaBirimi)}${v ? `. Sıradaki aşama: ${esc(v.asama)}, ${para(v.kalan, s.ParaBirimi)} (${tarihKisa(v.tarih)})` : ''}.</p>
+    <div class="iki">
+      <div><label class="et" for="ofTarih">Tarih</label><input class="girdi" type="date" id="ofTarih" value="${bugun()}"></div>
+      <div><label class="et" for="ofSekil">Ödeme şekli</label><select class="girdi" id="ofSekil"><option value="">Seçilmedi</option>${ODEME_SEKILLERI.map(x => `<option>${x}</option>`).join('')}</select></div>
+    </div>
+    ${doviz ? `<label class="et">${gelen ? 'Ödeme nasıl geldi?' : 'Ödeme nasıl yapıldı?'}</label>
+      <div class="cips" style="width:100%;margin-bottom:18px"><button type="button" style="flex:1" data-om="doviz" onclick="ofMod('doviz')">${PARA[s.ParaBirimi]} olarak</button>
+        <button type="button" style="flex:1" data-om="tl" onclick="ofMod('tl')">TL'ye çevrilerek</button></div>` : ''}
+    <div id="ofTlKutu" hidden><label class="et" for="ofTl">Hesaba ${gelen ? 'geçen' : 'çıkan'} TL tutarı *</label>
+      <input class="girdi" id="ofTl" inputmode="decimal" placeholder="Ör. 980.000" oninput="ofKur()"></div>
+    <label class="et" for="ofTutar" id="ofTutarEt">Tutar (${PARA[s.ParaBirimi]}) *</label>
+    <input class="girdi" id="ofTutar" inputmode="decimal" value="${esc(varsayilan)}" oninput="ofKur()">
+    <p class="bilgi-not" id="ofKurBilgi"></p>
+    <label class="et" for="ofAck">Açıklama</label><input class="girdi" id="ofAck" placeholder="Ör. dekont no, banka">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="ofKaydet" onclick="odemeKaydet()">Kaydet</button>`);
+  ofMod('doviz');
+}
+function ofMod(m) {
+  OF.mod = m;
+  const s = finSiparis(OF.kisa, OF.id);
+  document.querySelectorAll('[data-om]').forEach(b => b.classList.toggle('on', b.dataset.om === m));
+  $('ofTlKutu').hidden = m !== 'tl';
+  $('ofTutarEt').textContent = m === 'tl' ? `Kapattığı ${PARA[s.ParaBirimi]} tutarı *` : `Tutar (${PARA[s.ParaBirimi]}) *`;
+  ofKur();
+}
+function ofKur() {
+  const s = finSiparis(OF.kisa, OF.id), t = sayiOku($('ofTutar').value), tl = sayiOku(($('ofTl') || {}).value);
+  $('ofKurBilgi').textContent = OF.mod === 'tl' && t > 0 && tl > 0 ? `Bilgi: 1 ${PARA[s.ParaBirimi]} = ${(tl / t).toLocaleString('tr-TR', { maximumFractionDigits: 4 })} TL olarak kapanacak. Sistem kur çevrimi yapmaz, girdiğiniz iki tutarı saklar.` : '';
+}
+async function odemeKaydet() {
+  const s = finSiparis(OF.kisa, OF.id), hata = m => ($('mHata').textContent = m);
+  const tutar = sayiOku($('ofTutar').value), tl = OF.mod === 'tl' ? sayiOku($('ofTl').value) : 0;
+  if (!(tutar > 0)) return hata('Tutar geçersiz. Örnek: 36.000 veya 1.250,50');
+  if (tutar > s.kalan + 0.005) return hata(`Kalan bakiye ${para(s.kalan, s.ParaBirimi)}, daha fazlası girilemez.`);
+  if (OF.mod === 'tl' && !(tl > 0)) return hata('Hesaba geçen TL tutarını girin.');
+  const btn = $('ofKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    await api('kayit.kaydet', { varlik: 'odeme', kayit: { SiparisTur: s.v, SiparisId: s.Id, Tarih: $('ofTarih').value, Tutar: tutar,
+      HesapParaBirimi: OF.mod === 'tl' ? 'TRY' : s.ParaBirimi, HesapTutar: tl, OdemeSekli: $('ofSekil').value, Aciklama: $('ofAck').value.trim() } });
+    await finansYukle(true); modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle();
+    toast(`${s.v === 'musteriSiparis' ? 'Tahsilat' : 'Ödeme'} kaydedildi.`);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+function odemeSilOnay(id) {
+  const o = FIN.veri.odemeler.find(x => x.Id === id);
+  modalAc('Kaydı Sil', `<p>${tarihKisa(o.Tarih)} tarihli <b>${para(o.Tutar, o.ParaBirimi)}</b> ${o.Tur.toLocaleLowerCase('tr-TR')} kaydı (${esc(o.SiparisNo)}) silinecek; sipariş bakiyesi buna göre yeniden hesaplanır.</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="finKayitSil('odeme','${id}')">Sil</button>`);
+}
+async function finKayitSil(varlik, id) {
+  const btn = $('mSil'); btn.disabled = true;
+  try { await api('kayit.sil', { varlik, id }); await finansYukle(true); modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast('Kayıt silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Hareketler ----------
+function finHareketler(ic) {
+  ic.innerHTML = `<div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Firma, sipariş no, açıklama ara" value="${esc(FIN.arama)}" oninput="FIN.arama=this.value;finHareketSatirlar()"></label>
+    <div class="cips">${[['tumu', 'Tümü'], ['gelir', 'Gelir'], ['gider', 'Gider']].map(([k, a]) => `<button type="button" data-f="${k}" onclick="FIN.hTur='${k}';finHareketSatirlar()">${a}</button>`).join('')}</div></div>
+    <div class="ozet" id="finOzetSat"></div><div class="kart" id="finSatirlar"></div>`;
+  finHareketSatirlar();
+}
+function finHareketSatirlar() {
+  const kutu = $('finSatirlar'); if (!kutu) return;
+  document.querySelectorAll('.cips [data-f]').forEach(b => b.classList.toggle('on', b.dataset.f === FIN.hTur));
+  const V = FIN.veri, q = trKucuk(FIN.arama), tam = yetki('finans') === 'tam';
+  const l = V.odemeler.map(o => ({ id: o.Id, varlik: 'odeme', tur: o.Tur === 'Tahsilat' ? 'gelir' : 'gider', tarih: o.Tarih, baslik: `${o.Tur}: ${o.FirmaAd}`,
+      alt: [o.SiparisNo, o.HesapParaBirimi !== o.ParaBirimi ? `kapattığı ${para(o.Tutar, o.ParaBirimi)}` : '', o.OdemeSekli, o.Aciklama].filter(Boolean).join(', '),
+      pb: o.HesapParaBirimi, tutar: o.HesapTutar, rota: `finans/${o.SiparisTur === 'musteriSiparis' ? 'ms' : 'sa'}.${o.SiparisId}` }))
+    .concat(V.giderler.map(g => ({ id: g.Id, varlik: 'gider', tur: 'gider', tarih: g.Tarih, baslik: g.Aciklama,
+      alt: [g.Tur === 'duzenli' ? 'Düzenli gider' : 'Genel gider', g.Kategori, g.OdemeSekli, g.Notlar].filter(Boolean).join(', '), pb: g.ParaBirimi, tutar: g.Tutar })))
+    .filter(x => FIN.hTur === 'tumu' || x.tur === FIN.hTur)
+    .filter(x => !q || trKucuk(x.baslik + ' ' + x.alt).includes(q))
+    .sort((a, b) => String(b.tarih).localeCompare(String(a.tarih)));
+  const top = {}; l.forEach(x => { top[x.pb] = top[x.pb] || { g: 0, c: 0 }; top[x.pb][x.tur === 'gelir' ? 'g' : 'c'] += Number(x.tutar); });
+  $('finOzetSat').innerHTML = `<span class="soluk">${l.length} hareket</span>` + Object.keys(top).map(p => `<span class="ozet-tutar"><span class="gelir-y">+${para(top[p].g, p)}</span> / <span class="gider-y">−${para(top[p].c, p)}</span></span>`).join('');
+  kutu.innerHTML = l.length ? l.slice(0, 400).map(x => `<div class="f-satir" ${x.rota ? `onclick="git('${x.rota}')"` : ''}>
+      <span class="f-tarih">${tarihKisa(x.tarih)}</span>
+      <span class="f-ic"><b>${esc(x.baslik)}</b><small>${esc(x.alt)}</small></span>
+      <span class="f-tutar ${x.tur}">${x.tur === 'gelir' ? '+' : '−'}${para(x.tutar, x.pb)}</span>
+      ${tam ? `<button class="k-sil" type="button" title="Sil" aria-label="Kaydı sil" onclick="event.stopPropagation();${x.varlik === 'odeme' ? `odemeSilOnay('${x.id}')` : `giderSilOnay('${x.id}')`}">×</button>` : ''}</div>`).join('')
+    : '<div class="bos"><h3>Hareket yok</h3></div>';
+}
+
+// ---------- Düzenli giderler ----------
+function finDuzenli(ic) {
+  const V = FIN.veri, tam = yetki('finans') === 'tam', bgn = bugun();
+  const l = V.duzenli.slice().sort((a, b) => (b.Aktif - a.Aktif) || String((a.bekleyen || [])[0] || '9').localeCompare(String((b.bekleyen || [])[0] || '9')));
+  ic.innerHTML = l.length ? `<div class="kart">${l.map(d => {
+    const s = (d.bekleyen || [])[0], gec = s && s < bgn, n = (d.bekleyen || []).filter(t => t < bgn).length;
+    return `<div class="m-satir ${d.Aktif ? '' : 'pasif'}" onclick="duzenliOdeForm('${d.Id}')">
+      <span class="av">🧾</span>
+      <span class="ms-ic"><span class="ms-ad">${esc(d.Ad)}</span><span class="ms-alt">${para(d.Tutar, d.ParaBirimi)}, ${PERIYOT_AD[d.Periyot].toLocaleLowerCase('tr-TR')}${d.Kategori ? ', ' + esc(d.Kategori) : ''}</span></span>
+      <span class="ms-tel">${d.Aktif && s ? `Sıradaki ödeme ${tarihKisa(s)}` : d.Aktif ? '' : 'Pasif'}</span>
+      ${d.Aktif && gec ? `<span class="rozet tehlike">${n > 1 ? n + ' dönem ' : ''}gecikti</span>` : ''}
+      <span class="m-btn">${tam && d.Aktif && s ? `<button class="btn kucuk" type="button" onclick="event.stopPropagation();duzenliOdeForm('${d.Id}')">✓ Ödendi</button>` : ''}
+        ${tam ? `<button class="btn ikincil kucuk" type="button" onclick="event.stopPropagation();duzenliForm('${d.Id}')">Düzenle</button>` : ''}</span></div>`;
+  }).join('')}</div>` : `<div class="kart bos"><div class="b-ikon">🧾</div><h3>Düzenli gider yok</h3><p>${tam ? 'İnternet, telefon faturası, kira gibi sabit ödemeleri Düzenli Gider ile ekleyin.' : ''}</p></div>`;
+}
+function duzenliForm(id) {
+  const d = id ? FIN.veri.duzenli.find(x => x.Id === id) : null;
+  modalAc(d ? 'Düzenli Gideri Düzenle' : 'Yeni Düzenli Gider', `
+    <label class="et" for="dgAd">Gider adı *</label><input class="girdi" id="dgAd" value="${d ? esc(d.Ad) : ''}" placeholder="Ör. İnternet faturası">
+    <div class="iki">
+      <div><label class="et" for="dgTutar">Sabit tutar *</label><input class="girdi" id="dgTutar" inputmode="decimal" value="${d ? sayiYaz(d.Tutar) : ''}"></div>
+      <div><label class="et">Para birimi</label><div class="cips" style="width:100%;margin-bottom:18px">${Object.keys(PARA).map(p => `<button type="button" style="flex:1" data-dpb="${p}" class="${(d ? d.ParaBirimi : 'TRY') === p ? 'on' : ''}" onclick="document.querySelectorAll('[data-dpb]').forEach(b=>b.classList.toggle('on',b===this))">${PARA[p]}</button>`).join('')}</div></div>
+      <div><label class="et" for="dgPer">Periyot</label><select class="girdi" id="dgPer">${Object.entries(PERIYOT_AD).map(([k, a]) => `<option value="${k}" ${(d ? d.Periyot : 'ay') === k ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
+      <div><label class="et" for="dgBas">İlk ödeme tarihi *</label><input class="girdi" type="date" id="dgBas" value="${d ? d.Baslangic : bugun()}"></div>
+      <div><label class="et" for="dgKat">Kategori</label><input class="girdi" id="dgKat" list="dgKatListe" value="${d ? esc(d.Kategori) : ''}" placeholder="Ör. Fatura"><datalist id="dgKatListe">${['Fatura', 'Kira', 'Abonelik', 'Sigorta', 'Vergi / SGK', 'Diğer'].map(x => `<option value="${x}">`).join('')}</datalist></div>
+      ${d ? `<div><label class="et">Durum</label><div class="cips" style="width:100%;margin-bottom:18px"><button type="button" style="flex:1" data-da="1" class="${d.Aktif ? 'on' : ''}" onclick="document.querySelectorAll('[data-da]').forEach(b=>b.classList.toggle('on',b===this))">Aktif</button><button type="button" style="flex:1" data-da="0" class="${d.Aktif ? '' : 'on'}" onclick="document.querySelectorAll('[data-da]').forEach(b=>b.classList.toggle('on',b===this))">Pasif</button></div></div>` : ''}
+    </div>
+    <p class="bilgi-not">Ödeme günü ilk ödeme tarihinden alınır (ör. 15 Ağustos seçerseniz her ayın 15'i). Takvimde tutar yazmadan görünür, günü yaklaşınca uyarı gelir.</p>
+    <label class="et" for="dgNot">Not</label><textarea class="girdi alan" id="dgNot" style="min-height:60px" placeholder="Abone no, hesap no vb.">${d ? esc(d.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `${d ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="duzenliSil('${d.Id}')">Sil</button>` : ''}
+     <button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="dgKaydet" onclick="duzenliKaydet('${d ? d.Id : ''}')">Kaydet</button>`);
+}
+async function duzenliKaydet(id) {
+  const t = sayiOku($('dgTutar').value);
+  const kayit = { Id: id || null, Ad: $('dgAd').value.trim(), Tutar: t, ParaBirimi: (document.querySelector('[data-dpb].on') || {}).dataset.dpb,
+    Periyot: $('dgPer').value, Baslangic: $('dgBas').value, Kategori: $('dgKat').value.trim(), Notlar: $('dgNot').value.trim(),
+    Aktif: id ? (document.querySelector('[data-da].on') || {}).dataset.da !== '0' : true };
+  if (!kayit.Ad) return ($('mHata').textContent = 'Gider adı gerekli.');
+  if (!(t >= 0)) return ($('mHata').textContent = 'Tutar geçersiz. Örnek: 850 veya 1.250,50');
+  const btn = $('dgKaydet'); btn.disabled = true;
+  try { await api('kayit.kaydet', { varlik: 'duzenliGider', kayit }); await finansYukle(true); modalKapat(); FIN.sekme = 'duzenli'; rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast('Düzenli gider kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+async function duzenliSil(id) {
+  if (!confirm('Düzenli gider silinsin mi?')) return;
+  try { await api('kayit.sil', { varlik: 'duzenliGider', id }); await finansYukle(true); modalKapat(); rotaUygula(); toast('Düzenli gider silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; }
+}
+function duzenliOdeForm(id) {
+  const d = FIN.veri.duzenli.find(x => x.Id === id); if (!d) return;
+  const tam = yetki('finans') === 'tam', sinir = ajTarihEkle(bugun(), 60);
+  const donemler = (d.bekleyen || []).filter(t => t <= sinir);
+  const odenenler = FIN.veri.giderler.filter(g => g.DuzenliId === id).sort((a, b) => String(b.Donem).localeCompare(String(a.Donem)));
+  modalAc(`🧾 ${d.Ad}`, `
+    <p class="bilgi-not" style="margin:0 0 14px">${para(d.Tutar, d.ParaBirimi)}, ${PERIYOT_AD[d.Periyot].toLocaleLowerCase('tr-TR')}${d.Notlar ? '. ' + esc(d.Notlar) : ''}</p>
+    ${tam && d.Aktif && donemler.length ? `<div class="bolum-et">Ödendi olarak işaretle</div>
+      <div class="iki">
+        <div><label class="et" for="doDonem">Dönem (ödeme günü)</label><select class="girdi" id="doDonem">${donemler.map(t => `<option value="${t}">${tarihKisa(t)}${t < bugun() ? ' (gecikti)' : ''}</option>`).join('')}</select></div>
+        <div><label class="et" for="doTarih">Ödeme tarihi</label><input class="girdi" type="date" id="doTarih" value="${bugun()}"></div>
+        <div><label class="et" for="doTutar">Tutar (${PARA[d.ParaBirimi]})</label><input class="girdi" id="doTutar" inputmode="decimal" value="${sayiYaz(d.Tutar)}"></div>
+        <div><label class="et" for="doSekil">Ödeme şekli</label><select class="girdi" id="doSekil"><option value="">Seçilmedi</option>${ODEME_SEKILLERI.map(x => `<option>${x}</option>`).join('')}</select></div>
+      </div>` : `<p class="soluk">${d.Aktif ? 'Önümüzdeki 60 günde bekleyen ödeme yok.' : 'Bu düzenli gider pasif.'}</p>`}
+    <div class="bolum-et">Son ödemeler</div>
+    ${odenenler.length ? odenenler.slice(0, 12).map(g => `<div class="f-satir"><span class="f-tarih">${tarihKisa(g.Donem)}</span><span class="f-ic"><b>${para(g.Tutar, g.ParaBirimi)}</b><small>${tarihKisa(g.Tarih)} tarihinde ödendi${g.OdemeSekli ? ', ' + esc(g.OdemeSekli) : ''}</small></span>
+      ${tam ? `<button class="k-sil" type="button" aria-label="Sil" onclick="giderSilOnay('${g.Id}')">×</button>` : ''}</div>`).join('') : '<p class="soluk">Henüz ödeme kaydı yok.</p>'}
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Kapat</button>${tam && d.Aktif && donemler.length ? `<button class="btn" type="button" id="doKaydet" onclick="duzenliOde('${id}')">✓ Ödendi</button>` : ''}`, true);
+}
+async function duzenliOde(id) {
+  const t = sayiOku($('doTutar').value);
+  if (!(t > 0)) return ($('mHata').textContent = 'Tutar geçersiz.');
+  const d = FIN.veri.duzenli.find(x => x.Id === id), btn = $('doKaydet'); btn.disabled = true;
+  try {
+    await api('kayit.kaydet', { varlik: 'gider', kayit: { Tur: 'duzenli', DuzenliId: id, Donem: $('doDonem').value, Tarih: $('doTarih').value, Tutar: t, ParaBirimi: d.ParaBirimi, OdemeSekli: $('doSekil').value } });
+    await finansYukle(true); modalKapat(); rotaUygula(); BILD.zaman = 0; bildirimYukle(); toast(`${d.Ad}: ödendi olarak işaretlendi.`);
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Genel giderler ----------
+function finGenel(ic) {
+  const tam = yetki('finans') === 'tam';
+  ic.innerHTML = `<div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Açıklama, kategori ara" value="${esc(FIN.arama)}" oninput="FIN.arama=this.value;finGenelSatirlar()"></label></div>
+    <div class="ozet" id="finOzetSat"></div><div class="kart" id="finSatirlar"></div>`;
+  finGenelSatirlar();
+}
+function finGenelSatirlar() {
+  const kutu = $('finSatirlar'); if (!kutu) return;
+  const q = trKucuk(FIN.arama), tam = yetki('finans') === 'tam', ay = bugun().slice(0, 7);
+  const l = FIN.veri.giderler.filter(g => g.Tur === 'genel').filter(g => !q || trKucuk([g.Aciklama, g.Kategori, g.Notlar].join(' ')).includes(q))
+    .sort((a, b) => String(b.Tarih).localeCompare(String(a.Tarih)));
+  const top = {}; l.filter(g => String(g.Tarih).startsWith(ay)).forEach(g => top[g.ParaBirimi] = (top[g.ParaBirimi] || 0) + Number(g.Tutar));
+  $('finOzetSat').innerHTML = `<span class="soluk">${l.length} gider, bu ay</span>` + (Object.keys(top).length ? Object.keys(top).map(p => `<span class="ozet-tutar">${para(top[p], p)}</span>`).join('') : '<span class="ozet-tutar">0</span>');
+  kutu.innerHTML = l.length ? l.map(g => `<div class="f-satir" ${tam ? `onclick="genelGiderForm('${g.Id}')"` : ''}>
+      <span class="f-tarih">${tarihKisa(g.Tarih)}</span>
+      <span class="f-ic"><b>${esc(g.Aciklama)}</b><small>${[g.Kategori, g.OdemeSekli, g.Notlar].filter(Boolean).map(esc).join(', ')}</small></span>
+      <span class="f-tutar gider">−${para(g.Tutar, g.ParaBirimi)}</span>
+      ${tam ? `<button class="k-sil" type="button" aria-label="Sil" onclick="event.stopPropagation();giderSilOnay('${g.Id}')">×</button>` : ''}</div>`).join('')
+    : `<div class="bos"><div class="b-ikon">🧾</div><h3>Genel gider yok</h3><p>${tam ? 'Anlık alımları Genel Gider ile ekleyin; nereden ne alındığını açıklamaya yazın.' : ''}</p></div>`;
+}
+function genelGiderForm(id) {
+  const g = id ? FIN.veri.giderler.find(x => x.Id === id) : null;
+  const kategoriler = [...new Set([...GIDER_KATEGORI, ...FIN.veri.giderler.map(x => x.Kategori).filter(Boolean)])];
+  modalAc(g ? 'Gideri Düzenle' : 'Yeni Genel Gider', `
+    <label class="et" for="ggAck">Açıklama * <span class="soluk">(nereden, ne alındı)</span></label>
+    <input class="girdi" id="ggAck" value="${g ? esc(g.Aciklama) : ''}" placeholder="Ör. Yıldız Hırdavat, M8 cıvata ve somun">
+    <div class="iki">
+      <div><label class="et" for="ggTarih">Tarih</label><input class="girdi" type="date" id="ggTarih" value="${g ? g.Tarih : bugun()}"></div>
+      <div><label class="et" for="ggKat">Kategori</label><input class="girdi" id="ggKat" list="ggKatListe" value="${g ? esc(g.Kategori) : ''}"><datalist id="ggKatListe">${kategoriler.map(x => `<option value="${esc(x)}">`).join('')}</datalist></div>
+      <div><label class="et" for="ggTutar">Tutar *</label><input class="girdi" id="ggTutar" inputmode="decimal" value="${g ? sayiYaz(g.Tutar) : ''}"></div>
+      <div><label class="et">Para birimi</label><div class="cips" style="width:100%;margin-bottom:18px">${Object.keys(PARA).map(p => `<button type="button" style="flex:1" data-gpb="${p}" class="${(g ? g.ParaBirimi : 'TRY') === p ? 'on' : ''}" onclick="document.querySelectorAll('[data-gpb]').forEach(b=>b.classList.toggle('on',b===this))">${PARA[p]}</button>`).join('')}</div></div>
+      <div><label class="et" for="ggSekil">Ödeme şekli</label><select class="girdi" id="ggSekil"><option value="">Seçilmedi</option>${ODEME_SEKILLERI.map(x => `<option ${g && g.OdemeSekli === x ? 'selected' : ''}>${x}</option>`).join('')}</select></div>
+    </div>
+    <label class="et" for="ggNot">Not</label><textarea class="girdi alan" id="ggNot" style="min-height:60px" placeholder="Fatura / fiş no, kimin aldığı vb.">${g ? esc(g.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="ggKaydet" onclick="genelGiderKaydet('${g ? g.Id : ''}')">Kaydet</button>`);
+  setTimeout(() => $('ggAck').focus(), 50);
+}
+async function genelGiderKaydet(id) {
+  const t = sayiOku($('ggTutar').value);
+  const kayit = { Id: id || null, Tur: 'genel', Aciklama: $('ggAck').value.trim(), Tarih: $('ggTarih').value, Kategori: $('ggKat').value.trim(),
+    Tutar: t, ParaBirimi: (document.querySelector('[data-gpb].on') || {}).dataset.gpb, OdemeSekli: $('ggSekil').value, Notlar: $('ggNot').value.trim() };
+  if (!kayit.Aciklama) return ($('mHata').textContent = 'Açıklama gerekli (nereden, ne alındı).');
+  if (!(t > 0)) return ($('mHata').textContent = 'Tutar geçersiz. Örnek: 340 veya 1.250,50');
+  const btn = $('ggKaydet'); btn.disabled = true;
+  try { await api('kayit.kaydet', { varlik: 'gider', kayit }); await finansYukle(true); modalKapat(); if (D.aktif === 'finans' && !D.param) { FIN.sekme = 'genel'; rotaUygula(); } toast('Gider kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+function giderSilOnay(id) {
+  const g = FIN.veri.giderler.find(x => x.Id === id);
+  modalAc('Gideri Sil', `<p>${tarihKisa(g.Tarih)} tarihli <b>${esc(g.Aciklama)}</b> (${para(g.Tutar, g.ParaBirimi)}) silinecek.</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="finKayitSil('gider','${id}')">Sil</button>`);
+}
+
+// ---------- Sipariş formu: ödeme planı ----------
+const PLAN_SABLON = {
+  pesin: [['Peşinat', 100, 'siparis', 0]],
+  yarim: [['Peşinat', 50, 'siparis', 0], ['Vade', 50, 'teslim', 30]],
+  uclu: [['Peşinat', 30, 'siparis', 0], ['Test / Kabul', 30, 'teslim', 0], ['Vade', 40, 'teslim', 30]]
+};
+function planSablon(ad) {
+  const st = $('sfTarih').value || bugun(), tt = $('sfTeslim').value;
+  SF.plan = PLAN_SABLON[ad].map(([asama, oran, baz, gun]) => ({ asama, oran: String(oran), tarih: baz === 'siparis' ? ajTarihEkle(st, gun) : tt ? ajTarihEkle(tt, gun) : '' }));
+  planCiz();
+  if (!tt && PLAN_SABLON[ad].some(x => x[2] === 'teslim')) toast('Teslim tarihi girilmemiş; teslime bağlı aşamaların tarihini girin.', true);
+}
+function planCiz() {
+  const kutu = $('sfPlan'); if (!kutu) return;
+  const toplam = sfToplamDeger();
+  const oranTop = Math.round(SF.plan.reduce((t, r) => t + (sayiOku(r.oran) || 0), 0) * 100) / 100;
+  kutu.innerHTML = (SF.plan.length ? SF.plan.map((r, i) => `<div class="plan-satir">
+      <input class="girdi" list="asamaListe" placeholder="Aşama" value="${esc(r.asama)}" oninput="SF.plan[${i}].asama=this.value">
+      <input class="girdi" inputmode="decimal" placeholder="%" value="${esc(r.oran)}" oninput="SF.plan[${i}].oran=this.value;planToplam()">
+      <input class="girdi" type="date" value="${r.tarih}" oninput="SF.plan[${i}].tarih=this.value">
+      <span class="k-tutar" data-pt="${i}"></span>
+      <button class="k-sil" type="button" aria-label="Aşamayı kaldır" onclick="SF.plan.splice(${i},1);planCiz()">×</button></div>`).join('')
+    : '<p class="soluk" style="margin-bottom:8px">Ödeme planı yok. Vade takibi ve uyarı için bir plan seçin.</p>')
+    + `<datalist id="asamaListe">${ASAMALAR.map(x => `<option value="${x}">`).join('')}</datalist>`;
+  planToplam();
+}
+function sfToplamDeger() {
+  const yuv = n => Math.round((n + Number.EPSILON) * 100) / 100;
+  let ara = 0; SF.kalemler.forEach(k => { const m = sayiOku(k.miktar), f = sayiOku(k.birimFiyat); if (m > 0 && f >= 0) ara += yuv(m * f); });
+  return yuv(ara + yuv(ara * Number($('sfKdv').value) / 100));
+}
+function planToplam() {
+  if (!$('sfPlanDurum')) return;
+  const toplam = sfToplamDeger();
+  const oranTop = Math.round(SF.plan.reduce((t, r) => t + (sayiOku(r.oran) || 0), 0) * 100) / 100;
+  SF.plan.forEach((r, i) => { const el = document.querySelector(`[data-pt="${i}"]`); const o = sayiOku(r.oran); if (el) el.textContent = o > 0 ? para(toplam * o / 100, SF.pb) : '—'; });
+  $('sfPlanDurum').innerHTML = !SF.plan.length ? '' : Math.abs(oranTop - 100) < 0.01 ? '<span class="rozet ok">%100 ✓</span>' : `<span class="rozet tehlike">%${sayiGoster(oranTop)}, ${oranTop < 100 ? 'eksik %' + sayiGoster(100 - oranTop) : 'fazla %' + sayiGoster(oranTop - 100)}</span>`;
+}
+
 // ==================== GENEL VERİ ====================
 const VERI = {};
 const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
@@ -2661,6 +3130,7 @@ function firmaDetay(v, ic, s, y, id) {
             ${k.eposta ? `<a href="mailto:${esc(k.eposta)}">✉️ ${esc(k.eposta)}</a>` : ''}
           </div></div></div>`).join('');
 
+    if (yetki('finans') !== 'yok') setTimeout(() => firmaCariCiz(v, m.Id), 0);
     ic.innerHTML = geri + `
       <div class="d-bas">
         <span class="av buyuk">${esc(basHarf(m.Ad))}</span>
@@ -2687,6 +3157,7 @@ function firmaDetay(v, ic, s, y, id) {
         ${m.Notlar ? `<div class="d-not">${esc(m.Notlar)}</div>` : '<p class="soluk">Not yok.</p>'}
       </section>
 
+      ${yetki('finans') !== 'yok' ? '<section class="kart panel" id="firmaCari" hidden></section>' : ''}
       <section class="kart panel">
         <h3 class="panel-bas">${c.islemBaslik}</h3>
         ${!(c.kaynaklar || []).some(([, sy]) => yetki(sy) !== 'yok')
@@ -2704,6 +3175,26 @@ function firmaDetay(v, ic, s, y, id) {
   Promise.all([veriYukle(v), ...kaynaklar.map(kv => veriYukle(kv).catch(() => null))])
     .then(() => { if (D.aktif === v && D.param === id && $('modal').hidden) ciz(); })
     .catch(e => { if (!onbellek) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+/** Firma sayfasında para birimine göre cari bakiye */
+function firmaCariCiz(v, firmaId) {
+  finansYukle().then(() => {
+    const el = $('firmaCari'); if (!el) return;
+    const kisa = v === 'musteriler' ? 'ms' : 'sa', alacak = kisa === 'ms', bgn = bugun();
+    const l = FIN.veri.siparisler.filter(s => s.FirmaId === firmaId && s.kisa === kisa);
+    if (!l.length) { el.hidden = true; return; }
+    const pbs = [...new Set(l.map(s => s.ParaBirimi))];
+    el.hidden = false;
+    el.innerHTML = `<h3 class="panel-bas">Cari Durum <span class="soluk">(${alacak ? 'alacak' : 'borç'})</span></h3>
+      ${pbs.map(pb => { const x = l.filter(s => s.ParaBirimi === pb), top = f => x.reduce((t, s) => t + f(s), 0);
+        const gec = top(s => s.plan.filter(r => r.kalan > 0.005 && r.tarih < bgn).reduce((t, r) => t + r.kalan, 0));
+        return `<div class="fo-grid cari"><div class="fo-hucre"><span>${PARA[pb]}: sipariş toplamı</span><b>${para(top(s => s.Toplam), pb)}</b></div>
+          <div class="fo-hucre ${alacak ? 'gelir' : 'gider'}"><span>${alacak ? 'Tahsil edilen' : 'Ödenen'}</span><b>${para(top(s => s.odenen), pb)}</b></div>
+          <div class="fo-hucre"><span>Kalan ${alacak ? 'alacak' : 'borç'}</span><b>${para(top(s => s.kalan), pb)}</b></div>
+          <div class="fo-hucre ${gec > 0 ? 'kirmizi' : ''}"><span>Vadesi geçmiş</span><b>${para(gec, pb)}</b></div></div>`; }).join('')}
+      ${yetki('finans') !== 'yok' ? `<button class="link-btn" type="button" style="margin-top:10px" onclick="FIN.sekme='${alacak ? 'alacak' : 'borc'}';FIN.arama='';git('finans')">Finans'ta aç ›</button>` : ''}`;
+  }).catch(() => {});
 }
 
 function islemlerHTML(liste, bosMetin) {
@@ -3007,7 +3498,9 @@ function siparisDetay(ic, s, y, param) {
         <h4 class="panel-alt">Notlar</h4>
         ${x.Notlar ? `<div class="d-not">${esc(x.Notlar)}</div>` : '<p class="soluk">Not yok.</p>'}
         <div class="d-meta" style="margin-top:16px">Oluşturan: @${esc(x.Olusturan || '?')}, ${esc(tarihYaz(x.Olusturma))}. Son güncelleme: @${esc(x.Guncelleyen || '?')}, ${esc(tarihYaz(x.Guncelleme))}</div>
-      </section>`;
+      </section>
+      ${yetki('finans') !== 'yok' ? '<section class="kart panel" id="sipFinans"><p class="soluk">Ödeme bilgileri yükleniyor…</p></section>' : ''}`;
+    if (yetki('finans') !== 'yok') sipFinansCiz(t, x.Id);
   };
 
   if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
@@ -3017,6 +3510,23 @@ function siparisDetay(ic, s, y, param) {
   Promise.all([veriYukle(t), firmalarYukle(), ...(yetki('stok') !== 'yok' ? [veriYukle('stokHareket').catch(() => null)] : [])])
     .then(() => { if (D.aktif === 'siparisler' && D.param === param && $('modal').hidden) ciz(); })
     .catch(e => { if (!ob) ic.innerHTML = geri + `<div class="kart bos"><h3>Sipariş alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+/** Sipariş sayfasındaki ödeme planı ve tahsilat/ödeme bölümü */
+function sipFinansCiz(t, id) {
+  finansYukle().then(() => {
+    const el = $('sipFinans'); if (!el) return;
+    const s = finSiparis(SIP[t].kisa, id), gelen = t === 'musteriSiparis';
+    if (!s) { el.innerHTML = '<p class="soluk">İptal edilen siparişlerde ödeme takibi yapılmaz.</p>'; return; }
+    const [dAd, dCls] = odemeDurum(s);
+    el.innerHTML = `<div class="w-bas"><h3>Ödeme Planı ve ${gelen ? 'Tahsilatlar' : 'Ödemeler'}</h3><span class="rozet ${dCls}">${dAd}</span>
+        ${yetki('finans') === 'tam' && s.kalan > 0.005 ? `<button class="btn kucuk sag" type="button" onclick="odemeForm('${s.kisa}','${s.Id}')">+ ${gelen ? 'Tahsilat' : 'Ödeme'} Ekle</button>` : ''}</div>
+      <div class="fo-grid uc" style="margin-bottom:14px">
+        <div class="fo-hucre"><span>Toplam</span><b>${para(s.Toplam, s.ParaBirimi)}</b></div>
+        <div class="fo-hucre ${gelen ? 'gelir' : 'gider'}"><span>${gelen ? 'Tahsil edilen' : 'Ödenen'}</span><b>${para(s.odenen, s.ParaBirimi)}</b></div>
+        <div class="fo-hucre"><span>Kalan</span><b>${para(s.kalan, s.ParaBirimi)}</b></div></div>
+      ${finansPlanHTML(s)}<h4 class="panel-alt">${gelen ? 'Tahsilatlar' : 'Ödemeler'}</h4>${finansOdemelerHTML(s)}`;
+  }).catch(e => { const el = $('sipFinans'); if (el) el.innerHTML = `<p class="soluk">Ödeme bilgileri alınamadı: ${esc(e.message)}</p>`; });
 }
 
 async function siparisDurumDegistir(t, id, durum) {
@@ -3050,6 +3560,7 @@ function siparisForm(t, id) {
 
   SF = {
     tur: t, Id: x ? x.Id : null, pb: x ? x.ParaBirimi : 'TRY',
+    plan: x && x.OdemePlani ? x.OdemePlani.map(r => ({ asama: r.asama, oran: sayiYaz(r.oran), tarih: r.tarih })) : [],
     kalemler: x ? x.Kalemler.map(k => ({ aciklama: k.aciklama, miktar: sayiYaz(k.miktar), birim: k.birim, birimFiyat: sayiYaz(k.birimFiyat) }))
       : [{ aciklama: '', miktar: '1', birim: 'adet', birimFiyat: '' }]
   };
@@ -3077,6 +3588,15 @@ function siparisForm(t, id) {
     <div class="kalem-bas"><span>Ürün / hizmet</span><span>Miktar</span><span>Birim</span><span>Birim fiyat</span><span style="text-align:right">Tutar</span><span></span></div>
     <div id="sfKalemler"></div>
     <div class="toplamlar" id="sfToplam"></div>
+    <div class="bolum-et">Ödeme planı <span id="sfPlanDurum" style="margin-left:10px"></span></div>
+    <div class="plan-sablon">
+      <button class="btn ikincil kucuk" type="button" onclick="planSablon('pesin')">Peşin</button>
+      <button class="btn ikincil kucuk" type="button" onclick="planSablon('yarim')">%50 peşin + %50 vade</button>
+      <button class="btn ikincil kucuk" type="button" onclick="planSablon('uclu')">%30 peşinat + %30 test/teslim + %40 vade</button>
+      <button class="btn ikincil kucuk" type="button" onclick="SF.plan.push({asama:'',oran:'',tarih:''});planCiz()">+ Aşama</button>
+    </div>
+    <div id="sfPlan"></div>
+    <p class="bilgi-not" style="margin-top:4px">Her aşamanın vadesi takvimde (tutar yazmadan) görünür, yaklaşınca ve geçince uyarı gelir. Gelen ödemeler aşamalara sırayla düşer.</p>
     <label class="et" for="sfNot">Notlar</label>
     <textarea class="girdi alan" id="sfNot" placeholder="Siparişle ilgili notlar">${x ? esc(x.Notlar) : ''}</textarea>
     <div class="hata-kutu" id="mHata"></div>`,
@@ -3084,6 +3604,7 @@ function siparisForm(t, id) {
      <button class="btn" type="button" id="sfKaydet" onclick="siparisKaydet()">Kaydet</button>`, true);
   pbSec(SF.pb);
   kalemlerCiz();
+  planCiz();
 }
 
 function pbSec(pb) {
@@ -3125,6 +3646,7 @@ function toplamHesapla() {
     <div><span>Ara toplam</span><span>${para(ara, SF.pb)}</span></div>
     <div><span>KDV (%${oran})</span><span>${para(kdv, SF.pb)}</span></div>
     <div class="genel"><span>Genel toplam</span><span>${para(yuv(ara + kdv), SF.pb)}</span></div>`;
+  planToplam();
 }
 
 async function siparisKaydet() {
@@ -3138,11 +3660,18 @@ async function siparisKaydet() {
     Tarih: $('sfTarih').value, TeslimTarihi: $('sfTeslim').value,
     ParaBirimi: SF.pb, KdvOrani: Number($('sfKdv').value),
     MusteriSiparisNo: $('sfPo') ? $('sfPo').value.trim() : undefined,
-    Kalemler: kalemler, Notlar: $('sfNot').value.trim()
+    Kalemler: kalemler, Notlar: $('sfNot').value.trim(),
+    OdemePlani: SF.plan.filter(r => String(r.oran).trim() || r.tarih || r.asama.trim()).map(r => ({ asama: r.asama.trim() || 'Ödeme', oran: sayiOku(r.oran), tarih: r.tarih }))
   };
   if (!kayit.FirmaId) return hata(`${c.firmaEt} seçin.`);
   if (!kayit.Tarih) return hata('Sipariş tarihi gerekli.');
   if (!kalemler.length) return hata('En az bir kalem girin.');
+  if (kayit.OdemePlani.length) {
+    const top = Math.round(kayit.OdemePlani.reduce((s, r) => s + (r.oran || 0), 0) * 100) / 100;
+    const eksik = kayit.OdemePlani.findIndex(r => !(r.oran > 0) || !r.tarih);
+    if (eksik >= 0) return hata(`Ödeme planı ${eksik + 1}. aşama: oran ve tarih girin.`);
+    if (Math.abs(top - 100) > 0.01) return hata(`Ödeme planındaki oranların toplamı %100 olmalı (şu an %${sayiGoster(top)}).`);
+  }
   for (let i = 0; i < kalemler.length; i++) {
     const k = kalemler[i];
     if (!k.aciklama) return hata(`${i + 1}. kalemin açıklaması boş.`);
@@ -3154,7 +3683,7 @@ async function siparisKaydet() {
   try {
     const onceki = kayit.Id ? ((VERI[t] || []).find(k => k.Id === kayit.Id) || {}).Durum : null;
     const r = await api('kayit.kaydet', { varlik: t, kayit });
-    veriGuncelle(t, r);
+    veriGuncelle(t, r); FIN.zaman = 0;
     modalKapat();
     if (D.aktif === 'siparisler' && D.param) rotaUygula(); else siparisListeCiz();
     toast(`${r.No} ${kayit.Id ? 'güncellendi' : 'oluşturuldu'}.`);
