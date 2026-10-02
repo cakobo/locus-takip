@@ -573,6 +573,48 @@ a.btn{text-decoration:none}
 .b-ertelenen .b-satir{opacity:.75}
 .dikkat{margin-bottom:22px}
 
+/* ---------- ajanda ---------- */
+.aj-arac{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.aj-nav{display:flex;align-items:center;gap:8px}
+.aj-nav h3{font-size:19px;font-weight:600;min-width:160px;text-align:center}
+.aj-arac .cips{margin-left:auto}
+.aj-arac .cips button{height:36px}
+.aj-filtre{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.aj-filtre button{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--line);border-radius:16px;font-size:13px;background:var(--sf)}
+.aj-filtre button.kapali{opacity:.4;text-decoration:line-through}
+.aj-nokta{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.aj-duzen{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
+.aj-takvim{overflow:hidden}
+.aj-gunler{display:grid;grid-template-columns:repeat(7,1fr);background:var(--inbg);border-bottom:1px solid var(--line)}
+.aj-gunler span{padding:8px;font-size:12px;color:var(--mute);text-align:center;font-weight:600}
+.aj-izgara{display:grid;grid-template-columns:repeat(7,1fr)}
+.aj-hucre{min-height:104px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.aj-hucre:nth-child(7n){border-right:0}
+.aj-hucre:hover{background:color-mix(in srgb,var(--sel) 50%,transparent)}
+.aj-hucre.disari{background:var(--inbg)}
+.aj-hucre.disari .aj-no{opacity:.4}
+.aj-hucre.secili{box-shadow:inset 0 0 0 2px var(--acc)}
+.aj-no{font-size:13px;font-weight:600;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%}
+.aj-hucre.bugun .aj-no{background:var(--acc);color:#fff}
+.aj-cipler{display:flex;flex-direction:column;gap:2px;min-width:0}
+.aj-cip{font-size:11.5px;line-height:1.35;padding:1px 6px;border-radius:4px;background:color-mix(in srgb,var(--r) 15%,transparent);border-left:3px solid var(--r);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--ink)}
+.aj-cip.tamam{opacity:.5;text-decoration:line-through}
+.aj-cip.gecikti{background:color-mix(in srgb,var(--danger) 16%,transparent)}
+.aj-daha{font-size:11px;color:var(--mute);padding-left:4px}
+.aj-noktalar{display:none;gap:3px;justify-content:center}
+.aj-gun{padding:16px 18px;position:sticky;top:calc(80px + var(--top))}
+.aj-gun-bas{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.aj-gun-bas h3{font-size:15px;font-weight:600}
+.aj-olay{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;margin-bottom:6px;border-radius:6px;background:var(--inbg);border-left:4px solid var(--r);cursor:pointer}
+.aj-olay:hover{background:var(--sel)}
+.aj-olay.tamam{opacity:.55}
+.aj-saat{font-size:12px;font-weight:600;color:var(--mute);width:46px;flex:none;font-variant-numeric:tabular-nums}
+.aj-olay-ic{flex:1;min-width:0}
+.aj-olay-ic b{display:block;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aj-olay-ic small{display:block;color:var(--mute);font-size:12.5px}
+.aj-liste-gun{margin-bottom:12px;overflow:hidden}
+.aj-liste-gun .aj-olay{margin:8px 12px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -676,6 +718,14 @@ a.btn{text-decoration:none}
   .istat{grid-template-columns:1fr 1fr;gap:8px}
   .istat-kart{padding:12px}
   .istat-kart.genis{grid-column:1/-1;order:-1}
+  .aj-duzen{grid-template-columns:1fr}
+  .aj-gun{position:static}
+  .aj-hucre{min-height:52px;padding:4px 2px;align-items:center}
+  .aj-cipler{display:none}
+  .aj-noktalar{display:flex}
+  .aj-nav h3{min-width:0;font-size:17px}
+  .aj-arac .cips{margin-left:0;width:100%}
+  .aj-arac .cips button{flex:1}
   .b-istat{grid-template-columns:repeat(3,1fr)}
   .ust .zil{color:#fff}
   .b-satir{padding:12px 14px;flex-wrap:wrap}
@@ -990,8 +1040,9 @@ const SAYFA_CIZ = {
   async yonetim(ic, s) {
     ic.innerHTML = sayfaBasHTML(s, 'tam', `<button class="btn" type="button" onclick="kullaniciModal()">+ Kullanıcı Ekle</button>`) +
       `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>
-       <section class="kart panel" id="epostaAyar" style="margin-top:22px"><div class="bos kucuk-bos"><p>E-posta ayarları yükleniyor…</p></div></section>`;
-    epostaAyarYukle();
+       <section class="kart panel" id="epostaAyar" style="margin-top:22px"><div class="bos kucuk-bos"><p>E-posta ayarları yükleniyor…</p></div></section>
+       <section class="kart panel" id="takvimAyar" style="margin-top:18px"><div class="bos kucuk-bos"><p>Takvim ayarı yükleniyor…</p></div></section>`;
+    epostaAyarYukle(); takvimAyarYukle();
     try {
       const liste = await api('kullanicilar.liste');
       YONETIM.liste = liste;
@@ -1967,7 +2018,7 @@ const BSEV = {
   sari: { ad: 'Uyarı', ikon: '🟡', sinif: 'uyari' },
   mavi: { ad: 'Bilgi', ikon: '🔵', sinif: '' }
 };
-const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝' };
+const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '🛒', 'Teklifler': '📝', 'Ajanda': '📅' };
 
 async function bildirimYukle() {
   if (!D.kul) return;
@@ -2140,6 +2191,326 @@ async function epostaTest() {
   btn.disabled = false; btn.textContent = 'Test e-postası gönder';
 }
 
+// ==================== AJANDA ====================
+// Toplantı ve hatırlatmalar burada; bakım ve sipariş tarihleri diğer sayfalardan otomatik gelir (arka taraf hesaplar).
+const AJT = {
+  toplanti: { ad: 'Toplantı', ikon: '👥', renk: '#2F6FC0' },
+  hatirlatma: { ad: 'Hatırlatma', ikon: '🔔', renk: '#7B4FC9' },
+  bakim: { ad: 'Bakım', ikon: '🔧', renk: '#D9822B' },
+  gelen: { ad: 'Gelecek sipariş', ikon: '📥', renk: '#0F8B8D' },
+  giden: { ad: 'Gidecek sipariş', ikon: '📤', renk: '#1E8E5A' }
+};
+const AJ = { gorunum: 'ay', ay: null, secili: null, filtre: { toplanti: 1, hatirlatma: 1, bakim: 1, gelen: 1, giden: 1 }, oto: {} };
+const AY_ADLARI = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+const GUN_KISA = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const TEKRAR_AD = { yok: 'Tekrar yok', hafta: 'Her hafta', ay: 'Her ay', yil: 'Her yıl' };
+const HATIRLATMA_AD = { 0: 'Hatırlatma yok', 5: '5 dakika önce', 10: '10 dakika önce', 15: '15 dakika önce', 30: '30 dakika önce', 60: '1 saat önce', 120: '2 saat önce', 1440: '1 gün önce' };
+const ajandaBul = id => (VERI.ajanda || []).find(x => x.Id === id);
+const ajTurKod = e => e.Tur === 'Toplantı' ? 'toplanti' : 'hatirlatma';
+const ajTarihEkle = (t, g) => { const d = new Date(t + 'T12:00:00'); d.setDate(d.getDate() + g); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const tarihUzun = t => new Date(t + 'T12:00:00').toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', weekday: 'long' });
+
+/** Toplantı/hatırlatmaları (tekrarlar dahil) ve otomatik kayıtları aralık içinde gün gün döker */
+function ajandaOlaylari(bas, bit) {
+  const l = [];
+  (VERI.ajanda || []).forEach(e => {
+    const ekle = t => l.push({ kaynak: 'ajanda', id: e.Id, tur: ajTurKod(e), tarih: t, saat: e.TumGun ? '' : e.Baslangic,
+      baslik: e.Baslik, aciklama: [e.TumGun ? 'Tüm gün' : [e.Baslangic, e.Bitis].filter(Boolean).join('–'), e.FirmaAd, e.Yer].filter(Boolean).join(', '),
+      tamam: e.Tamamlandi, tekrar: e.Tekrar !== 'yok' });
+    if (e.Tekrar === 'yok' || !e.Tekrar) { if (e.Tarih >= bas && e.Tarih <= bit) ekle(e.Tarih); return; }
+    for (let i = 0; i < 800; i++) {
+      const t = e.Tekrar === 'hafta' ? ajTarihEkle(e.Tarih, i * 7) : ayEkle(e.Tarih, i * (e.Tekrar === 'ay' ? 1 : 12));
+      if (t > bit) break;
+      if (t >= bas) ekle(t);
+    }
+  });
+  Object.values(AJ.oto).forEach(o => (o.bas <= bit && o.bit >= bas) && o.liste.forEach(x => {
+    if (x.tarih >= bas && x.tarih <= bit && !l.some(y => y.kaynak === 'oto' && y.rota === x.rota && y.tarih === x.tarih))
+      l.push(Object.assign({ kaynak: 'oto' }, x));
+  }));
+  return l.filter(x => AJ.filtre[x.tur])
+    .sort((a, b) => a.tarih.localeCompare(b.tarih) || (a.saat || '99').localeCompare(b.saat || '99') || a.baslik.localeCompare(b.baslik, 'tr'));
+}
+
+function ajandaAralik() {
+  if (AJ.gorunum === 'liste') return [bugun(), ajTarihEkle(bugun(), 60)];
+  const [y, m] = AJ.ay.split('-').map(Number);
+  const ilk = new Date(y, m - 1, 1), gun = (ilk.getDay() + 6) % 7;
+  const bas = ajTarihEkle(`${AJ.ay}-01`, -gun);
+  return [bas, ajTarihEkle(bas, 41)];
+}
+
+async function ajandaOtoYukle(bas, bit) {
+  const anahtar = bas + '_' + bit;
+  if (AJ.oto[anahtar] && Date.now() - AJ.oto[anahtar].zaman < 3 * 60 * 1000) return;
+  try { AJ.oto[anahtar] = { bas, bit, liste: await api('ajanda.otomatik', { bas, bit }), zaman: Date.now() }; }
+  catch (e) { if (!AJ.oto[anahtar]) toast('Bakım ve sipariş tarihleri alınamadı: ' + e.message, true); }
+}
+
+SAYFA_CIZ.ajanda = function (ic, s, y) {
+  if (!AJ.ay) { AJ.ay = bugun().slice(0, 7); AJ.secili = bugun(); }
+  if (window.innerWidth < 820 && !AJ._mobilAyar) { AJ._mobilAyar = true; }
+  const tam = y === 'tam';
+  ic.innerHTML = sayfaBasHTML(s, y, tam ? `<button class="btn ikincil" type="button" onclick="ajandaForm('Hatırlatma')">+ Hatırlatma</button>
+      <button class="btn" type="button" onclick="ajandaForm('Toplantı')">+ Toplantı</button>` : '') + `
+    <div class="aj-arac">
+      <div class="aj-nav">
+        <button class="btn ikincil kucuk" type="button" aria-label="Önceki ay" onclick="ajandaAyKaydir(-1)">‹</button>
+        <h3 id="ajBaslik"></h3>
+        <button class="btn ikincil kucuk" type="button" aria-label="Sonraki ay" onclick="ajandaAyKaydir(1)">›</button>
+        <button class="btn ikincil kucuk" type="button" onclick="AJ.ay=bugun().slice(0,7);AJ.secili=bugun();ajandaCiz()">Bugün</button>
+      </div>
+      <div class="cips"><button type="button" data-g="ay" onclick="AJ.gorunum='ay';ajandaCiz()">Ay</button><button type="button" data-g="liste" onclick="AJ.gorunum='liste';ajandaCiz()">Yaklaşanlar</button></div>
+    </div>
+    <div class="aj-filtre">${Object.keys(AJT).map(k => `<button type="button" data-af="${k}" onclick="AJ.filtre.${k}=!AJ.filtre.${k};ajandaCiz()">
+      <span class="aj-nokta" style="background:${AJT[k].renk}"></span>${AJT[k].ad}</button>`).join('')}</div>
+    <div id="ajIcerik"></div>`;
+  if (!VERI.ajanda) VERI.ajanda = ls.al('locus_c_ajanda') || undefined;
+  if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  ajandaCiz();
+  const [bas, bit] = ajandaAralik();
+  Promise.all([veriYukle('ajanda'), ajandaOtoYukle(bas, bit), firmalarYukle().catch(() => null)]).then(() => {
+    if (D.aktif !== 'ajanda') return;
+    if (D.param) {
+      const e = ajandaBul(D.param);
+      if (e) { const t = ajandaSiradakiTarih(e); AJ.ay = t.slice(0, 7); AJ.secili = t; ajandaCiz(); ajandaDetay(e.Id); }
+      else { ajandaCiz(); toast('Kayıt bulunamadı, silinmiş olabilir.', true); }
+    } else if ($('modal').hidden) ajandaCiz();
+  }).catch(e => { if ($('ajIcerik') && !VERI.ajanda) $('ajIcerik').innerHTML = `<div class="kart bos"><h3>Ajanda alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+};
+
+function ajandaSiradakiTarih(e) {
+  if (e.Tekrar === 'yok' || e.Tarih >= bugun()) return e.Tarih;
+  for (let i = 0; i < 1200; i++) {
+    const t = e.Tekrar === 'hafta' ? ajTarihEkle(e.Tarih, i * 7) : ayEkle(e.Tarih, i * (e.Tekrar === 'ay' ? 1 : 12));
+    if (t >= bugun()) return t;
+  }
+  return e.Tarih;
+}
+
+function ajandaAyKaydir(n) {
+  const [y, m] = AJ.ay.split('-').map(Number), d = new Date(y, m - 1 + n, 1);
+  AJ.ay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  AJ.secili = AJ.ay === bugun().slice(0, 7) ? bugun() : AJ.ay + '-01';
+  AJ.gorunum = 'ay';
+  ajandaCiz();
+  const [bas, bit] = ajandaAralik();
+  ajandaOtoYukle(bas, bit).then(() => { if (D.aktif === 'ajanda' && $('modal').hidden) ajandaCiz(); });
+}
+
+function ajandaCiz() {
+  const ic = $('ajIcerik'); if (!ic) return;
+  document.querySelectorAll('[data-g]').forEach(b => b.classList.toggle('on', b.dataset.g === AJ.gorunum));
+  document.querySelectorAll('[data-af]').forEach(b => b.classList.toggle('kapali', !AJ.filtre[b.dataset.af]));
+  const [y, m] = AJ.ay.split('-').map(Number);
+  $('ajBaslik').textContent = AJ.gorunum === 'ay' ? `${AY_ADLARI[m - 1]} ${y}` : 'Önümüzdeki 60 gün';
+  document.querySelectorAll('.aj-nav .btn').forEach((b, i) => { if (i !== 2) b.style.visibility = AJ.gorunum === 'ay' ? '' : 'hidden'; });
+  const [bas, bit] = ajandaAralik();
+  const olaylar = ajandaOlaylari(bas, bit);
+  if (AJ.gorunum === 'liste') { ic.innerHTML = ajandaListeHTML(olaylar); return; }
+
+  const gunler = Array.from({ length: 42 }, (_, i) => ajTarihEkle(bas, i));
+  const bgn = bugun();
+  ic.innerHTML = `<div class="aj-duzen">
+    <div class="kart aj-takvim">
+      <div class="aj-gunler">${GUN_KISA.map(g => `<span>${g}</span>`).join('')}</div>
+      <div class="aj-izgara">${gunler.map(t => {
+        const o = olaylar.filter(x => x.tarih === t);
+        return `<button type="button" class="aj-hucre ${t.slice(0, 7) !== AJ.ay ? 'disari' : ''} ${t === bgn ? 'bugun' : ''} ${t === AJ.secili ? 'secili' : ''}" onclick="AJ.secili='${t}';ajandaCiz()">
+          <span class="aj-no">${Number(t.slice(8))}</span>
+          <span class="aj-cipler">${o.slice(0, 3).map(x => `<span class="aj-cip ${x.tamam ? 'tamam' : ''} ${x.gecikti ? 'gecikti' : ''}" style="--r:${AJT[x.tur].renk}">${x.saat ? `<b>${x.saat}</b> ` : ''}${esc(x.baslik)}</span>`).join('')}
+            ${o.length > 3 ? `<span class="aj-daha">+${o.length - 3} daha</span>` : ''}</span>
+          <span class="aj-noktalar">${o.slice(0, 5).map(x => `<span class="aj-nokta" style="background:${AJT[x.tur].renk}"></span>`).join('')}</span>
+        </button>`;
+      }).join('')}</div>
+    </div>
+    <div class="kart aj-gun" id="ajGun">${ajandaGunHTML(AJ.secili, olaylar.filter(x => x.tarih === AJ.secili))}</div>
+  </div>`;
+}
+
+function ajandaOlayHTML(x) {
+  const t = AJT[x.tur];
+  const tik = x.kaynak === 'ajanda' ? `ajandaDetay('${x.id}')` : `git('${x.rota}')`;
+  return `<div class="aj-olay ${x.tamam ? 'tamam' : ''}" style="--r:${t.renk}" onclick="${tik}">
+    <span class="aj-saat">${x.saat || (x.kaynak === 'ajanda' ? 'Tüm gün' : '')}</span>
+    <span class="aj-olay-ic"><b>${t.ikon} ${esc(x.baslik)}${x.tekrar ? ' <span class="soluk">↻</span>' : ''}</b>
+      <small>${esc(x.aciklama || t.ad)}${x.tamam && x.kaynak === 'ajanda' ? ', tamamlandı' : ''}</small></span>
+    ${x.gecikti ? '<span class="rozet tehlike">Gecikti</span>' : ''}</div>`;
+}
+
+function ajandaGunHTML(t, o) {
+  const tam = yetki('ajanda') === 'tam';
+  return `<div class="aj-gun-bas"><h3>${esc(tarihUzun(t))}</h3>${t === bugun() ? '<span class="rozet">Bugün</span>' : ''}</div>
+    ${o.length ? o.map(ajandaOlayHTML).join('') : '<p class="soluk" style="padding:6px 0 10px">Bu gün için kayıt yok.</p>'}
+    ${tam ? `<div class="stok-btn" style="margin-top:12px;padding-top:12px">
+      <button class="btn ikincil kucuk" type="button" onclick="ajandaForm('Toplantı',null,'${t}')">+ Toplantı</button>
+      <button class="btn ikincil kucuk" type="button" onclick="ajandaForm('Hatırlatma',null,'${t}')">+ Hatırlatma</button></div>` : ''}`;
+}
+
+function ajandaListeHTML(olaylar) {
+  if (!olaylar.length) return '<div class="kart bos"><div class="b-ikon">📅</div><h3>Önümüzdeki 60 günde kayıt yok</h3></div>';
+  const gunler = [...new Set(olaylar.map(x => x.tarih))];
+  return gunler.map(t => `<section class="kart aj-liste-gun"><h3 class="b-grup-bas">${esc(tarihUzun(t))}${t === bugun() ? ' <span class="rozet">Bugün</span>' : ''}</h3>
+    ${olaylar.filter(x => x.tarih === t).map(ajandaOlayHTML).join('')}</section>`).join('');
+}
+
+// ---------- Kayıt detayı ----------
+function ajandaDetay(id) {
+  const e = ajandaBul(id); if (!e) return;
+  const tam = yetki('ajanda') === 'tam', t = AJT[ajTurKod(e)];
+  const firma = e.FirmaId ? (yetki(e.FirmaTur) !== 'yok' ? `<a class="firma-link" onclick="git('${e.FirmaTur}/${e.FirmaId}')">${esc(e.FirmaAd)}</a>` : esc(e.FirmaAd)) : '';
+  modalAc(`${t.ikon} ${e.Baslik}`, `
+    <div class="d-rozetler" style="margin:0 0 14px"><span class="rozet" style="background:color-mix(in srgb,${t.renk} 16%,transparent);color:${t.renk}">${e.Tur}</span>
+      ${e.Tamamlandi ? '<span class="rozet ok">Tamamlandı</span>' : ''}${e.Tekrar !== 'yok' ? `<span class="rozet pasif">↻ ${TEKRAR_AD[e.Tekrar]}</span>` : ''}
+      ${e.TakvimId ? '<span class="rozet pasif">📆 Google Takvim\'de</span>' : ''}</div>
+    <div class="bilgi-grid" style="grid-template-columns:1fr 1fr">
+      <div><div class="de">Tarih</div>${tarihKisa(e.Tarih)}${e.Tekrar !== 'yok' ? `<span class="soluk">, sıradaki ${tarihKisa(ajandaSiradakiTarih(e))}</span>` : ''}</div>
+      <div><div class="de">Saat</div>${e.TumGun ? 'Tüm gün' : esc([e.Baslangic, e.Bitis].filter(Boolean).join(' – '))}</div>
+      ${e.Yer ? `<div><div class="de">Yer</div>${esc(e.Yer)}</div>` : ''}
+      ${firma ? `<div><div class="de">Firma</div>${firma}</div>` : ''}
+      ${e.Katilimcilar ? `<div style="grid-column:1/-1"><div class="de">Katılımcılar</div>${esc(e.Katilimcilar)}</div>` : ''}
+      <div><div class="de">Hatırlatma</div>${HATIRLATMA_AD[e.HatirlatmaDk] || '—'}</div>
+      <div><div class="de">Oluşturan</div>@${esc(e.Olusturan || '?')}</div>
+    </div>
+    <h4 class="panel-alt">${e.Tur === 'Toplantı' ? 'Toplantı notları' : 'Notlar'}</h4>
+    ${e.Notlar ? `<div class="d-not">${esc(e.Notlar)}</div>` : '<p class="soluk">Not yok.</p>'}
+    <div class="d-meta" style="margin-top:12px">Son güncelleme: @${esc(e.Guncelleyen || '?')}, ${esc(tarihYaz(e.Guncelleme))}</div>
+    <div class="hata-kutu" id="mHata"></div>`,
+    tam ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="ajandaSilOnay('${e.Id}')">Sil</button>
+      ${e.Tur === 'Hatırlatma' ? `<button class="btn ikincil" type="button" onclick="ajandaTamamla('${e.Id}',${!e.Tamamlandi})">${e.Tamamlandi ? 'Geri Aç' : '✓ Tamamlandı'}</button>` : ''}
+      <button class="btn" type="button" onclick="ajandaForm('${e.Tur}','${e.Id}')">${e.Tur === 'Toplantı' ? 'Düzenle / Not Ekle' : 'Düzenle'}</button>`
+      : `<button class="btn" type="button" onclick="modalKapat()">Kapat</button>`, true);
+}
+
+async function ajandaTamamla(id, tamam) {
+  const e = ajandaBul(id);
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'ajanda', kayit: Object.assign({}, e, { Tamamlandi: tamam }) });
+    veriGuncelle('ajanda', r); modalKapat(); ajandaCiz(); BILD.zaman = 0; bildirimYukle();
+    toast(tamam ? 'Hatırlatma tamamlandı.' : 'Hatırlatma yeniden açıldı.');
+  } catch (x) { $('mHata').textContent = x.message; }
+}
+function ajandaSilOnay(id) {
+  const e = ajandaBul(id);
+  modalAc('Kaydı Sil', `<p><b>${esc(e.Baslik)}</b> ${e.Tekrar !== 'yok' ? 've bütün tekrarları ' : ''}silinecek${e.TakvimId ? ', Google Takvim\'den de kaldırılacak' : ''}.</p><div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="ajandaDetay('${id}')">Vazgeç</button><button class="btn tehlike" type="button" id="mSil" onclick="ajandaSil('${id}')">Sil</button>`);
+}
+async function ajandaSil(id) {
+  const btn = $('mSil'); btn.disabled = true;
+  try { await api('kayit.sil', { varlik: 'ajanda', id }); veriCikar('ajanda', id); modalKapat(); if (D.param) git('ajanda'); else ajandaCiz(); toast('Kayıt silindi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
+
+// ---------- Toplantı / hatırlatma formu ----------
+let AF = null;
+function ajandaForm(tur, id, tarih) {
+  const e = id ? ajandaBul(id) : null;
+  AF = { tur: e ? e.Tur : tur, id: e ? e.Id : null };
+  const f = FIRMALAR || {};
+  const firmaSec = e && e.FirmaId ? `${e.FirmaTur}:${e.FirmaId}` : '';
+  const grup = (v, et) => (f[v] || []).length ? `<optgroup label="${et}">${(f[v] || []).filter(x => x.Aktif || `${v}:${x.Id}` === firmaSec).sort((a, b) => trSirala(a.Ad, b.Ad))
+    .map(x => `<option value="${v}:${x.Id}" ${`${v}:${x.Id}` === firmaSec ? 'selected' : ''}>${esc(x.Ad)}</option>`).join('')}</optgroup>` : '';
+  const varsayilanTarih = tarih || (AJ.secili && AJ.secili >= bugun() ? AJ.secili : bugun());
+  modalAc(e ? `${e.Tur} Düzenle` : (AF.tur === 'Toplantı' ? 'Yeni Toplantı' : 'Yeni Hatırlatma'), `
+    ${e ? '' : `<div class="cips" style="width:100%;margin-bottom:18px">${['Toplantı', 'Hatırlatma'].map(t =>
+      `<button type="button" style="flex:1" data-at="${t}" onclick="afTur('${t}')">${t === 'Toplantı' ? '👥 Toplantı' : '🔔 Hatırlatma'}</button>`).join('')}</div>`}
+    <label class="et" for="afBaslik">Başlık *</label>
+    <input class="girdi" id="afBaslik" value="${e ? esc(e.Baslik) : ''}" placeholder="Ör. Arçelik proje toplantısı">
+    <div class="iki">
+      <div><label class="et" for="afTarih">Tarih *</label><input class="girdi" type="date" id="afTarih" value="${e ? e.Tarih : varsayilanTarih}"></div>
+      <div class="af-top"><label class="anahtar" style="margin-top:30px"><input type="checkbox" id="afTumGun" ${e && e.TumGun ? 'checked' : ''} onchange="afSaatGoster()"> Tüm gün</label></div>
+      <div id="afBasKutu"><label class="et" for="afBas" id="afBasEt">Başlangıç saati</label><input class="girdi" type="time" id="afBas" value="${e ? e.Baslangic || '' : (AF.tur === 'Toplantı' ? '10:00' : '09:00')}"></div>
+      <div id="afBitKutu" class="af-top"><label class="et" for="afBit">Bitiş saati</label><input class="girdi" type="time" id="afBit" value="${e ? e.Bitis || '' : '11:00'}"></div>
+    </div>
+    <div class="iki">
+      <div class="af-top"><label class="et" for="afYer">Yer</label><input class="girdi" id="afYer" value="${e ? esc(e.Yer) : ''}" placeholder="Adres ya da toplantı bağlantısı"></div>
+      <div><label class="et" for="afFirma">İlgili firma</label><select class="girdi" id="afFirma"><option value="">Yok</option>${grup('musteriler', 'Müşteriler')}${grup('tedarikciler', 'Tedarikçiler')}</select></div>
+    </div>
+    <div class="af-top"><label class="et" for="afKat">Katılımcılar</label><input class="girdi" id="afKat" value="${e ? esc(e.Katilimcilar) : ''}" placeholder="Ör. Çağatay, Mehmet Bey (Arçelik)"></div>
+    <div class="iki">
+      <div><label class="et" for="afTekrar">Tekrar</label><select class="girdi" id="afTekrar">${Object.entries(TEKRAR_AD).map(([k, a]) => `<option value="${k}" ${(e ? e.Tekrar : 'yok') === k ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
+      <div><label class="et" for="afHat">Hatırlat (telefon + e-posta)</label><select class="girdi" id="afHat">${Object.entries(HATIRLATMA_AD).map(([k, a]) =>
+        `<option value="${k}" ${String(e ? e.HatirlatmaDk : 30) === k ? 'selected' : ''}>${a}</option>`).join('')}</select></div>
+    </div>
+    <label class="et" for="afNot" id="afNotEt">Notlar</label>
+    <textarea class="girdi alan" id="afNot" style="min-height:140px" placeholder="Gündem, alınan kararlar, yapılacaklar…">${e ? esc(e.Notlar) : ''}</textarea>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="${e ? `ajandaDetay('${e.Id}')` : 'modalKapat()'}">Vazgeç</button>
+     <button class="btn" type="button" id="afKaydet" onclick="ajandaKaydet()">Kaydet</button>`, true);
+  afTur(AF.tur);
+  setTimeout(() => $('afBaslik').focus(), 50);
+}
+function afTur(t) {
+  AF.tur = t;
+  document.querySelectorAll('[data-at]').forEach(b => b.classList.toggle('on', b.dataset.at === t));
+  const toplanti = t === 'Toplantı';
+  document.querySelectorAll('.af-top').forEach(el => el.hidden = !toplanti);
+  $('afBasEt').textContent = toplanti ? 'Başlangıç saati' : 'Saat';
+  $('afNotEt').textContent = toplanti ? 'Toplantı notları' : 'Notlar';
+  if (!toplanti) $('afTumGun').checked = false;
+  afSaatGoster();
+}
+function afSaatGoster() {
+  const tum = $('afTumGun').checked;
+  $('afBasKutu').hidden = tum;
+  if (AF.tur === 'Toplantı') $('afBitKutu').hidden = tum;
+}
+async function ajandaKaydet() {
+  const hata = m => ($('mHata').textContent = m);
+  const toplanti = AF.tur === 'Toplantı', tum = toplanti && $('afTumGun').checked;
+  const [fTur, fId] = ($('afFirma').value || ':').split(':');
+  const eski = AF.id ? ajandaBul(AF.id) : {};
+  const kayit = Object.assign({}, eski, {
+    Id: AF.id, Tur: AF.tur, Baslik: $('afBaslik').value.trim(), Tarih: $('afTarih').value, TumGun: tum,
+    Baslangic: tum ? '' : $('afBas').value, Bitis: tum || !toplanti ? '' : $('afBit').value,
+    Yer: toplanti ? $('afYer').value.trim() : '', FirmaTur: fTur || '', FirmaId: fId || '',
+    Katilimcilar: toplanti ? $('afKat').value.trim() : '', Tekrar: $('afTekrar').value, HatirlatmaDk: Number($('afHat').value),
+    Notlar: $('afNot').value.trim(), Tamamlandi: AF.id ? !!eski.Tamamlandi : false
+  });
+  if (!kayit.Baslik) return hata('Başlık gerekli.');
+  if (!kayit.Tarih) return hata('Tarih gerekli.');
+  if (!tum && !kayit.Baslangic) return hata(toplanti ? 'Başlangıç saati girin ya da "Tüm gün" seçin.' : 'Saat girin.');
+  if (kayit.Bitis && kayit.Bitis <= kayit.Baslangic) return hata('Bitiş saati başlangıçtan sonra olmalı.');
+  const btn = $('afKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    const r = await api('kayit.kaydet', { varlik: 'ajanda', kayit });
+    const takvimHata = r.TakvimHata; delete r.TakvimHata;
+    veriGuncelle('ajanda', r);
+    AJ.ay = r.Tarih.slice(0, 7); AJ.secili = r.Tarih; AJ.gorunum = 'ay';
+    modalKapat();
+    if (D.aktif === 'ajanda') { if (D.param) git('ajanda'); else ajandaCiz(); } else git('ajanda');
+    BILD.zaman = 0; bildirimYukle();
+    toast(takvimHata || `${r.Tur} kaydedildi${r.TakvimId ? ', Google Takvim\'e de eklendi' : ''}.`, !!takvimHata);
+  } catch (e) { hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet'; }
+}
+
+// ---------- Yönetim: Google Takvim eşitleme ----------
+let GT = null;
+async function takvimAyarYukle() {
+  const k = $('takvimAyar'); if (!k) return;
+  try { GT = await api('ajandaAyar.oku'); takvimAyarCiz(); }
+  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Takvim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+function takvimAyarCiz() {
+  const k = $('takvimAyar'); if (!k || !GT) return;
+  k.innerHTML = `<div class="w-bas"><h3>📆 Google Takvim Eşitleme</h3><span class="rozet ${GT.TakvimAktif ? 'ok' : 'pasif'}">${GT.TakvimAktif ? 'Aktif' : 'Kapalı'}</span></div>
+    <p class="bilgi-not" style="margin:-6px 0 16px">Açıkken Ajanda'daki toplantı ve hatırlatmalar Google hesabındaki "Locus Ajanda" takvimine yazılır; telefonuna seçilen sürede anlık bildirim ve e-posta hatırlatması gelir. Takvimi Google Takvim ayarlarından ekip arkadaşlarınla paylaşırsan onlar da görür.</p>
+    <div class="cips" style="margin-bottom:16px"><button type="button" class="${GT.TakvimAktif ? 'on' : ''}" onclick="takvimAyarKaydet(true)">Aktif</button><button type="button" class="${GT.TakvimAktif ? '' : 'on'}" onclick="takvimAyarKaydet(false)">Kapalı</button></div>
+    ${GT.TakvimAktif ? `<button class="btn ikincil" type="button" id="gtEsitle" onclick="takvimTumunuEsitle()">Mevcut kayıtları Google Takvim'e aktar</button>` : ''}
+    <div class="hata-kutu" id="gtHata"></div>`;
+}
+async function takvimAyarKaydet(aktif) {
+  $('gtHata').textContent = '';
+  try { GT = await api('ajandaAyar.kaydet', { TakvimAktif: aktif }); takvimAyarCiz(); toast(aktif ? 'Google Takvim eşitlemesi açıldı. Bundan sonraki kayıtlar takvime yazılacak.' : 'Google Takvim eşitlemesi kapatıldı.'); }
+  catch (e) { $('gtHata').textContent = e.message; }
+}
+async function takvimTumunuEsitle() {
+  const btn = $('gtEsitle'); btn.disabled = true; btn.textContent = 'Aktarılıyor…';
+  try { const r = await api('ajanda.tumunuEsitle'); toast(`${r.aktarilan} kayıt Google Takvim'e aktarıldı${r.hatali ? `, ${r.hatali} kayıt aktarılamadı` : ''}.`); VERI.ajanda = undefined; }
+  catch (e) { $('gtHata').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Mevcut kayıtları Google Takvim\'e aktar';
+}
+
 // ==================== GENEL VERİ ====================
 const VERI = {};
 const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
@@ -2170,8 +2541,8 @@ const FIRMA = {
     islemBaslik: 'Yapılan İşlemler',
     islemBos: 'Bu müşteriye ait teklifler, siparişler ve Oxyweld bakımları burada tarih sırasına göre listelenecek.',
     // Projeler sayfası yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
-    kaynaklar: [['musteriSiparis', 'siparisler'], ['oxyBakim', 'oxyweld'], ['teklif', 'teklifler']],
-    islemler: m => (VERI.teklif || []).filter(x => x.FirmaId === m.Id).map(x => ({
+    kaynaklar: [['musteriSiparis', 'siparisler'], ['oxyBakim', 'oxyweld'], ['teklif', 'teklifler'], ['ajanda', 'ajanda']],
+    islemler: m => ajandaToplantilari(m, 'musteriler').concat((VERI.teklif || []).filter(x => x.FirmaId === m.Id).map(x => ({
       tarih: x.Tarih, tur: 'Teklif', baslik: x.No, aciklama: x.Konu || kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: TEKLIF_DURUM_SINIF[x.Durum] || '', rota: 'teklifler/' + x.Id
     })).concat((VERI.oxyBakim || []).filter(x => x.MusteriId === m.Id).map(x => ({
@@ -2181,19 +2552,25 @@ const FIRMA = {
     }))).concat((VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
       tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: durumSinif('musteriSiparis', x.Durum), rota: 'siparisler/ms.' + x.Id
-    })))
+    }))))
   },
   tedarikciler: {
     tekil: 'Tedarikçi', kucuk: 'tedarikçi', ikon: '🚚',
     islemBaslik: 'Satın Almalar',
     islemBos: 'Bu tedarikçiden yapılan satın almalar burada tarih sırasına göre listelenecek.',
-    kaynaklar: [['satinalma', 'siparisler']],
-    islemler: m => (VERI.satinalma || []).filter(x => x.FirmaId === m.Id).map(x => ({
+    kaynaklar: [['satinalma', 'siparisler'], ['ajanda', 'ajanda']],
+    islemler: m => ajandaToplantilari(m, 'tedarikciler').concat((VERI.satinalma || []).filter(x => x.FirmaId === m.Id).map(x => ({
       tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: durumSinif('satinalma', x.Durum), rota: 'siparisler/sa.' + x.Id
-    }))
+    })))
   }
 };
+/** Firmaya bağlı toplantılar firma sayfasının geçmişinde görünür */
+const ajandaToplantilari = (m, tur) => (VERI.ajanda || []).filter(x => x.FirmaId === m.Id && x.FirmaTur === tur && x.Tur === 'Toplantı').map(x => ({
+  tarih: x.Tarih, tur: 'Toplantı', baslik: x.Baslik, aciklama: [x.TumGun ? 'Tüm gün' : x.Baslangic, x.Yer].filter(Boolean).join(', '),
+  durum: x.Tarih > bugun() ? 'Planlandı' : x.Tarih === bugun() ? 'Bugün' : 'Yapıldı',
+  durumSinif: x.Tarih > bugun() ? '' : x.Tarih === bugun() ? 'uyari' : 'ok', rota: 'ajanda/' + x.Id
+}));
 const FD = {};
 const fDurum = v => FD[v] || (FD[v] = { arama: '', filtre: 'tumu' });
 const firmaBul = (v, id) => (VERI[v] || []).find(x => x.Id === id);
