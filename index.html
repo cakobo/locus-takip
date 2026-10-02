@@ -3608,23 +3608,90 @@ const PO_DIL = {
         yetkili: 'Yetkili', vd: 'V.D. / No', vn: 'Vergi No', tel: 'Tel', pb: 'Para birimi', teslimYeri: 'Teslim yeri / şekli', odeme: 'Ödeme koşulları',
         sutunlar: ['Sıra', 'Açıklama', 'Miktar', 'Birim Fiyat', 'Tutar'], ara: 'Ara toplam', kdv: 'KDV', genel: 'GENEL TOPLAM', notlar: 'Notlar',
         onay: 'Lütfen siparişin alındığını ve teslim tarihini yazılı olarak teyit ediniz. Faturada sipariş numaramızı belirtiniz.',
-        adina: 'ADINA', tedOnay: 'TEDARİKÇİ ONAYI', imza: 'Tarih / Kaşe / İmza', yok: 'Belirtilmemiş', pesin: 'Peşin' },
+        adina: 'ADINA', tedOnay: 'TEDARİKÇİ ONAYI', imza: 'Tarih / Kaşe / İmza', yok: 'Belirtilmemiş', pesin: 'Peşin', sartlar: 'Şartlar' },
   en: { baslik: 'PURCHASE ORDER', no: 'PO No', tarih: 'Date', teslim: 'Requested delivery', veren: 'BUYER', tedarikci: 'SUPPLIER',
         yetkili: 'Attn.', vd: 'Tax office / No', vn: 'Tax / VAT No', tel: 'Tel', pb: 'Currency', teslimYeri: 'Delivery terms / place', odeme: 'Payment terms',
         sutunlar: ['No', 'Description', 'Qty', 'Unit Price', 'Amount'], ara: 'Subtotal', kdv: 'VAT', genel: 'TOTAL', notlar: 'Notes',
         onay: 'Please confirm receipt of this order and the delivery date in writing. Please quote our PO number on your invoice.',
-        adina: '', tedOnay: 'SUPPLIER CONFIRMATION', imza: 'Date / Stamp / Signature', yok: 'Not specified', pesin: 'Advance' }
+        adina: '', tedOnay: 'SUPPLIER CONFIRMATION', imza: 'Date / Stamp / Signature', yok: 'Not specified', pesin: 'Advance', sartlar: 'Terms and Conditions' }
 };
 const PO_BIRIM_EN = { adet: 'pcs', kg: 'kg', m: 'm', 'm²': 'm²', lt: 'L', set: 'set', paket: 'pack', saat: 'hr', gün: 'day' };
 const PO_ASAMA_EN = { 'Peşinat': 'Advance payment', 'Teslim': 'On delivery', 'Test / Kabul': 'On acceptance', 'Vade': 'Deferred', 'Ara ödeme': 'Interim payment' };
 const poNo = no => String(no || '').replace(/^LCS/, 'LPO');
+
+
+// ---------- PO ayarları ----------
+let PO_AYAR = null;
+const PO_ONERI = {
+  Sartlar: ['Faturada sipariş numaramız (LPO…) belirtilmelidir.',
+            'Malzemeler siparişteki teknik özelliklere uygun, eksiksiz ve hasarsız teslim edilmelidir.',
+            'Teslim tarihinde gecikme olacaksa önceden yazılı olarak bilgi verilmelidir.',
+            'Varsa test, kalite ve uygunluk sertifikaları sevkiyatla birlikte gönderilmelidir.'].join('\n'),
+  SartlarEn: ['Our PO number (LPO…) must be quoted on the invoice.',
+              'Goods must comply with the specifications in this order and be delivered complete and undamaged.',
+              'Any delay in the delivery date must be notified in writing in advance.',
+              'Test, quality and conformity certificates (if any) must be sent with the shipment.'].join('\n'),
+  Teyit: 'Lütfen siparişin alındığını ve teslim tarihini yazılı olarak teyit ediniz.',
+  TeyitEn: 'Please confirm receipt of this order and the delivery date in writing.'
+};
+async function poAyarYukle(zorla) {
+  if (!PO_AYAR) PO_AYAR = ls.al('locus_c_poAyar');
+  if (PO_AYAR && !zorla) { api('ayar.oku', { anahtar: 'po' }).then(r => { PO_AYAR = r; ls.koy('locus_c_poAyar', r); }).catch(() => {}); return PO_AYAR; }
+  try { PO_AYAR = await api('ayar.oku', { anahtar: 'po' }); ls.koy('locus_c_poAyar', PO_AYAR); } catch (e) { PO_AYAR = PO_AYAR || {}; }
+  return PO_AYAR;
+}
+/** PO'da kullanılacak bilgi: PO ayarı boşsa teklif ayarlarındaki firma bilgisi kullanılır */
+async function poBilgi() {
+  const [po, tk] = await Promise.all([poAyarYukle(), (TEKLIF_AYAR ? Promise.resolve(TEKLIF_AYAR) : teklifAyarYukle()).catch(() => ({}))]);
+  const p = po || {}, t = tk || {}, al = (a, b) => p[a] || t[b || a] || '';
+  return { Unvan: al('Unvan'), Adres: al('Adres'), VergiDairesi: al('VergiDairesi'), VergiNo: al('VergiNo'), Telefon: al('Telefon'), Eposta: al('Eposta'),
+           Veren: al('Veren', 'Hazirlayan'), VerenUnvan: al('VerenUnvan', 'HazirlayanUnvan'), VerenTelefon: al('VerenTelefon', 'HazirlayanTelefon'), VerenEposta: al('VerenEposta', 'HazirlayanEposta'),
+           TeslimYeri: p.TeslimYeri || (t.Adres || '').replace(/\n/g, ', '), TeslimYeriEn: p.TeslimYeriEn || '',
+           Sartlar: p.Sartlar || '', SartlarEn: p.SartlarEn || '', Teyit: p.Teyit || PO_ONERI.Teyit, TeyitEn: p.TeyitEn || PO_ONERI.TeyitEn,
+           FormKodu: p.FormKodu || '', FormTarihi: p.FormTarihi || '' };
+}
+async function poAyarModal() {
+  const [a, tk] = await Promise.all([poAyarYukle(true), (TEKLIF_AYAR ? Promise.resolve(TEKLIF_AYAR) : teklifAyarYukle()).catch(() => ({}))]);
+  const t = tk || {};
+  const onerilen = { Unvan: t.Unvan, Adres: t.Adres, VergiDairesi: t.VergiDairesi, VergiNo: t.VergiNo, Telefon: t.Telefon, Eposta: t.Eposta,
+    Veren: t.Hazirlayan, VerenUnvan: t.HazirlayanUnvan, VerenTelefon: t.HazirlayanTelefon, VerenEposta: t.HazirlayanEposta,
+    TeslimYeri: (t.Adres || '').replace(/\n/g, ', '), TeslimYeriEn: t.Adres ? (t.Adres || '').replace(/\n/g, ', ') + ', Turkey' : '', ...PO_ONERI };
+  const deger = id => a[id] != null && a[id] !== '' ? a[id] : (onerilen[id] || '');
+  const g = (id, et, ph) => `<div><label class="et" for="po${id}">${et}</label><input class="girdi" id="po${id}" value="${esc(deger(id))}" placeholder="${ph || ''}"></div>`;
+  const alan = (id, et, yuk, ph) => `<div><label class="et" for="po${id}">${et}</label><textarea class="girdi alan" id="po${id}" style="min-height:${yuk || 70}px" placeholder="${ph || ''}">${esc(deger(id))}</textarea></div>`;
+  modalAc('PO Ayarları', `
+    <p class="bilgi-not" style="margin:0 0 14px">Bu bilgiler Purchase Order PDF'inde kullanılır. Boş alanlara Teklif Ayarları'ndaki bilgiler ve örnek şartlar önerildi; kontrol edip kaydedin.</p>
+    <div class="bolum-et">Firma bilgileri</div>
+    <div class="iki">${g('Unvan', 'Firma unvanı')}${g('VergiDairesi', 'Vergi dairesi')}${g('VergiNo', 'Vergi no')}${g('Telefon', 'Telefon')}${g('Eposta', 'E-posta')}</div>
+    <label class="et" for="poAdres">Adres</label><textarea class="girdi alan" id="poAdres" style="min-height:52px">${esc(deger('Adres'))}</textarea>
+    <div class="bolum-et">Siparişi veren</div>
+    <div class="iki">${g('Veren', 'Ad soyad')}${g('VerenUnvan', 'Unvanı')}${g('VerenTelefon', 'Telefonu')}${g('VerenEposta', 'E-postası')}</div>
+    <div class="bolum-et">Varsayılan teslim yeri</div>
+    <div class="iki">${g('TeslimYeri', '🇹🇷 Türkçe', 'Ör. Locus Mühendislik, Nilüfer / Bursa')}${g('TeslimYeriEn', '🇬🇧 English', 'Ör. DAP Bursa, Turkey (Incoterms 2020)')}</div>
+    <div class="bolum-et">Şartlar <span class="soluk" style="font-weight:400;font-size:13px;margin-left:6px">(her satır bir madde, her PO'nun altında görünür)</span></div>
+    <div class="iki">${alan('Sartlar', '🇹🇷 Türkçe', 150)}${alan('SartlarEn', '🇬🇧 English', 150)}</div>
+    <div class="iki">${alan('Teyit', '🇹🇷 Teyit isteği', 52)}${alan('TeyitEn', '🇬🇧 Confirmation request', 52)}</div>
+    <div class="bolum-et">Form kontrol bilgileri</div>
+    <div class="iki">${g('FormKodu', 'Form kodu', 'Ör. FR-74-01 R(0)')}${g('FormTarihi', 'Yayın tarihi', 'Ör. Y.T.26.10.02')}</div>
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="poaKaydet" onclick="poAyarKaydet()">Kaydet</button>`, true);
+}
+async function poAyarKaydet() {
+  const d = {};
+  ['Unvan', 'VergiDairesi', 'VergiNo', 'Telefon', 'Eposta', 'Adres', 'Veren', 'VerenUnvan', 'VerenTelefon', 'VerenEposta',
+   'TeslimYeri', 'TeslimYeriEn', 'Sartlar', 'SartlarEn', 'Teyit', 'TeyitEn', 'FormKodu', 'FormTarihi'].forEach(k => d[k] = $('po' + k).value.trim());
+  const btn = $('poaKaydet'); btn.disabled = true;
+  try { PO_AYAR = await api('ayar.kaydet', { anahtar: 'po', deger: d }); ls.koy('locus_c_poAyar', PO_AYAR); modalKapat(); toast('PO ayarları kaydedildi.'); }
+  catch (e) { $('mHata').textContent = e.message; btn.disabled = false; }
+}
 
 async function poModal(id) {
   const x = (VERI.satinalma || []).find(s => s.Id === id); if (!x) return;
   if (!FIRMALAR) { try { await firmalarYukle(); } catch (e) { } }
   const f = ((FIRMALAR || {}).tedarikciler || []).find(t => t.Id === x.FirmaId) || {};
   const yetkililer = (f.Yetkililer || []).filter(y => y.adSoyad);
-  const a = TEKLIF_AYAR || await teklifAyarYukle().catch(() => ({})) || {};
+  const a = await poBilgi();
+  PO_GECICI = { a };
   const ilkDil = ls.al('locus_po_dil') || 'tr';
   modalAc(`${poNo(x.No)}: Purchase Order`, `
     <label class="et">Dil / Language</label>
@@ -3633,14 +3700,20 @@ async function poModal(id) {
     <label class="et" for="poYet">Tedarikçi yetkilisi</label>
     <select class="girdi" id="poYet"><option value="">Belirtme</option>${yetkililer.map((y, i) => `<option value="${i}" ${i === 0 ? 'selected' : ''}>${esc(y.adSoyad)}${y.pozisyon ? ' (' + esc(y.pozisyon) + ')' : ''}</option>`).join('')}</select>
     <label class="et" for="poTeslimYeri">Teslim yeri / şekli</label>
-    <input class="girdi" id="poTeslimYeri" value="${esc(ls.al('locus_po_teslim') || (a.Adres ? a.Adres.replace(/\n/g, ', ') : ''))}" placeholder="Ör. Locus Mühendislik, Nilüfer / Bursa (DAP) veya EXW">
-    <label class="et" for="poNot">Ek not (PDF'e yazılır)</label>
-    <textarea class="girdi alan" id="poNot" style="min-height:60px" placeholder="Ör. Lütfen sertifikaları sevkiyatla birlikte gönderin.">${esc(x.Notlar || '')}</textarea>
+    <input class="girdi" id="poTeslimYeri" value="${esc(ilkDil === 'en' ? (a.TeslimYeriEn || a.TeslimYeri) : a.TeslimYeri)}" placeholder="Ör. Locus Mühendislik, Nilüfer / Bursa veya DAP Bursa">
+    <label class="et" for="poNot">Bu siparişe özel not (PDF'e yazılır)</label>
+    <textarea class="girdi alan" id="poNot" style="min-height:60px" placeholder="Ör. Paketler paletli gelmeli.">${esc(x.Notlar || '')}</textarea>
+    <p class="bilgi-not">Standart şartlar seçilen dile göre PO Ayarları'ndan otomatik eklenir.</p>
     ${!f.Adres ? '<p class="bilgi-not">Tedarikçi kartında adres yok; Tedarikçiler sayfasından eklerseniz PO\'da görünür.</p>' : ''}
-    ${!a.Unvan ? '<p class="bilgi-not" style="color:var(--warn)">Firma bilgileriniz (unvan, adres, vergi no) Teklifler > Ayarlar\'dan girilir; PO da aynı bilgileri kullanır.</p>' : ''}`,
+    ${!a.Unvan ? '<p class="bilgi-not" style="color:var(--warn)">Firma bilgileriniz girilmemiş; Satın Almalar > ⚙️ PO Ayarları\'ndan girin.</p>' : ''}`,
     `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" onclick="poYazdir('${id}')">🖨 PDF Oluştur</button>`);
 }
-function poDil(d) { document.querySelectorAll('[data-pdil]').forEach(b => b.classList.toggle('on', b.dataset.pdil === d)); }
+let PO_GECICI = null;
+function poDil(d) {
+  document.querySelectorAll('[data-pdil]').forEach(b => b.classList.toggle('on', b.dataset.pdil === d));
+  const a = (PO_GECICI || {}).a || {}, alan = $('poTeslimYeri');
+  if (alan && [a.TeslimYeri, a.TeslimYeriEn, ''].includes(alan.value)) alan.value = d === 'en' ? (a.TeslimYeriEn || a.TeslimYeri || '') : (a.TeslimYeri || '');
+}
 
 async function poYazdir(id) {
   const x = (VERI.satinalma || []).find(s => s.Id === id); if (!x) return;
@@ -3648,8 +3721,9 @@ async function poYazdir(id) {
   const f = ((FIRMALAR || {}).tedarikciler || []).find(t => t.Id === x.FirmaId) || {};
   const yi = $('poYet').value, yet = yi === '' ? null : (f.Yetkililer || []).filter(y => y.adSoyad)[Number(yi)];
   const teslimYeri = $('poTeslimYeri').value.trim(), ekNot = $('poNot').value.trim();
-  ls.koy('locus_po_dil', dil); if (teslimYeri) ls.koy('locus_po_teslim', teslimYeri);
-  const a = TEKLIF_AYAR || {};
+  ls.koy('locus_po_dil', dil);
+  const a = (PO_GECICI || {}).a || await poBilgi();
+  const sartlar = String(en ? a.SartlarEn : a.Sartlar || '').split('\n').map(s => s.replace(/^[\s*•\-–]+/, '').trim()).filter(Boolean);
   const satir = (...p) => p.filter(Boolean).join(' &nbsp;|&nbsp; ');
   const plan = (x.OdemePlani || []).map(r => `${en ? sayiGoster(r.oran) + '%' : '%' + sayiGoster(r.oran)} ${esc(en ? (PO_ASAMA_EN[r.asama] || r.asama) : r.asama)} (${tarihKisa(r.tarih)})`).join(', ');
   const birim = b => en ? (PO_BIRIM_EN[b] || b) : b;
@@ -3666,7 +3740,7 @@ async function poYazdir(id) {
       <div><h4>${L.veren}</h4><b>${esc(a.Unvan || 'Locus Mühendislik')}</b>${a.Adres ? `<p>${esc(a.Adres)}</p>` : ''}
         ${(a.VergiDairesi || a.VergiNo) ? `<p>${L.vd}: ${esc([a.VergiDairesi, a.VergiNo].filter(Boolean).join(' / '))}</p>` : ''}
         <p>${satir(a.Telefon && L.tel + ': ' + esc(a.Telefon), esc(a.Eposta || ''))}</p>
-        ${a.Hazirlayan ? `<p>${satir(esc(a.Hazirlayan), esc(a.HazirlayanTelefon || ''), esc(a.HazirlayanEposta || ''))}</p>` : ''}</div>
+        ${a.Veren ? `<p>${satir(esc(a.Veren), esc(a.VerenTelefon || ''), esc(a.VerenEposta || ''))}</p>` : ''}</div>
       <div><h4>${L.tedarikci}</h4><b>${esc(x.FirmaAd)}</b>${f.Adres ? `<p>${esc(f.Adres)}</p>` : ''}
         ${f.VergiNo ? `<p>${L.vn}: ${esc(f.VergiNo)}</p>` : ''}
         ${yet ? `<p>${L.yetkili}: ${esc(yet.adSoyad)}</p><p>${satir(yet.telefon && L.tel + ': ' + esc(yet.telefon), esc(yet.eposta || ''))}</p>` : ''}</div>
@@ -3684,13 +3758,14 @@ async function poYazdir(id) {
       ${Number(x.KdvOrani) ? `<tr><td>${L.kdv} ${en ? x.KdvOrani + '%' : '%' + x.KdvOrani}</td><td>${para(x.Kdv, x.ParaBirimi)}</td></tr>` : ''}
       <tr class="genel"><td>${L.genel}</td><td>${para(x.Toplam, x.ParaBirimi)}</td></tr></table>
     ${ekNot ? `<div class="tk-bolum"><h3>${L.notlar}</h3><p>${esc(ekNot).replace(/\n/g, '<br>')}</p></div>` : ''}
-    <p class="y-altnot" style="font-style:normal">${L.onay}</p>
+    ${sartlar.length ? `<div class="tk-bolum"><h3>${L.sartlar}</h3><ul class="tk-sart">${sartlar.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    <p class="y-altnot" style="font-style:normal">${esc(en ? a.TeyitEn : a.Teyit)}</p>
     <div class="tk-imzalar">
-      <div><h4>${esc((a.Unvan || 'Locus Mühendislik').toLocaleUpperCase(en ? 'en-US' : 'tr-TR'))}${L.adina ? ' ' + L.adina : ''}</h4><b>${esc(a.Hazirlayan || '')}</b>
-        <p>${esc(a.HazirlayanUnvan || '')}</p></div>
+      <div><h4>${esc((a.Unvan || 'Locus Mühendislik').toLocaleUpperCase(en ? 'en-US' : 'tr-TR'))}${L.adina ? ' ' + L.adina : ''}</h4><b>${esc(a.Veren || '')}</b>
+        <p>${esc(a.VerenUnvan || '')}</p></div>
       <div><h4>${L.tedOnay}</h4><div class="tk-imza-alan"></div><p class="soluk-pdf">${L.imza}</p></div>
     </div>`,
-    [poNo(x.No), x.FirmaAd].join(', '), dil);
+    [a.FormKodu, a.FormTarihi, poNo(x.No), x.FirmaAd].filter(Boolean).join('   '), dil);
 }
 
 // ==================== GENEL VERİ ====================
@@ -4083,7 +4158,8 @@ async function firmalarYukle() {
 SAYFA_CIZ.siparisler = function (ic, s, y) {
   if (D.param) return siparisDetay(ic, s, y, D.param);
   const t = SP.tur, c = SIP[t];
-  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `<button class="btn" type="button" onclick="siparisForm('${t}')">+ Yeni ${c.ad}</button>` : '') + `
+  ic.innerHTML = sayfaBasHTML(s, y, y === 'tam' ? `${t === 'satinalma' ? '<button class="btn ikincil" type="button" onclick="poAyarModal()">⚙️ PO Ayarları</button>' : ''}
+      <button class="btn" type="button" onclick="siparisForm('${t}')">+ Yeni ${c.ad}</button>` : '') + `
     <div class="sekmeler" role="tablist">${Object.keys(SIP).map(k =>
       `<button type="button" role="tab" class="${k === t ? 'on' : ''}" onclick="SP.tur='${k}';rotaUygula()">${SIP[k].cogul}</button>`).join('')}</div>
     <div class="arac">
