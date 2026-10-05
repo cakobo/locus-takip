@@ -672,6 +672,9 @@ a.btn{text-decoration:none}
   .y-toplam-satir td{font-weight:700;background:#f2f5f9;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
+/* ---------- liste Excel düğmesi ---------- */
+.arac > .btn.kucuk{height:44px;padding:0 14px}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -1114,8 +1117,15 @@ const SAYFA_CIZ = {
     ic.innerHTML = sayfaBasHTML(s, 'tam', `<button class="btn" type="button" onclick="kullaniciModal()">+ Kullanıcı Ekle</button>`) +
       `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>
        <section class="kart panel" id="epostaAyar" style="margin-top:22px"><div class="bos kucuk-bos"><p>E-posta ayarları yükleniyor…</p></div></section>
-       <section class="kart panel" id="takvimAyar" style="margin-top:18px"><div class="bos kucuk-bos"><p>Takvim ayarı yükleniyor…</p></div></section>`;
-    epostaAyarYukle(); takvimAyarYukle();
+       <section class="kart panel" id="takvimAyar" style="margin-top:18px"><div class="bos kucuk-bos"><p>Takvim ayarı yükleniyor…</p></div></section>
+       <section class="kart panel" id="yedekKart" style="margin-top:18px"><div class="bos kucuk-bos"><p>Yedek bilgisi yükleniyor…</p></div></section>
+       <section class="kart panel" id="silinenKart" style="margin-top:18px"><div class="bos kucuk-bos"><p>Silinen kayıtlar yükleniyor…</p></div></section>
+       <section class="kart panel" style="margin-top:18px">
+         <div class="w-bas"><h3>🧹 Test Verilerini Temizle</h3></div>
+         <p class="bilgi-not" style="margin:-6px 0 12px">Gerçek kullanıma geçerken deneme kayıtlarını tek seferde siler: firmalar, siparişler, teklifler, stok, servis, ajanda, finans ve ekip kayıtları. <b>Kullanıcılar, şifreler, bütün ayarlar ve işlem günlüğü korunur.</b> Silmeden önce otomatik yedek alınır; gerekirse Drive'daki yedekten geri dönebilirsin. Sipariş, teklif ve bakım numaraları baştan başlar.</p>
+         <button class="btn tehlike" type="button" onclick="veriSifirlaModal()">Test verilerini temizle…</button>
+       </section>`;
+    epostaAyarYukle(); takvimAyarYukle(); yedekKartYukle(); silinenKartYukle();
     try {
       const liste = await api('kullanicilar.liste');
       YONETIM.liste = liste;
@@ -2811,7 +2821,8 @@ async function finKayitSil(varlik, id) {
 // ---------- Hareketler ----------
 function finHareketler(ic) {
   ic.innerHTML = `<div class="arac"><label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Firma, sipariş no, açıklama ara" value="${esc(FIN.arama)}" oninput="FIN.arama=this.value;finHareketSatirlar()"></label>
-    <div class="cips">${[['tumu', 'Tümü'], ['gelir', 'Gelir'], ['gider', 'Gider']].map(([k, a]) => `<button type="button" data-f="${k}" onclick="FIN.hTur='${k}';finHareketSatirlar()">${a}</button>`).join('')}</div></div>
+    <div class="cips">${[['tumu', 'Tümü'], ['gelir', 'Gelir'], ['gider', 'Gider']].map(([k, a]) => `<button type="button" data-f="${k}" onclick="FIN.hTur='${k}';finHareketSatirlar()">${a}</button>`).join('')}</div>
+    <button class="btn ikincil kucuk" type="button" onclick="finHareketExcel()" title="Muhasebe için Excel'e aktar">⬇ Excel</button></div>
     <div class="ozet" id="finOzetSat"></div><div class="kart" id="finSatirlar"></div>`;
   finHareketSatirlar();
 }
@@ -2829,6 +2840,7 @@ function finHareketSatirlar() {
     .filter(x => FIN.hTur === 'tumu' || x.tur === FIN.hTur)
     .filter(x => !q || trKucuk(x.baslik + ' ' + x.alt).includes(q))
     .sort((a, b) => String(b.tarih).localeCompare(String(a.tarih)));
+  LISTE_SON.finHareket = l;
   const top = {}; l.forEach(x => { top[x.pb] = top[x.pb] || { g: 0, c: 0 }; top[x.pb][x.tur === 'gelir' ? 'g' : 'c'] += Number(x.tutar); });
   $('finOzetSat').innerHTML = `<span class="soluk">${l.length} hareket</span>` + Object.keys(top).map(p => `<span class="ozet-tutar"><span class="gelir-y">+${para(top[p].g, p)}</span> / <span class="gider-y">−${para(top[p].c, p)}</span></span>`).join('');
   kutu.innerHTML = l.length ? l.slice(0, 400).map(x => `<div class="f-satir" ${x.rota ? `onclick="git('${x.rota}')"` : ''}>
@@ -3768,6 +3780,170 @@ async function poYazdir(id) {
     [a.FormKodu, a.FormTarihi, poNo(x.No), x.FirmaAd].filter(Boolean).join('   '), dil);
 }
 
+// ==================== YEDEKLEME VE SİLİNEN KAYITLAR (Yönetim) ====================
+let YD = null;
+async function yedekKartYukle() {
+  const k = $('yedekKart'); if (!k) return;
+  try { YD = await api('yedek.durum'); yedekKartCiz(); }
+  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Yedek bilgisi alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+function yedekKartCiz() {
+  const k = $('yedekKart'); if (!k || !YD) return;
+  const son = YD.sonYedek ? new Date(YD.sonYedek) : null;
+  const eski = son && (Date.now() - son.getTime()) > 2 * 86400000;
+  k.innerHTML = `<div class="w-bas"><h3>💾 Yedekleme</h3><span class="rozet ${YD.OtomatikYedek ? 'ok' : 'pasif'}">${YD.OtomatikYedek ? 'Otomatik yedek açık' : 'Otomatik yedek kapalı'}</span></div>
+    <p class="bilgi-not" style="margin:-6px 0 14px">Her gece (02:00'den sonra) bütün veriler Google Drive'daki "Locus Yedekler" klasörüne kopyalanır; saklama süresi dolan yedekler çöpe gider (en yeni 5 yedek her zaman kalır). Bütün veriyi ayrıca Excel olarak indirip bilgisayarında ya da harici diskte saklaman önerilir.</p>
+    <div class="fo-grid uc" style="margin-bottom:14px">
+      <div class="fo-hucre ${eski || !son ? 'kirmizi' : ''}"><span>Son yedek</span><b>${son ? esc(tarihYaz(YD.sonYedek)) : 'Henüz yok'}</b>${eski ? '<small>2 günden eski</small>' : ''}</div>
+      <div class="fo-hucre"><span>Klasördeki yedek</span><b>${YD.sayi}</b>${YD.klasorUrl ? `<small><a class="link" href="${esc(YD.klasorUrl)}" target="_blank" rel="noopener">Drive'da aç ›</a></small>` : ''}</div>
+      <div class="fo-hucre"><span>Saklama süresi</span><b>${YD.SaklamaGun} gün</b></div></div>
+    ${!YD.tetikleyici ? `<p class="bilgi-not" style="color:var(--warn)">Otomatik yedek için saatlik kontrol kurulu değil: Apps Script editöründe <b>bildirimKurulum</b> fonksiyonunu bir kez çalıştırın.</p>` : ''}
+    <div class="iki">
+      <div><label class="et">Otomatik gece yedeği</label><div class="cips" style="width:100%;margin-bottom:14px">
+        <button type="button" style="flex:1" class="${YD.OtomatikYedek ? 'on' : ''}" onclick="yedekAyar(true)">Açık</button><button type="button" style="flex:1" class="${YD.OtomatikYedek ? '' : 'on'}" onclick="yedekAyar(false)">Kapalı</button></div></div>
+      <div><label class="et" for="ydGun">Saklama süresi</label><select class="girdi" id="ydGun" onchange="yedekAyar(${YD.OtomatikYedek})">${[7, 14, 30, 60, 90].map(g => `<option value="${g}" ${g === YD.SaklamaGun ? 'selected' : ''}>${g} gün</option>`).join('')}</select></div>
+    </div>
+    <div class="stok-btn"><button class="btn ikincil" type="button" id="ydExcel" onclick="tumVeriIndir()">⬇ Bütün veriyi Excel olarak indir</button>
+      <button class="btn" type="button" id="ydAl" onclick="yedekSimdi()">💾 Şimdi yedek al</button></div>
+    <div class="hata-kutu" id="ydHata"></div>`;
+}
+async function yedekAyar(aktif) {
+  try { YD = await api('yedek.ayar', { OtomatikYedek: aktif, SaklamaGun: Number($('ydGun').value) }); yedekKartCiz(); toast('Yedek ayarı kaydedildi.'); }
+  catch (e) { $('ydHata').textContent = e.message; }
+}
+async function yedekSimdi() {
+  const btn = $('ydAl'); btn.disabled = true; btn.textContent = 'Yedek alınıyor…';
+  try { const r = await api('yedek.al'); YD = r.durum; yedekKartCiz(); toast(`Yedek alındı: ${r.ad}`); }
+  catch (e) { $('ydHata').textContent = e.message; btn.disabled = false; btn.textContent = '💾 Şimdi yedek al'; }
+}
+async function tumVeriIndir() {
+  const btn = $('ydExcel'); btn.disabled = true; btn.textContent = 'Hazırlanıyor…';
+  try {
+    const r = await api('yedek.excel');
+    const bayt = Uint8Array.from(atob(r.base64), c => c.charCodeAt(0));
+    dosyaIndir(new Blob([bayt], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), r.ad);
+    toast('Bütün veriler Excel olarak indirildi. Dosyada kullanıcı şifre özetleri de var; güvenli bir yerde saklayın.');
+  } catch (e) { $('ydHata').textContent = e.message; }
+  btn.disabled = false; btn.textContent = '⬇ Bütün veriyi Excel olarak indir';
+}
+
+let SL = null;
+async function silinenKartYukle() {
+  const k = $('silinenKart'); if (!k) return;
+  try { SL = await api('silinen.liste'); silinenKartCiz(); }
+  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Silinen kayıtlar alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+function silinenKartCiz(hepsi) {
+  const k = $('silinenKart'); if (!k || !SL) return;
+  const l = hepsi ? SL : SL.slice(0, 15);
+  k.innerHTML = `<div class="w-bas"><h3>🗑️ Silinen Kayıtlar</h3><span class="soluk">son ${SL.length} silme</span></div>
+    <p class="bilgi-not" style="margin:-6px 0 12px">Silinen her kaydın içeriği saklanır; yanlışlıkla silineni buradan geri yükleyebilirsin. Bağlı kayıtlar (ör. bakımın stok hareketleri, Drive'daki fotoğraflar) kendiliğinden geri gelmez.</p>
+    ${l.length ? l.map(x => `<div class="f-satir" style="cursor:default">
+      <span class="f-tarih">${tarihKisa(String(x.Zaman).slice(0, 10))}<small>@${esc(x.Kullanici)}</small></span>
+      <span class="f-ic"><b>${esc(x.VarlikAd)}</b><small>${esc(x.Ozet)}${x.Durum ? ' · ' + esc(x.Durum) : ''}</small></span>
+      ${x.GeriYuklenebilir ? `<button class="btn ikincil kucuk" type="button" onclick="silinenGeriYukle(${x.satir}, this)">↩ Geri yükle</button>` : ''}</div>`).join('')
+      : '<p class="soluk">Henüz silinen kayıt yok.</p>'}
+    ${!hepsi && SL.length > 15 ? `<button class="link-btn" type="button" style="margin-top:10px" onclick="silinenKartCiz(true)">Tümünü göster (${SL.length})</button>` : ''}`;
+}
+async function silinenGeriYukle(satir, btn) {
+  if (!confirm('Bu kayıt geri yüklensin mi?')) return;
+  btn.disabled = true;
+  try {
+    const r = await api('silinen.geriYukle', { satir });
+    if (VERI[r.varlik]) veriGuncelle(r.varlik, r.kayit);
+    FIN.zaman = 0; BILD.zaman = 0;
+    toast('Kayıt geri yüklendi.'); silinenKartYukle();
+  } catch (e) { toast(e.message, true); btn.disabled = false; }
+}
+
+
+function veriSifirlaModal() {
+  modalAc('Test Verilerini Temizle', `
+    <p><b>Bütün iş kayıtları silinecek.</b> Kullanıcılar, ayarlar ve işlem günlüğü kalır. İşlemden önce Drive'daki "Locus Yedekler" klasörüne otomatik yedek alınır.</p>
+    <p style="margin-top:10px;color:var(--mute);font-size:14px">Google Takvim eşitlemesi açıksa Ajanda kayıtları takvimden de kaldırılır. Drive'daki bakım fotoğrafları silinmez.</p>
+    <label class="et" for="vsOnay" style="margin-top:14px">Onaylamak için <b>SIFIRLA</b> yazın</label>
+    <input class="girdi" id="vsOnay" autocomplete="off" placeholder="SIFIRLA">
+    <div class="hata-kutu" id="mHata"></div>`,
+    `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn tehlike" type="button" id="vsBtn" onclick="veriSifirla()">Temizle</button>`);
+  setTimeout(() => $('vsOnay').focus(), 50);
+}
+async function veriSifirla() {
+  const onay = $('vsOnay').value.trim().toLocaleUpperCase('tr-TR').replace('İ', 'I');
+  if (onay !== 'SIFIRLA') return ($('mHata').textContent = 'Onay için SIFIRLA yazın.');
+  const btn = $('vsBtn'); btn.disabled = true; btn.textContent = 'Yedek alınıp temizleniyor…';
+  try {
+    const r = await api('veri.sifirla', { onay: 'SIFIRLA' });
+    // Cihazdaki önbellekleri temizle
+    Object.keys(localStorage).filter(k => k.startsWith('locus_c_')).forEach(k => { try { localStorage.removeItem(k); } catch (e) { } });
+    Object.keys(VERI).forEach(k => delete VERI[k]); FIRMALAR = null; FIN.veri = null; BILD.liste = []; BILD.ertelenen = [];
+    modalKapat();
+    modalAc('Temizlendi', `<p>Test verileri silindi. Silmeden önce alınan yedek: <b>${esc(r.yedek.ad)}</b></p>
+      <p style="margin-top:10px;color:var(--mute);font-size:14px">${r.silinen.length ? 'Silinen kayıtlar: ' + esc(r.silinen.join(', ')) : 'Silinecek kayıt yoktu.'}</p>
+      <p style="margin-top:10px;font-size:14px">Diğer cihazlarda (telefon vb.) eski kayıtlar önbellekte görünebilir; uygulamayı bir kez kapatıp açmak yeterli.</p>`,
+      `<button class="btn" type="button" onclick="modalKapat();git('anasayfa')">Tamam</button>`);
+  } catch (e) { $('mHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Temizle'; }
+}
+
+// ==================== LİSTELERİ EXCEL'E AKTARMA ====================
+/** sutunlar: [{ad, tip: 'metin'|'sayi'|'para'|'tarih', g}] ; para sütunları için ayrı "Para birimi" sütunu kullanılır */
+async function listeExcel(baslik, sutunlar, satirlar, aciklama) {
+  if (!satirlar.length) return toast('Aktarılacak kayıt yok.', true);
+  toast('Excel hazırlanıyor…');
+  try {
+    await scriptYukle('https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js');
+    const wb = new ExcelJS.Workbook(); wb.creator = 'Locus Şirket Takip Sistemi';
+    const ws = wb.addWorksheet(baslik.slice(0, 28), { views: [{ state: 'frozen', ySplit: 3 }], pageSetup: { paperSize: 9, orientation: 'landscape', fitToPage: true, fitToWidth: 1, fitToHeight: 0 } });
+    ws.getCell('A1').value = baslik; ws.getCell('A1').font = { bold: true, size: 14, color: { argb: 'FF004085' } };
+    ws.getCell('A2').value = `${aciklama ? aciklama + ', ' : ''}${tarihKisa(bugun())} tarihinde alındı, ${satirlar.length} kayıt`; ws.getCell('A2').font = { size: 9, color: { argb: 'FF5D6B80' } };
+    const bas = ws.getRow(3);
+    sutunlar.forEach((s, j) => { const c = bas.getCell(j + 1); c.value = s.ad; c.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF004085' } }; c.alignment = { vertical: 'middle', wrapText: true }; });
+    bas.height = 20;
+    satirlar.forEach((r, i) => {
+      const row = ws.getRow(4 + i);
+      r.forEach((v, j) => { const s = sutunlar[j], c = row.getCell(j + 1);
+        if (s.tip === 'tarih' && v) { const p = String(v).slice(0, 10).split('-').map(Number); c.value = new Date(Date.UTC(p[0], p[1] - 1, p[2])); c.numFmt = 'dd.mm.yyyy'; }
+        else c.value = v === '' || v == null ? null : v;
+        if (s.tip === 'para') c.numFmt = '#,##0.00'; if (s.tip === 'sayi') c.numFmt = '#,##0.###';
+        if (s.tip === 'metin') c.alignment = { wrapText: true, vertical: 'top' }; });
+    });
+    sutunlar.forEach((s, j) => ws.getColumn(j + 1).width = s.g || Math.min(50, Math.max(10, s.ad.length + 2, ...satirlar.slice(0, 200).map(r => String(r[j] ?? '').length + 2))));
+    ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: sutunlar.length } };
+    const buf = await wb.xlsx.writeBuffer();
+    dosyaIndir(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }), `${dosyaAdi(baslik)}_${bugun()}.xlsx`);
+    toast('Excel indirildi.');
+  } catch (e) { toast('Excel oluşturulamadı: ' + e.message, true); }
+}
+const LISTE_SON = {};
+function firmaExcel(v) {
+  const l = LISTE_SON[v] || [];
+  listeExcel(v === 'musteriler' ? 'Müşteriler' : 'Tedarikçiler',
+    [{ ad: 'Firma' }, { ad: 'Vergi no' }, { ad: 'Durum' }, { ad: 'Adres', tip: 'metin', g: 40 }, { ad: 'Yetkililer', tip: 'metin', g: 60 }, { ad: 'Notlar', tip: 'metin', g: 40 }],
+    l.map(m => [m.Ad, m.VergiNo || '', m.Aktif ? 'Aktif' : 'Pasif', m.Adres || '',
+      (m.Yetkililer || []).map(y => [y.adSoyad, y.pozisyon, y.telefon, y.eposta].filter(Boolean).join(' - ')).join('\n'), m.Notlar || '']));
+}
+function siparisExcel() {
+  const t = SP.tur, l = LISTE_SON[t] || [], ms = t === 'musteriSiparis';
+  listeExcel(ms ? 'Müşteri Siparişleri' : 'Satın Almalar',
+    [{ ad: 'Sipariş no' }, { ad: 'Tarih', tip: 'tarih' }, { ad: ms ? 'Müşteri' : 'Tedarikçi' }].concat(ms ? [{ ad: 'Müşteri PO no' }] : [])
+      .concat([{ ad: 'Teslim tarihi', tip: 'tarih' }, { ad: 'Durum' }, { ad: 'Para birimi' }, { ad: 'Ara toplam', tip: 'para' }, { ad: 'KDV', tip: 'para' }, { ad: 'Toplam', tip: 'para' }, { ad: 'Kalemler', tip: 'metin', g: 50 }]),
+    l.map(s => [s.No, s.Tarih, firmaAdi(t, s)].concat(ms ? [s.MusteriSiparisNo || ''] : [])
+      .concat([s.TeslimTarihi || '', s.Durum, s.ParaBirimi === 'TRY' ? 'TL' : s.ParaBirimi, Number(s.AraToplam), Number(s.Kdv), Number(s.Toplam),
+        (s.Kalemler || []).map(k => `${k.aciklama} (${sayiGoster(k.miktar)} ${k.birim})`).join('\n')])));
+}
+function teklifExcelListe() {
+  const l = LISTE_SON.teklif || [];
+  listeExcel('Teklifler', [{ ad: 'Teklif no' }, { ad: 'Tarih', tip: 'tarih' }, { ad: 'Müşteri' }, { ad: 'Konu', g: 36 }, { ad: 'Geçerlilik', tip: 'tarih' },
+    { ad: 'Durum' }, { ad: 'Para birimi' }, { ad: 'Ara toplam', tip: 'para' }, { ad: 'Toplam', tip: 'para' }, { ad: 'Sipariş no' }],
+    l.map(t => [t.No, t.Tarih, t.FirmaAd, t.Konu || '', t.GecerlilikTarihi || '', t.Durum, t.ParaBirimi === 'TRY' ? 'TL' : t.ParaBirimi, Number(t.AraToplam), Number(t.Toplam), t.SiparisNo || '']));
+}
+function finHareketExcel() {
+  const l = LISTE_SON.finHareket || [];
+  listeExcel('Finans Hareketleri', [{ ad: 'Tarih', tip: 'tarih' }, { ad: 'Tür' }, { ad: 'Açıklama', g: 36 }, { ad: 'Detay', tip: 'metin', g: 50 }, { ad: 'Para birimi' }, { ad: 'Tutar', tip: 'para' }],
+    l.map(x => [x.tarih, x.tur === 'gelir' ? 'Gelir' : 'Gider', x.baslik, x.alt, x.pb === 'TRY' ? 'TL' : x.pb, x.tur === 'gelir' ? Number(x.tutar) : -Number(x.tutar)]),
+    FIN.hTur === 'tumu' ? 'Gelir ve giderler' : FIN.hTur === 'gelir' ? 'Sadece gelirler' : 'Sadece giderler');
+}
+
 // ==================== GENEL VERİ ====================
 const VERI = {};
 const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
@@ -3845,6 +4021,7 @@ function firmaSayfasi(v, ic, s, y) {
       <label class="arama"><span>🔍</span><input id="fAra" type="search" placeholder="${c.tekil} adı ara" autocomplete="off" value="${esc(st.arama)}" oninput="fDurum('${v}').arama=this.value;firmaListeCiz('${v}')"></label>
       <div class="cips">${[['tumu', 'Tümü'], ['aktif', 'Aktif'], ['pasif', 'Pasif']].map(([k, a]) =>
         `<button type="button" data-f="${k}" onclick="fDurum('${v}').filtre='${k}';firmaListeCiz('${v}')">${a}</button>`).join('')}</div>
+      <button class="btn ikincil kucuk" type="button" onclick="firmaExcel('${v}')" title="Listeyi Excel'e aktar">⬇ Excel</button>
     </div>
     <div class="sayac" id="fSayac"></div>
     <div class="kart" id="fListe"></div>`;
@@ -3869,6 +4046,7 @@ function firmaListeCiz(v) {
     .filter(m => st.filtre === 'tumu' || (st.filtre === 'aktif') === m.Aktif)
     .filter(m => !q || trKucuk(m.Ad).includes(q))
     .sort((a, b) => trSirala(a.Ad, b.Ad));
+  LISTE_SON[v] = l;
 
   $('fSayac').textContent = l.length === tum.length ? `${tum.length} ${c.kucuk}` : `${l.length} / ${tum.length} ${c.kucuk}`;
 
@@ -4168,6 +4346,7 @@ SAYFA_CIZ.siparisler = function (ic, s, y) {
         value="${esc(SP.arama)}" oninput="SP.arama=this.value;siparisListeCiz()"></label>
       <div class="cips">${[['acik', 'Açık'], ['tamam', 'Tamamlanan'], ['iptal', 'İptal'], ['tumu', 'Tümü']].map(([k, a]) =>
         `<button type="button" data-f="${k}" onclick="SP.filtre='${k}';siparisListeCiz()">${a}</button>`).join('')}</div>
+      <button class="btn ikincil kucuk" type="button" onclick="siparisExcel()" title="Listeyi Excel'e aktar">⬇ Excel</button>
     </div>
     <div class="ozet" id="sOzet"></div>
     <div class="kart" id="sListe"></div>`;
@@ -4192,6 +4371,7 @@ function siparisListeCiz() {
       (SP.filtre === 'tamam' && s.Durum === c.tamam) || (SP.filtre === 'iptal' && s.Durum === 'İptal'))
     .filter(s => !q || [s.No, firmaAdi(t, s), s.MusteriSiparisNo].some(x => trKucuk(x).includes(q)))
     .sort((a, b) => String(b.Tarih).localeCompare(String(a.Tarih)) || siraNo(b.No) - siraNo(a.No));
+  LISTE_SON[t] = l;
 
   // Para birimi başına ayrı toplam (iptaller hariç)
   const top = {};
@@ -5109,6 +5289,7 @@ SAYFA_CIZ.teklifler = function (ic, s, y) {
       <label class="arama"><span>🔍</span><input type="search" autocomplete="off" placeholder="Teklif no, müşteri veya konu ara" value="${esc(TK.arama)}" oninput="TK.arama=this.value;teklifListeCiz()"></label>
       <div class="cips">${[['acik', 'Açık'], ['kabul', 'Kabul'], ['red', 'Red'], ['tumu', 'Tümü']].map(([k, a]) =>
         `<button type="button" data-f="${k}" onclick="TK.filtre='${k}';teklifListeCiz()">${a}</button>`).join('')}</div>
+      <button class="btn ikincil kucuk" type="button" onclick="teklifExcelListe()" title="Listeyi Excel'e aktar">⬇ Excel</button>
     </div>
     <div class="ozet" id="tkOzet"></div>
     <div class="kart" id="tkListe"></div>`;
@@ -5126,6 +5307,7 @@ function teklifListeCiz() {
   const l = tum.filter(t => !filtre || filtre.includes(t.Durum))
     .filter(t => !q || [t.No, t.FirmaAd, t.Konu, t.YetkiliAd].some(x => trKucuk(x).includes(q)))
     .sort(teklifSirala);
+  LISTE_SON.teklif = l;
   const top = {};
   l.filter(t => !['Reddedildi', 'Revize Edildi'].includes(t.Durum)).forEach(t => top[t.ParaBirimi] = (top[t.ParaBirimi] || 0) + Number(t.Toplam));
   $('tkOzet').innerHTML = `<span class="soluk">${l.length} teklif</span>` + Object.keys(PARA).filter(p => top[p]).map(p => `<span class="ozet-tutar">${para(top[p], p)}</span>`).join('');
