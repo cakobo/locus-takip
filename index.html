@@ -585,9 +585,9 @@ a.btn{text-decoration:none}
 .aj-nokta{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
 .aj-duzen{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start}
 .aj-takvim{overflow:hidden}
-.aj-gunler{display:grid;grid-template-columns:repeat(7,1fr);background:var(--inbg);border-bottom:1px solid var(--line)}
+.aj-gunler{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));background:var(--inbg);border-bottom:1px solid var(--line)}
 .aj-gunler span{padding:8px;font-size:12px;color:var(--mute);text-align:center;font-weight:600}
-.aj-izgara{display:grid;grid-template-columns:repeat(7,1fr)}
+.aj-izgara{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
 .aj-hucre{min-height:104px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);text-align:left;display:flex;flex-direction:column;gap:3px;overflow:hidden}
 .aj-hucre:nth-child(7n){border-right:0}
 .aj-hucre:hover{background:color-mix(in srgb,var(--sel) 50%,transparent)}
@@ -602,10 +602,11 @@ a.btn{text-decoration:none}
 .aj-cip.gecikti{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 .aj-daha{font-size:11px;color:var(--mute);padding-left:4px}
 .aj-noktalar{display:none;gap:3px;justify-content:center}
-.aj-gun{padding:16px 18px;position:sticky;top:calc(80px + var(--top))}
+.aj-gun{padding:16px 18px;position:sticky;top:calc(80px + var(--top));min-width:0}
+.aj-takvim{min-width:0}
 .aj-gun-bas{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .aj-gun-bas h3{font-size:15px;font-weight:600}
-.aj-olay{display:flex;align-items:center;gap:10px;padding:9px 10px 9px 12px;margin-bottom:6px;border-radius:6px;background:var(--inbg);border-left:4px solid var(--r);cursor:pointer}
+.aj-olay{display:flex;align-items:center;gap:10px;min-width:0;padding:9px 10px 9px 12px;margin-bottom:6px;border-radius:6px;background:var(--inbg);border-left:4px solid var(--r);cursor:pointer}
 .aj-olay:hover{background:var(--sel)}
 .aj-olay.tamam{opacity:.55}
 .aj-olay.baglantisiz{cursor:default}
@@ -797,7 +798,16 @@ a.btn{text-decoration:none}
   .plan-satir{grid-template-columns:1fr 64px 32px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--inbg)}
   .plan-satir input[type=date]{grid-column:1/3}
   .plan-satir .k-tutar{text-align:left;font-weight:600}
-  .aj-duzen{grid-template-columns:1fr}
+  .aj-duzen{grid-template-columns:minmax(0,1fr)}
+  /* Uzun başlık ve açıklamalar ekrandan taşmasın, alt satıra geçsin */
+  .aj-olay{align-items:flex-start;padding:10px 10px 10px 12px}
+  .aj-olay-ic b{white-space:normal;overflow-wrap:anywhere;line-height:1.35}
+  .aj-olay-ic small{overflow-wrap:anywhere}
+  .aj-saat{width:40px;padding-top:2px}
+  .aj-gun{padding:14px}
+  .aj-gun-bas h3{font-size:14px}
+  .aj-filtre{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .aj-filtre button{flex:none}
   .aj-gun{position:static}
   .aj-hucre{min-height:52px;padding:4px 2px;align-items:center}
   .aj-cipler{display:none}
