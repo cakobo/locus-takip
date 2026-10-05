@@ -675,6 +675,9 @@ a.btn{text-decoration:none}
 /* ---------- liste Excel düğmesi ---------- */
 .arac > .btn.kucuk{height:44px;padding:0 14px}
 
+/* ---------- telefon bildirimleri ---------- */
+.adim-liste{margin:10px 0 12px 20px;line-height:1.7}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -870,6 +873,7 @@ a.btn{text-decoration:none}
     <div class="menu-acilir" id="kulMenuKutu" hidden>
       <div class="bas"><b id="kmAd"></b><small id="kmRol"></small></div>
       <button type="button" id="yukleBtn" hidden onclick="uygulamayiYukle()">📲 Uygulamayı Yükle</button>
+      <button type="button" onclick="pushModal()">📱 Telefon bildirimleri</button>
       <button type="button" onclick="sifreModal()">🔑 Şifre Değiştir</button>
       <button type="button" onclick="cikis()">↩ Çıkış Yap</button>
     </div>
@@ -1012,6 +1016,7 @@ function uygulamayiAc() {
   menuleriCiz();
   rotaUygula();
   bildirimYukle();
+  setTimeout(pushTazele, 4000);
 }
 
 function basHarf(s) {
@@ -1118,6 +1123,7 @@ const SAYFA_CIZ = {
       `<div class="kart liste" id="kulListe"><div class="bos"><p>Kullanıcılar yükleniyor…</p></div></div>
        <section class="kart panel" id="epostaAyar" style="margin-top:22px"><div class="bos kucuk-bos"><p>E-posta ayarları yükleniyor…</p></div></section>
        <section class="kart panel" id="takvimAyar" style="margin-top:18px"><div class="bos kucuk-bos"><p>Takvim ayarı yükleniyor…</p></div></section>
+       <section class="kart panel" id="pushAyar" style="margin-top:18px"><div class="bos kucuk-bos"><p>Bildirim ayarı yükleniyor…</p></div></section>
        <section class="kart panel" id="yedekKart" style="margin-top:18px"><div class="bos kucuk-bos"><p>Yedek bilgisi yükleniyor…</p></div></section>
        <section class="kart panel" id="silinenKart" style="margin-top:18px"><div class="bos kucuk-bos"><p>Silinen kayıtlar yükleniyor…</p></div></section>
        <section class="kart panel" style="margin-top:18px">
@@ -1125,7 +1131,7 @@ const SAYFA_CIZ = {
          <p class="bilgi-not" style="margin:-6px 0 12px">Gerçek kullanıma geçerken deneme kayıtlarını tek seferde siler: firmalar, siparişler, teklifler, stok, servis, ajanda, finans ve ekip kayıtları. <b>Kullanıcılar, şifreler, bütün ayarlar ve işlem günlüğü korunur.</b> Silmeden önce otomatik yedek alınır; gerekirse Drive'daki yedekten geri dönebilirsin. Sipariş, teklif ve bakım numaraları baştan başlar.</p>
          <button class="btn tehlike" type="button" onclick="veriSifirlaModal()">Test verilerini temizle…</button>
        </section>`;
-    epostaAyarYukle(); takvimAyarYukle(); yedekKartYukle(); silinenKartYukle();
+    epostaAyarYukle(); takvimAyarYukle(); pushAyarYukle(); yedekKartYukle(); silinenKartYukle();
     try {
       const liste = await api('kullanicilar.liste');
       YONETIM.liste = liste;
@@ -3942,6 +3948,148 @@ function finHareketExcel() {
   listeExcel('Finans Hareketleri', [{ ad: 'Tarih', tip: 'tarih' }, { ad: 'Tür' }, { ad: 'Açıklama', g: 36 }, { ad: 'Detay', tip: 'metin', g: 50 }, { ad: 'Para birimi' }, { ad: 'Tutar', tip: 'para' }],
     l.map(x => [x.tarih, x.tur === 'gelir' ? 'Gelir' : 'Gider', x.baslik, x.alt, x.pb === 'TRY' ? 'TL' : x.pb, x.tur === 'gelir' ? Number(x.tutar) : -Number(x.tutar)]),
     FIN.hTur === 'tumu' ? 'Gelir ve giderler' : FIN.hTur === 'gelir' ? 'Sadece gelirler' : 'Sadece giderler');
+}
+
+// ==================== TELEFON BİLDİRİMLERİ (Firebase) ====================
+const FB_SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
+let FB_MSG = null;
+const pushStandalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pushIos = () => /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function pushDestek() {
+  if (pushIos() && !pushStandalone()) return { ok: false, neden: 'ios-sekme' };
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return { ok: false, neden: pushIos() ? 'ios-eski' : 'tarayici' };
+  return { ok: true };
+}
+function cihazAdi() {
+  const u = navigator.userAgent;
+  const os = /iPhone/.test(u) ? 'iPhone' : /iPad/.test(u) ? 'iPad' : /Android/.test(u) ? 'Android' : /Windows/.test(u) ? 'Windows' : /Mac/.test(u) ? 'Mac' : 'Cihaz';
+  const tb = /Edg\//.test(u) ? 'Edge' : /CriOS|Chrome/.test(u) ? 'Chrome' : /Firefox|FxiOS/.test(u) ? 'Firefox' : /Safari/.test(u) ? 'Safari' : '';
+  return [os, tb, pushStandalone() ? '(uygulama)' : ''].filter(Boolean).join(' ');
+}
+async function fbMesajlasma(yap) {
+  if (FB_MSG) return FB_MSG;
+  await scriptYukle(FB_SDK + 'firebase-app-compat.js');
+  await scriptYukle(FB_SDK + 'firebase-messaging-compat.js');
+  if (!firebase.apps.length) firebase.initializeApp(yap.config);
+  FB_MSG = firebase.messaging();
+  return FB_MSG;
+}
+async function pushTokenAl(yap) {
+  const reg = await navigator.serviceWorker.ready;
+  const msg = await fbMesajlasma(yap);
+  return msg.getToken({ vapidKey: yap.vapid, serviceWorkerRegistration: reg });
+}
+
+function pushModal() {
+  $('kulMenuKutu').hidden = true;
+  const d = pushDestek(), izin = 'Notification' in window ? Notification.permission : 'yok';
+  const kayitli = !!ls.al('locus_push_token') && izin === 'granted';
+  let govde;
+  if (!d.ok && d.neden === 'ios-sekme') govde = `<p>iPhone'da bildirim alabilmek için uygulamanın <b>ana ekrandan</b> açılması gerekiyor.</p>
+    <ol class="adim-liste"><li>Bu sayfayı <b>Safari</b>'de açın.</li><li>Alttaki <b>Paylaş</b> düğmesine (kare ve yukarı ok) dokunun.</li>
+    <li><b>Ana Ekrana Ekle</b>'yi seçin.</li><li>Ana ekrandaki <b>Locus</b> simgesinden uygulamayı açıp buraya tekrar gelin.</li></ol>
+    <p class="bilgi-not">iOS 16.4 veya daha yeni bir sürüm gerekir (Ayarlar > Genel > Hakkında).</p>`;
+  else if (!d.ok) govde = `<p>Bu ${d.neden === 'ios-eski' ? 'iOS sürümü' : 'tarayıcı'} bildirimleri desteklemiyor.</p>
+    <p class="bilgi-not">${d.neden === 'ios-eski' ? 'iPhone\'u iOS 16.4 veya daha yeni bir sürüme güncelleyin.' : 'Android\'de Chrome, bilgisayarda Chrome veya Edge kullanın.'}</p>`;
+  else if (izin === 'denied') govde = `<p>Bu cihazda Locus bildirimleri <b>engellenmiş</b>.</p>
+    <p class="bilgi-not">${pushIos() ? 'iPhone: Ayarlar > Bildirimler > Locus > Bildirimlere İzin Ver.' : 'Tarayıcıda adres çubuğundaki kilit simgesine dokunup Bildirimler\'i "İzin ver" yapın, sonra sayfayı yenileyin.'}</p>`;
+  else govde = `<p>${kayitli ? '✅ Bu cihaz bildirim almaya <b>kayıtlı</b>.' : 'Bu cihazda bildirimleri açarsanız acil uyarılar ve sabah özeti telefonunuza gelir. Sadece yetkili olduğunuz sayfaların bildirimleri gönderilir.'}</p>
+    <p class="bilgi-not">Cihaz: ${esc(cihazAdi())}</p>`;
+  modalAc('📱 Telefon Bildirimleri', govde + '<div class="hata-kutu" id="mHata"></div>',
+    d.ok && izin !== 'denied'
+      ? (kayitli ? `<button class="btn ikincil sol" type="button" style="color:var(--danger)" onclick="pushKapat()">Bu cihazda kapat</button>
+          <button class="btn ikincil" type="button" onclick="pushAc(true)">Yenile</button><button class="btn" type="button" id="puTest" onclick="pushTest()">Test bildirimi gönder</button>`
+                 : `<button class="btn ikincil" type="button" onclick="modalKapat()">Vazgeç</button><button class="btn" type="button" id="puAc" onclick="pushAc()">🔔 Bildirimleri aç</button>`)
+      : `<button class="btn" type="button" onclick="modalKapat()">Tamam</button>`);
+}
+
+async function pushAc(sessiz) {
+  const hata = m => { if ($('mHata')) $('mHata').textContent = m; else if (!sessiz) toast(m, true); };
+  // İzin, dokunuşun hemen ardından istenmeli (iPhone şartı); ağ isteğinden önce
+  let izin = Notification.permission;
+  if (izin === 'default') izin = await Notification.requestPermission();
+  if (izin !== 'granted') return hata('Bildirim izni verilmedi.');
+  const btn = $('puAc'); if (btn) { btn.disabled = true; btn.textContent = 'Kaydediliyor…'; }
+  try {
+    const yap = await api('push.yapilandirma');
+    if (!yap.aktif) return hata('Telefon bildirimleri henüz kurulmadı. Yöneticinin Yönetim > Telefon Bildirimleri bölümünü doldurması gerekiyor.');
+    const token = await pushTokenAl(yap);
+    if (!token) throw new Error('Cihaz anahtarı alınamadı.');
+    await api('push.kaydet', { token, cihaz: cihazAdi() });
+    ls.koy('locus_push_token', token);
+    if (!sessiz) { modalKapat(); toast('Bildirimler açıldı. Test için menüden tekrar "Telefon bildirimleri"ne girebilirsiniz.'); }
+    else pushModal();
+  } catch (e) { hata('Bildirimler açılamadı: ' + e.message); if (btn) { btn.disabled = false; btn.textContent = '🔔 Bildirimleri aç'; } }
+}
+async function pushTest() {
+  const btn = $('puTest'); btn.disabled = true; btn.textContent = 'Gönderiliyor…';
+  try { const r = await api('push.test'); toast(`Test bildirimi ${r.gonderilen} cihaza gönderildi; birkaç saniye içinde gelmesi gerekir.`); }
+  catch (e) { $('mHata').textContent = e.message; }
+  btn.disabled = false; btn.textContent = 'Test bildirimi gönder';
+}
+async function pushKapat() {
+  const token = ls.al('locus_push_token');
+  try { if (token) await api('push.sil', { token }); if (FB_MSG) await FB_MSG.deleteToken().catch(() => {}); } catch (e) { }
+  try { localStorage.removeItem('locus_push_token'); } catch (e) { }
+  modalKapat(); toast('Bu cihazda bildirimler kapatıldı.');
+}
+/** Açılışta: izin verilmiş ve kayıtlı cihazın anahtarını sessizce tazele (anahtarlar zamanla değişebilir) */
+async function pushTazele() {
+  try {
+    if (!pushDestek().ok || Notification.permission !== 'granted' || !ls.al('locus_push_token')) return;
+    const yap = await api('push.yapilandirma'); if (!yap.aktif) return;
+    const token = await pushTokenAl(yap);
+    if (token && (token !== ls.al('locus_push_token') || !yap.cihazSayisi)) { await api('push.kaydet', { token, cihaz: cihazAdi() }); ls.koy('locus_push_token', token); }
+  } catch (e) { }
+}
+// Bildirime dokununca açık uygulamada ilgili sayfaya geç
+if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', e => {
+  if (e.data && e.data.tip === 'git') { try { const h = new URL(e.data.link).hash; if (h) location.hash = h; } catch (x) { } }
+});
+
+// ---------- Yönetim: Firebase ayarları ----------
+let PA = null;
+async function pushAyarYukle() {
+  const k = $('pushAyar'); if (!k) return;
+  try { PA = await api('pushAyar.oku'); pushAyarCiz(); }
+  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Bildirim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+}
+function pushAyarCiz() {
+  const k = $('pushAyar'); if (!k || !PA) return;
+  const c = PA.Config || {};
+  const cfgMetin = PA.Config ? `const firebaseConfig = {\n${Object.entries(c).filter(([, v]) => v).map(([a, v]) => `  ${a}: "${v}"`).join(',\n')}\n};` : '';
+  k.innerHTML = `<div class="w-bas"><h3>📱 Telefon Bildirimleri (Firebase)</h3><span class="rozet ${PA.hazir ? 'ok' : 'pasif'}">${PA.hazir ? 'Hazır' : 'Kurulmadı'}</span></div>
+    <p class="bilgi-not" style="margin:-6px 0 14px">Acil bildirimler ve sabah özeti, bildirimleri açan kullanıcıların telefonlarına yetkilerine göre gönderilir. Her kullanıcı kendi telefonunda sağ üstteki adına dokunup <b>📱 Telefon bildirimleri</b>'nden açar. ${PA.hazir ? `Kayıtlı cihaz: <b>${PA.cihazSayisi}</b>.` : ''}</p>
+    <label class="et" for="paCfg">Firebase yapılandırması <span class="soluk">(Proje ayarları > Genel > Web uygulaması > firebaseConfig bloğu)</span></label>
+    <textarea class="girdi alan" id="paCfg" style="min-height:120px;font-family:monospace;font-size:13px" placeholder='const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "locus-takip", ... };'>${esc(cfgMetin)}</textarea>
+    <label class="et" for="paVapid">Web Push anahtarı (VAPID) <span class="soluk">(Cloud Messaging > Web Push sertifikaları)</span></label>
+    <input class="girdi" id="paVapid" value="${esc(PA.Vapid || '')}" style="font-family:monospace;font-size:13px">
+    <label class="et" for="paSa">Hizmet hesabı anahtarı (JSON) <span class="soluk">(gizli; ${PA.saEposta ? 'kayıtlı: ' + esc(PA.saEposta) + ', değiştirmek için yeni dosyayı yapıştırın' : 'indirdiğiniz dosyanın tüm içeriğini yapıştırın'})</span></label>
+    <textarea class="girdi alan" id="paSa" style="min-height:70px;font-family:monospace;font-size:12px;-webkit-text-security:disc" placeholder="${PA.saEposta ? '•••••• kayıtlı (boş bırakılırsa değişmez)' : '{ &quot;type&quot;: &quot;service_account&quot;, ... }'}" autocomplete="off" spellcheck="false"></textarea>
+    <div class="iki">
+      <div><label class="anahtar" style="margin-top:6px"><input type="checkbox" id="paAnlik" ${PA.AnlikAcil ? 'checked' : ''}> Yeni acil bildirimleri anında gönder</label>
+        <label class="anahtar"><input type="checkbox" id="paOzet" ${PA.SabahOzet ? 'checked' : ''}> Sabah kişiye özel özet gönder</label></div>
+      <div><label class="et" for="paSaat">Sabah özeti saati</label><select class="girdi" id="paSaat">${Array.from({ length: 24 }, (_, i) => `<option value="${i}" ${i === PA.Saat ? 'selected' : ''}>${String(i).padStart(2, '0')}:00</option>`).join('')}</select></div>
+    </div>
+    <p class="bilgi-not">Gönderim, saatlik kontrolle yapılır (en geç 1 saat içinde). Saatlik kontrol için editörde <b>bildirimKurulum</b> bir kez çalıştırılmış olmalı.</p>
+    <div class="hata-kutu" id="paHata"></div>
+    <div class="stok-btn"><button class="btn" type="button" id="paKaydet" onclick="pushAyarKaydet()">Kaydet</button></div>`;
+}
+function firebaseConfigOku(metin) {
+  const c = {}; const re = /(apiKey|authDomain|projectId|storageBucket|messagingSenderId|appId)\s*["']?\s*:\s*["']([^"']+)["']/g;
+  let m; while ((m = re.exec(metin))) c[m[1]] = m[2];
+  return c;
+}
+async function pushAyarKaydet() {
+  $('paHata').textContent = '';
+  const Config = firebaseConfigOku($('paCfg').value);
+  if (!Config.apiKey || !Config.projectId) return ($('paHata').textContent = 'Firebase yapılandırması okunamadı; firebaseConfig bloğunu olduğu gibi yapıştırın.');
+  const btn = $('paKaydet'); btn.disabled = true; btn.textContent = 'Kaydediliyor…';
+  try {
+    PA = await api('pushAyar.kaydet', { Config, Vapid: $('paVapid').value.trim(), ServisHesabi: $('paSa').value.trim(),
+      AnlikAcil: $('paAnlik').checked, SabahOzet: $('paOzet').checked, Saat: Number($('paSaat').value) });
+    pushAyarCiz(); toast('Telefon bildirimi ayarları kaydedildi. Şimdi kendi telefonunuzda menüden "Telefon bildirimleri"ni açın.');
+  } catch (e) { $('paHata').textContent = e.message; btn.disabled = false; btn.textContent = 'Kaydet'; }
 }
 
 // ==================== GENEL VERİ ====================
