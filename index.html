@@ -940,24 +940,63 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 // ==================== API ====================
-async function api(islem, veri) {
-  let yanit;
+// ---------- Sunucu istekleri ----------
+// Aynı anda yapılan okuma istekleri tek bir "toplu" istekte birleştirilir (Google'ın her istekteki açılış süresi bir kez ödenir).
+// Google geçici olarak yanıt veremezse okuma istekleri bir kez daha denenir.
+const OKUMA_ISLEMLERI = /^(kayit\.liste|firma\.secim|bildirim\.liste|kurlar|ben|finans\.veri|ajanda\.otomatik|ayar\.oku|push\.yapilandirma|yedek\.durum|silinen\.liste|bildirimAyar\.oku|ajandaAyar\.oku|pushAyar\.oku|kullanicilar\.liste|oxy\.malzemeler|stok\.|rapor\.olustur)/;
+const API_KUYRUK = []; let apiZamanlayici = null;
+
+function api(islem, veri) {
+  if (!OKUMA_ISLEMLERI.test(islem) || /^stok\.(hareket|toplu|malzemeKaydet|sayim)/.test(islem)) return apiTek(islem, veri, false);
+  return new Promise((res, rej) => {
+    API_KUYRUK.push({ islem, veri: veri || {}, res, rej });
+    if (!apiZamanlayici) apiZamanlayici = setTimeout(apiKuyrukGonder, 15);
+  });
+}
+async function apiKuyrukGonder() {
+  apiZamanlayici = null;
+  const l = API_KUYRUK.splice(0, 12);
+  if (API_KUYRUK.length) apiZamanlayici = setTimeout(apiKuyrukGonder, 0);
+  if (l.length === 1) return apiTek(l[0].islem, l[0].veri, true).then(l[0].res, l[0].rej);
   try {
-    const r = await fetch(API_URL, {
-      method: 'POST',
-      // text/plain: tarayıcı ön kontrol (CORS preflight) yapmasın diye
-      body: JSON.stringify({ islem, token: D.token, veri: veri || {} })
+    const sonuclar = await apiTek('toplu', { istekler: l.map(x => ({ islem: x.islem, veri: x.veri })) }, true);
+    sonuclar.forEach((y, i) => {
+      if (y && y.ok) return l[i].res(y.veri);
+      const err = Object.assign(new Error((y && y.hata) || 'Beklenmeyen hata'), { kod: y && y.kod });
+      if (err.kod === 'OTURUM') oturumBitti(err.message);
+      l[i].rej(err);
     });
-    yanit = await r.json();
-  } catch (e) {
-    throw Object.assign(new Error('Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.'), { kod: 'AG' });
+  } catch (e) { l.forEach(x => x.rej(e)); }
+}
+
+async function apiTek(islem, veri, tekrarDene) {
+  for (let deneme = 0; ; deneme++) {
+    let yanit, metin = null;
+    const iptal = new AbortController(), sure = setTimeout(() => iptal.abort(), 60000);
+    try {
+      const r = await fetch(API_URL, {
+        method: 'POST', signal: iptal.signal,
+        // text/plain: tarayıcı ön kontrol (CORS preflight) yapmasın diye
+        body: JSON.stringify({ islem, token: D.token, veri: veri || {} })
+      });
+      metin = await r.text();
+      yanit = JSON.parse(metin);
+    } catch (e) {
+      clearTimeout(sure);
+      const ag = metin === null; // hiç yanıt gelmediyse bağlantı/zaman aşımı, geldiyse Google hata sayfası
+      if (tekrarDene && deneme === 0) { await new Promise(r => setTimeout(r, 1500)); continue; }
+      throw Object.assign(new Error(e.name === 'AbortError' ? 'Sunucu 60 saniye içinde yanıt vermedi. Lütfen tekrar deneyin.'
+        : ag ? 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edin.'
+        : 'Google sunucusu şu an yanıt veremedi (geçici yoğunluk). Birkaç saniye sonra tekrar deneyin.'), { kod: ag ? 'AG' : 'SUNUCU' });
+    }
+    clearTimeout(sure);
+    if (!yanit.ok) {
+      const err = Object.assign(new Error(yanit.hata || 'Beklenmeyen hata'), { kod: yanit.kod });
+      if (err.kod === 'OTURUM' && islem !== 'giris') { oturumBitti(err.message); }
+      throw err;
+    }
+    return yanit.veri;
   }
-  if (!yanit.ok) {
-    const err = Object.assign(new Error(yanit.hata || 'Beklenmeyen hata'), { kod: yanit.kod });
-    if (err.kod === 'OTURUM' && islem !== 'giris') { oturumBitti(err.message); }
-    throw err;
-  }
-  return yanit.veri;
 }
 
 // ==================== TEMA ====================
@@ -2111,6 +2150,11 @@ const BKAT_IKON = { 'Oxyweld Servis': '🔧', 'Stok': '📦', 'Siparişler': '�
 
 async function bildirimYukle() {
   if (!D.kul) return;
+  if (BILD._istek) return BILD._istek;
+  BILD._istek = bildirimYukleIc().finally(() => { BILD._istek = null; });
+  return BILD._istek;
+}
+async function bildirimYukleIc() {
   BILD.zaman = Date.now();
   if (!BILD.liste.length && !BILD.ertelenen.length) Object.assign(BILD, ls.al('locus_c_bildirim') || {});
   bildirimRozet();
