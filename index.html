@@ -1055,7 +1055,8 @@ function uygulamayiAc() {
   menuleriCiz();
   rotaUygula();
   bildirimYukle();
-  setTimeout(pushTazele, 4000);
+  setTimeout(onYukle, 2500);
+  setTimeout(pushTazele, 6000);
 }
 
 function basHarf(s) {
@@ -2159,9 +2160,8 @@ async function bildirimYukleIc() {
   if (!BILD.liste.length && !BILD.ertelenen.length) Object.assign(BILD, ls.al('locus_c_bildirim') || {});
   bildirimRozet();
   try {
-    const r = await api('bildirim.liste');
-    BILD.liste = r.liste; BILD.ertelenen = r.ertelenen;
-    ls.koy('locus_c_bildirim', { liste: r.liste, ertelenen: r.ertelenen });
+    const r = await surumluYukle('bildirim', 'bildirim.liste', {}, v => v);
+    BILD.liste = r.liste || []; BILD.ertelenen = r.ertelenen || [];
     bildirimRozet();
     if (D.aktif === 'bildirimler' && $('bListe') && $('modal').hidden) bildirimListeCiz();
     if (D.aktif === 'anasayfa') dikkatCiz();
@@ -2232,7 +2232,7 @@ function erteleMenu(btn, anahtar) {
 async function bildirimErtele(anahtar, gun) {
   try {
     const r = await api('bildirim.ertele', { anahtar, gun });
-    BILD.liste = r.liste; BILD.ertelenen = r.ertelenen; ls.koy('locus_c_bildirim', r);
+    BILD.liste = r.liste; BILD.ertelenen = r.ertelenen; ls.koy('locus_c_bildirim', r); ls.koy('locus_s_bildirim', '');
     bildirimRozet(); bildirimListeCiz();
     toast(gun ? 'Bildirim ertelendi. Süre dolunca durum aynıysa tekrar görünür.' : 'Erteleme geri alındı.');
   } catch (e) { toast(e.message, true); }
@@ -2664,9 +2664,9 @@ const GIDER_KATEGORI = ['Malzeme', 'Yakıt', 'Yemek', 'Kırtasiye', 'Kargo / Nak
 
 async function finansYukle(zorla) {
   if (!FIN.veri) FIN.veri = ls.al('locus_c_finans');
-  if (!zorla && FIN.veri && Date.now() - FIN.zaman < 60 * 1000) return FIN.veri;
-  FIN.veri = await api('finans.veri'); FIN.zaman = Date.now(); ls.koy('locus_c_finans', FIN.veri);
-  return FIN.veri;
+  if (zorla === true) ls.koy('locus_s_finans', '');
+  else if (FIN.veri && FIN.zaman && Date.now() - FIN.zaman < 20 * 1000) return FIN.veri;
+  return surumluYukle('finans', 'finans.veri', {}, v => { FIN.zaman = Date.now(); return (FIN.veri = v); });
 }
 const finSiparis = (kisa, id) => ((FIN.veri || {}).siparisler || []).find(s => s.kisa === kisa && s.Id === id);
 function sonrakiVade(s) {
@@ -2686,7 +2686,7 @@ SAYFA_CIZ.finans = function (ic, s, y) {
     <div id="finIcerik"></div>`;
   if (FIN.veri || ls.al('locus_c_finans')) { FIN.veri = FIN.veri || ls.al('locus_c_finans'); finansSekmeCiz(); }
   else $('finIcerik').innerHTML = '<div class="kart bos"><p>Finans verileri yükleniyor…</p></div>';
-  finansYukle(true).then(() => {
+  finansYukle().then(() => {
     if (D.aktif !== 'finans' || !$('finIcerik') || !$('modal').hidden) return;
     finansSekmeCiz();
     if (FIN._ac) { const id = FIN._ac; FIN._ac = null; duzenliOdeForm(id); }
@@ -2801,7 +2801,7 @@ function finansSiparisSayfa(ic, sy, y, kisa, id) {
         <h4 class="panel-alt">${gelen ? 'Tahsilatlar' : 'Ödemeler'}</h4>${finansOdemelerHTML(s)}</section>`;
   };
   if (FIN.veri) ciz(); else ic.innerHTML = '<div class="kart bos"><p>Yükleniyor…</p></div>';
-  finansYukle(true).then(() => { if (D.aktif === 'finans' && D.param === kisa + '.' + id && $('modal').hidden) ciz(); })
+  finansYukle().then(() => { if (D.aktif === 'finans' && D.param === kisa + '.' + id && $('modal').hidden) ciz(); })
     .catch(e => { if (!FIN.veri) ic.innerHTML = `<div class="kart bos"><h3>Veriler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
 }
 
@@ -4142,21 +4142,54 @@ const trKucuk = s => String(s || '').toLocaleLowerCase('tr-TR').trim();
 const trSirala = (a, b) => String(a).localeCompare(String(b), 'tr', { sensitivity: 'base' });
 const tarihYaz = s => s ? new Date(s).toLocaleString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
 
+// ---------- Sürüm kontrollü veri yükleme ----------
+// Telefondaki kopyanın sürümü sunucuya gönderilir; değişmediyse sunucu tabloyu okumadan "değişmedi" der.
+// Güvenlik payı: her veri en geç 15 dakikada bir tamamen yeniden alınır.
+const TAM_TAZELEME_MS = 15 * 60 * 1000;
+const YUKLENIYOR = {};
+function surumluYukle(anahtar, islem, veri, uygula) {
+  if (YUKLENIYOR[anahtar]) return YUKLENIYOR[anahtar];
+  const sakli = ls.al('locus_c_' + anahtar), surum = ls.al('locus_s_' + anahtar), zaman = ls.al('locus_z_' + anahtar) || 0;
+  const tam = !sakli || !surum || Date.now() - zaman > TAM_TAZELEME_MS;
+  YUKLENIYOR[anahtar] = api(islem, Object.assign({}, veri, { surumIste: true, surum: tam ? '' : surum })).then(r => {
+    if (r && r.degismedi) return uygula(sakli, false);
+    const { surum: yeniSurum, ...icerik } = r;
+    const deger = islem === 'kayit.liste' ? icerik.liste : icerik;
+    ls.koy('locus_c_' + anahtar, deger); ls.koy('locus_s_' + anahtar, yeniSurum); ls.koy('locus_z_' + anahtar, Date.now());
+    return uygula(deger, true);
+  }).finally(() => { delete YUKLENIYOR[anahtar]; });
+  return YUKLENIYOR[anahtar];
+}
 async function veriYukle(varlik) {
-  const r = await api('kayit.liste', { varlik });
-  VERI[varlik] = r; ls.koy('locus_c_' + varlik, r);
-  return r;
+  return surumluYukle(varlik, 'kayit.liste', { varlik }, l => (VERI[varlik] = l));
 }
 function veriGuncelle(varlik, kayit) {
   const l = VERI[varlik] || (VERI[varlik] = []);
   const i = l.findIndex(x => x.Id === kayit.Id);
   if (i >= 0) l[i] = kayit; else l.push(kayit);
   ls.koy('locus_c_' + varlik, l);
+  ls.koy('locus_s_' + varlik, ''); // sunucuda değişti; bir sonraki kontrolde tazelensin
 }
 function veriCikar(varlik, id) {
   VERI[varlik] = (VERI[varlik] || []).filter(x => x.Id !== id);
   ls.koy('locus_c_' + varlik, VERI[varlik]);
+  ls.koy('locus_s_' + varlik, '');
 }
+
+/** Açılışta ve uygulamaya geri dönüldüğünde: yetkili olunan bütün sayfaların verisini arka planda tazele (değişmeyenler neredeyse bedava) */
+const VARLIK_SAYFA = { musteriler: 'musteriler', tedarikciler: 'tedarikciler', satinalma: 'siparisler', musteriSiparis: 'siparisler', teklif: 'teklifler',
+  stokKategori: 'stok', stokMalzeme: 'stok', stokHareket: 'stok', oxyMakine: 'oxyweld', oxyBakim: 'oxyweld', oxyFirma: 'oxyweld',
+  ajanda: 'ajanda', personel: 'ekip', izin: 'ekip', belge: 'ekip', personelMaas: 'finans', personelOdeme: 'finans' };
+let ON_YUKLEME = 0;
+function onYukle() {
+  if (!D.kul || Date.now() - ON_YUKLEME < 2 * 60 * 1000) return;
+  ON_YUKLEME = Date.now();
+  Object.keys(VARLIK_SAYFA).filter(v => yetki(VARLIK_SAYFA[v]) !== 'yok' && (VARLIK_SAYFA[v] !== 'finans' || yetki('ekip') !== 'yok'))
+    .forEach(v => veriYukle(v).catch(() => {}));
+  if (['siparisler', 'stok', 'oxyweld', 'teklifler', 'ajanda'].some(s => yetki(s) !== 'yok')) firmalarYukle().catch(() => {});
+  if (yetki('finans') !== 'yok') finansYukle().catch(() => {});
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) onYukle(); });
 
 // ==================== FİRMA SAYFALARI (MÜŞTERİLER / TEDARİKÇİLER) ====================
 // İki sayfa aynı kodu kullanır; farkları buradaki ayarlardır.
@@ -4520,9 +4553,7 @@ function firmaAdi(t, s) {
   return f ? f.Ad : (s.FirmaAd || '—');
 }
 async function firmalarYukle() {
-  const r = await api('firma.secim');
-  FIRMALAR = r; ls.koy('locus_c_firmalar', r);
-  return r;
+  return surumluYukle('firmalar', 'firma.secim', {}, f => (FIRMALAR = f));
 }
 
 SAYFA_CIZ.siparisler = function (ic, s, y) {
