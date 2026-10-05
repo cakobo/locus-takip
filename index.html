@@ -1171,18 +1171,27 @@ const SAYFA_CIZ = {
          <p class="bilgi-not" style="margin:-6px 0 12px">Gerçek kullanıma geçerken deneme kayıtlarını tek seferde siler: firmalar, siparişler, teklifler, stok, servis, ajanda, finans ve ekip kayıtları. <b>Kullanıcılar, şifreler, bütün ayarlar ve işlem günlüğü korunur.</b> Silmeden önce otomatik yedek alınır; gerekirse Drive'daki yedekten geri dönebilirsin. Sipariş, teklif ve bakım numaraları baştan başlar.</p>
          <button class="btn tehlike" type="button" onclick="veriSifirlaModal()">Test verilerini temizle…</button>
        </section>`;
+    // Önce telefonda/bilgisayarda saklı son halleri anında göster, sonra güncelle
+    const sakli = ls.al('locus_c_yonetim') || {};
+    if (sakli.kullanicilar) { YONETIM.liste = sakli.kullanicilar; kullaniciListesiCiz(); }
+    if (sakli.EP) { EP = sakli.EP; EP._aktif = EP.EpostaAktif; epostaAyarCiz(); }
+    if (sakli.GT) { GT = sakli.GT; takvimAyarCiz(); }
+    if (sakli.PA) { PA = sakli.PA; pushAyarCiz(); }
+    if (sakli.YD) { YD = sakli.YD; yedekKartCiz(); }
+    if (sakli.SL) { SL = sakli.SL; silinenKartCiz(); }
     epostaAyarYukle(); takvimAyarYukle(); pushAyarYukle(); yedekKartYukle(); silinenKartYukle();
     try {
       const liste = await api('kullanicilar.liste');
-      YONETIM.liste = liste;
+      YONETIM.liste = liste; yonetimSakla('kullanicilar', liste);
       if (D.aktif === 'yonetim') kullaniciListesiCiz();
     } catch (e) {
-      if ($('kulListe')) $('kulListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`;
+      if ($('kulListe') && !YONETIM.liste) $('kulListe').innerHTML = `<div class="bos"><h3>Liste alınamadı</h3><p>${esc(e.message)}</p></div>`;
     }
   }
 };
 
 // ==================== YÖNETİM ====================
+function yonetimSakla(a, v) { const s = ls.al('locus_c_yonetim') || {}; s[a] = v; ls.koy('locus_c_yonetim', s); }
 const YONETIM = { liste: [], duzenlenen: null, yetkiler: {} };
 const YETKI_ETIKET = { yok: 'Yok', goruntule: 'Görüntüle', tam: 'Tam' };
 const yetkiSayfalari = () => D.sayfalar.filter(s => s.kod !== 'yonetim' && s.kod !== 'anasayfa');
@@ -2255,8 +2264,8 @@ function dikkatCiz() {
 let EP = null;
 async function epostaAyarYukle() {
   const k = $('epostaAyar'); if (!k) return;
-  try { EP = await api('bildirimAyar.oku'); EP._aktif = EP.EpostaAktif; epostaAyarCiz(); }
-  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>E-posta ayarları alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+  try { EP = await api('bildirimAyar.oku'); EP._aktif = EP.EpostaAktif; yonetimSakla('EP', EP); epostaAyarCiz(); }
+  catch (e) { if (!EP) k.innerHTML = `<div class="bos kucuk-bos"><h3>E-posta ayarları alınamadı</h3><p>${esc(e.message)}</p></div>`; }
 }
 function epostaAyarCiz() {
   const k = $('epostaAyar'); if (!k || !EP) return;
@@ -2382,11 +2391,20 @@ function ajandaAralik() {
   return [bas, ajTarihEkle(bas, 41)];
 }
 
+/** Bakım, sipariş, ödeme, izin tarihleri: telefonda saklanır, sürüm kontrolüyle tazelenir (son 8 ay aralığı tutulur) */
+function ajandaOtoSakli(bas, bit) {
+  const anahtar = bas + '_' + bit, l = ls.al('locus_c_ajoto_' + anahtar);
+  if (l && !AJ.oto[anahtar]) AJ.oto[anahtar] = { bas, bit, liste: l, zaman: 0 };
+}
 async function ajandaOtoYukle(bas, bit) {
   const anahtar = bas + '_' + bit;
-  if (AJ.oto[anahtar] && Date.now() - AJ.oto[anahtar].zaman < 3 * 60 * 1000) return;
-  try { AJ.oto[anahtar] = { bas, bit, liste: await api('ajanda.otomatik', { bas, bit }), zaman: Date.now() }; }
-  catch (e) { if (!AJ.oto[anahtar]) toast('Bakım ve sipariş tarihleri alınamadı: ' + e.message, true); }
+  if (AJ.oto[anahtar] && Date.now() - AJ.oto[anahtar].zaman < 20 * 1000) return;
+  try {
+    await surumluYukle('ajoto_' + anahtar, 'ajanda.otomatik', { bas, bit }, l => (AJ.oto[anahtar] = { bas, bit, liste: l, zaman: Date.now() }));
+    const tutulan = (ls.al('locus_ajoto_anahtarlar') || []).filter(a => a !== anahtar).concat(anahtar);
+    tutulan.slice(0, -8).forEach(a => { ['c', 's', 'z'].forEach(o => { try { localStorage.removeItem(`locus_${o}_ajoto_${a}`); } catch (e) { } }); });
+    ls.koy('locus_ajoto_anahtarlar', tutulan.slice(-8));
+  } catch (e) { if (!AJ.oto[anahtar]) toast('Bakım ve sipariş tarihleri alınamadı: ' + e.message, true); }
 }
 
 SAYFA_CIZ.ajanda = function (ic, s, y) {
@@ -2409,6 +2427,7 @@ SAYFA_CIZ.ajanda = function (ic, s, y) {
     <div id="ajIcerik"></div>`;
   if (!VERI.ajanda) VERI.ajanda = ls.al('locus_c_ajanda') || undefined;
   if (!FIRMALAR) FIRMALAR = ls.al('locus_c_firmalar');
+  { const [b0, b1] = ajandaAralik(); ajandaOtoSakli(b0, b1); }
   ajandaCiz();
   const [bas, bit] = ajandaAralik();
   Promise.all([veriYukle('ajanda'), ajandaOtoYukle(bas, bit), firmalarYukle().catch(() => null)]).then(() => {
@@ -2435,6 +2454,7 @@ function ajandaAyKaydir(n) {
   AJ.ay = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   AJ.secili = AJ.ay === bugun().slice(0, 7) ? bugun() : AJ.ay + '-01';
   AJ.gorunum = 'ay';
+  { const [b0, b1] = ajandaAralik(); ajandaOtoSakli(b0, b1); }
   ajandaCiz();
   const [bas, bit] = ajandaAralik();
   ajandaOtoYukle(bas, bit).then(() => { if (D.aktif === 'ajanda' && $('modal').hidden) ajandaCiz(); });
@@ -2630,8 +2650,8 @@ async function ajandaKaydet() {
 let GT = null;
 async function takvimAyarYukle() {
   const k = $('takvimAyar'); if (!k) return;
-  try { GT = await api('ajandaAyar.oku'); takvimAyarCiz(); }
-  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Takvim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+  try { GT = await api('ajandaAyar.oku'); yonetimSakla('GT', GT); takvimAyarCiz(); }
+  catch (e) { if (!GT) k.innerHTML = `<div class="bos kucuk-bos"><h3>Takvim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
 }
 function takvimAyarCiz() {
   const k = $('takvimAyar'); if (!k || !GT) return;
@@ -3834,8 +3854,8 @@ async function poYazdir(id) {
 let YD = null;
 async function yedekKartYukle() {
   const k = $('yedekKart'); if (!k) return;
-  try { YD = await api('yedek.durum'); yedekKartCiz(); }
-  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Yedek bilgisi alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+  try { YD = await api('yedek.durum'); yonetimSakla('YD', YD); yedekKartCiz(); }
+  catch (e) { if (!YD) k.innerHTML = `<div class="bos kucuk-bos"><h3>Yedek bilgisi alınamadı</h3><p>${esc(e.message)}</p></div>`; }
 }
 function yedekKartCiz() {
   const k = $('yedekKart'); if (!k || !YD) return;
@@ -3880,8 +3900,8 @@ async function tumVeriIndir() {
 let SL = null;
 async function silinenKartYukle() {
   const k = $('silinenKart'); if (!k) return;
-  try { SL = await api('silinen.liste'); silinenKartCiz(); }
-  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Silinen kayıtlar alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+  try { SL = await api('silinen.liste'); yonetimSakla('SL', SL); silinenKartCiz(); }
+  catch (e) { if (!SL) k.innerHTML = `<div class="bos kucuk-bos"><h3>Silinen kayıtlar alınamadı</h3><p>${esc(e.message)}</p></div>`; }
 }
 function silinenKartCiz(hepsi) {
   const k = $('silinenKart'); if (!k || !SL) return;
@@ -4095,8 +4115,8 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('mess
 let PA = null;
 async function pushAyarYukle() {
   const k = $('pushAyar'); if (!k) return;
-  try { PA = await api('pushAyar.oku'); pushAyarCiz(); }
-  catch (e) { k.innerHTML = `<div class="bos kucuk-bos"><h3>Bildirim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
+  try { PA = await api('pushAyar.oku'); yonetimSakla('PA', PA); pushAyarCiz(); }
+  catch (e) { if (!PA) k.innerHTML = `<div class="bos kucuk-bos"><h3>Bildirim ayarı alınamadı</h3><p>${esc(e.message)}</p></div>`; }
 }
 function pushAyarCiz() {
   const k = $('pushAyar'); if (!k || !PA) return;
@@ -4154,7 +4174,7 @@ function surumluYukle(anahtar, islem, veri, uygula) {
   YUKLENIYOR[anahtar] = api(islem, Object.assign({}, veri, { surumIste: true, surum: tam ? '' : surum })).then(r => {
     if (r && r.degismedi) return uygula(sakli, false);
     const { surum: yeniSurum, ...icerik } = r;
-    const deger = islem === 'kayit.liste' ? icerik.liste : icerik;
+    const deger = islem === 'kayit.liste' || islem === 'ajanda.otomatik' ? icerik.liste : icerik;
     ls.koy('locus_c_' + anahtar, deger); ls.koy('locus_s_' + anahtar, yeniSurum); ls.koy('locus_z_' + anahtar, Date.now());
     return uygula(deger, true);
   }).finally(() => { delete YUKLENIYOR[anahtar]; });
@@ -4188,6 +4208,11 @@ function onYukle() {
     .forEach(v => veriYukle(v).catch(() => {}));
   if (['siparisler', 'stok', 'oxyweld', 'teklifler', 'ajanda'].some(s => yetki(s) !== 'yok')) firmalarYukle().catch(() => {});
   if (yetki('finans') !== 'yok') finansYukle().catch(() => {});
+  if (yetki('ajanda') !== 'yok') {
+    if (!AJ.ay) { AJ.ay = bugun().slice(0, 7); AJ.secili = bugun(); }
+    const g = AJ.gorunum; AJ.gorunum = 'ay'; const [bas, bit] = ajandaAralik(); AJ.gorunum = g;
+    ajandaOtoYukle(bas, bit).catch(() => {});
+  }
 }
 document.addEventListener('visibilitychange', () => { if (!document.hidden) onYukle(); });
 
