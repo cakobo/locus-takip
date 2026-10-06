@@ -4838,6 +4838,7 @@ function siparisDetay(ic, s, y, param) {
           ${t === 'satinalma' ? `<button class="btn ikincil" type="button" onclick="poModal('${x.Id}')">🖨 Purchase Order</button>` : ''}
           ${yetki('stok') === 'tam' && stokIslenebilir(t, x.Durum) ? (VERI.stokHareket || []).some(hh => hh.SiparisId === x.Id)
             ? `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka işlendi</button>`
+            : x.Stoksuz ? `<button class="btn ikincil" type="button" title="Bu sipariş stoka işlenmeyecek olarak işaretli" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoksuz işlem</button>`
             : `<button class="btn ikincil" type="button" onclick="stokIsleModal('${t}','${x.Id}')">📦 Stoka İşle</button>` : ''}
           ${tam ? `<button class="btn ikincil" type="button" style="color:var(--danger)" onclick="siparisSilOnay('${t}','${x.Id}')">Sil</button>
           <button class="btn" type="button" onclick="siparisForm('${t}','${x.Id}')">Düzenle</button>` : ''}</div>` : ''}
@@ -4913,7 +4914,7 @@ async function siparisDurumDegistir(t, id, durum) {
     tamam = true;
   } catch (e) { toast(e.message, true); }
   rotaUygula();
-  if (tamam && yetki('stok') === 'tam' && stokIslenebilir(t, durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, id);
+  if (tamam && !x.Stoksuz && yetki('stok') === 'tam' && stokIslenebilir(t, durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, id);
 }
 
 // ---------- Ekle / Düzenle ----------
@@ -5062,7 +5063,7 @@ async function siparisKaydet() {
     modalKapat();
     if (D.aktif === 'siparisler' && D.param) rotaUygula(); else siparisListeCiz();
     toast(`${r.No} ${kayit.Id ? 'güncellendi' : 'oluşturuldu'}.`);
-    if (yetki('stok') === 'tam' && stokIslenebilir(t, r.Durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, r.Id);
+    if (!r.Stoksuz && yetki('stok') === 'tam' && stokIslenebilir(t, r.Durum) && !stokIslenebilir(t, onceki)) stokIsleModal(t, r.Id);
   } catch (e) {
     hata(e.message); btn.disabled = false; btn.textContent = 'Kaydet';
   }
@@ -5621,9 +5622,13 @@ async function stokIsleModal(t, id) {
     return;
   }
   const mlz = (VERI.stokMalzeme || []).filter(m => m.Aktif).sort((a, b) => trSirala(a.Ad, b.Ad));
+  // Stoksuz işlem: hizmet/bakım gibi stokla ilgisi olmayan siparişlerde stoka işleme bir daha sorulmaz
+  const stoksuzBtn = yetki('siparisler') !== 'tam' ? '' : x.Stoksuz
+    ? `<button class="btn ikincil sol" type="button" onclick="siparisStoksuz('${t}','${id}',false)">Stoksuz işareti kaldır</button>`
+    : `<button class="btn ikincil sol" type="button" title="Hizmet, bakım gibi stokla ilgisi olmayan siparişler için" onclick="siparisStoksuz('${t}','${id}',true)">Stoksuz işlem</button>`;
   if (!mlz.length) {
     modalAc('Stoka İşle', '<p>Stoka işlemek için önce Stok sayfasında malzeme tanımlamalısınız.</p>',
-      `<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
+      `${stoksuzBtn}<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
        <button class="btn" type="button" onclick="modalKapat();STK.sekme='tanimlar';git('stok')">Malzeme Tanımla</button>`);
     return;
   }
@@ -5633,7 +5638,8 @@ async function stokIsleModal(t, id) {
     malzemeId: (mlz.find(m => trKucuk(m.Ad) === trKucuk(k.aciklama)) || {}).Id || ''
   })) };
   modalAc(`${x.No}: Stoka ${tur}`, `
-    <p class="bilgi-not" style="margin:0 0 8px">Her kalemi stoktaki bir malzemeyle eşleştirin. Stoğa girmeyecek kalemler (nakliye, hizmet vb.) için "Stoka işleme" seçili kalsın.</p>
+    ${x.Stoksuz ? '<p class="bilgi-not plan-ipucu">Bu sipariş <b>stoksuz işlem</b> olarak işaretli; stoka işleme sorulmuyor ve uyarı verilmiyor.</p>' : ''}
+    <p class="bilgi-not" style="margin:0 0 8px">Her kalemi stoktaki bir malzemeyle eşleştirin. Stoğa girmeyecek kalemler (nakliye, hizmet vb.) için "Stoka işleme" seçili kalsın.${x.Stoksuz ? '' : ' Siparişin tamamı stokla ilgisizse (hizmet, bakım vb.) <b>Stoksuz işlem</b> deyin.'}</p>
     ${(x.Kalemler || []).map((k, i) => `
       <div class="si-satir">
         <div class="si-ac"><b>${esc(k.aciklama)}</b><small>Siparişte: ${miktarYaz(k.miktar)} ${esc(k.birim)}</small></div>
@@ -5642,8 +5648,18 @@ async function stokIsleModal(t, id) {
         <input class="girdi" inputmode="decimal" value="${esc(SI.satirlar[i].miktar)}" aria-label="Miktar" oninput="SI.satirlar[${i}].miktar=this.value">
       </div>`).join('')}
     <div class="hata-kutu" id="mHata"></div>`,
-    `<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
+    `${stoksuzBtn}<button class="btn ikincil" type="button" onclick="modalKapat()">Şimdi Değil</button>
      <button class="btn" type="button" id="siKaydet" onclick="stokIsleKaydet()">Stoka İşle</button>`, true);
+}
+
+async function siparisStoksuz(t, id, deger) {
+  const x = (VERI[t] || []).find(k => k.Id === id); if (!x) return;
+  try {
+    const r = await api('kayit.kaydet', { varlik: t, kayit: Object.assign({}, x, { Stoksuz: deger }) });
+    veriGuncelle(t, r); ls.koy('locus_s_bildirim', '');
+    modalKapat(); rotaUygula();
+    toast(deger ? `${r.No}: stoksuz işlem olarak işaretlendi.` : `${r.No}: stoksuz işareti kaldırıldı.`);
+  } catch (e) { toast(e.message, true); }
 }
 
 async function stokIsleKaydet() {
