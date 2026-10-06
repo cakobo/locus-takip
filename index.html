@@ -681,6 +681,11 @@ a.btn{text-decoration:none}
 
 .plan-ipucu{background:color-mix(in srgb,var(--warn) 12%,transparent);border-left:3px solid var(--warn);padding:8px 12px;border-radius:6px;margin:-4px 0 12px}
 
+.fd-sekme{overflow-x:auto;margin:-2px 0 14px;-webkit-overflow-scrolling:touch}
+.fd-sekme .cips button{white-space:nowrap;height:40px;padding:0 13px}
+.fd-sekme .say{display:inline-block;min-width:18px;margin-left:4px;padding:0 5px;border-radius:9px;background:var(--line);color:var(--mute);font-size:11.5px;font-weight:600;line-height:18px;text-align:center}
+.z-not{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-line;margin-top:5px;padding-left:9px;border-left:2px solid var(--line);font-size:13px;color:var(--mute)}
+
 /* ---------- mobil ---------- */
 @media (max-width:820px){
   #giris{flex-direction:column}
@@ -4356,15 +4361,16 @@ const FIRMA = {
     islemBos: 'Bu müşteriye ait teklifler, siparişler ve Oxyweld bakımları burada tarih sırasına göre listelenecek.',
     // Projeler sayfası yapıldığında buraya eklenecek. Öğe: { tarih, tur, baslik, aciklama, durum, rota }
     kaynaklar: [['musteriSiparis', 'siparisler'], ['oxyBakim', 'oxyweld'], ['teklif', 'teklifler'], ['ajanda', 'ajanda']],
+    sekmeler: [['teklif', 'Teklifler', 'teklifler'], ['siparis', 'Siparişler', 'siparisler'], ['toplanti', 'Toplantılar', 'ajanda'], ['bakim', 'Bakımlar', 'oxyweld']],
     islemler: m => ajandaToplantilari(m, 'musteriler').concat((VERI.teklif || []).filter(x => x.FirmaId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: 'Teklif', baslik: x.No, aciklama: x.Konu || kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      grup: 'teklif', tarih: x.Tarih, tur: 'Teklif', baslik: x.No, aciklama: x.Konu || kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: TEKLIF_DURUM_SINIF[x.Durum] || '', rota: 'teklifler/' + x.Id
     })).concat((VERI.oxyBakim || []).filter(x => x.MusteriId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: x.Gecmis ? 'Geçmiş Bakım' : 'Oxyweld Bakım', baslik: x.No,
+      grup: 'bakim', tarih: x.Tarih, tur: x.Gecmis ? 'Geçmiş Bakım' : 'Oxyweld Bakım', baslik: x.No,
       aciklama: [x.Model, x.SeriNo].filter(Boolean).join(', '), durum: x.Durum,
       durumSinif: x.Durum === 'Tamamlandı' ? 'ok' : 'uyari', rota: 'oxyweld/b.' + x.Id
     }))).concat((VERI.musteriSiparis || []).filter(x => x.FirmaId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      grup: 'siparis', tarih: x.Tarih, tur: 'Sipariş', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: durumSinif('musteriSiparis', x.Durum), rota: 'siparisler/ms.' + x.Id
     }))))
   },
@@ -4373,15 +4379,16 @@ const FIRMA = {
     islemBaslik: 'Satın Almalar',
     islemBos: 'Bu tedarikçiden yapılan satın almalar burada tarih sırasına göre listelenecek.',
     kaynaklar: [['satinalma', 'siparisler'], ['ajanda', 'ajanda']],
+    sekmeler: [['siparis', 'Satın Almalar', 'siparisler'], ['toplanti', 'Toplantılar', 'ajanda']],
     islemler: m => ajandaToplantilari(m, 'tedarikciler').concat((VERI.satinalma || []).filter(x => x.FirmaId === m.Id).map(x => ({
-      tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
+      grup: 'siparis', tarih: x.Tarih, tur: 'Satın Alma', baslik: x.No, aciklama: kalemOzet(x), tutar: para(x.Toplam, x.ParaBirimi),
       durum: x.Durum, durumSinif: durumSinif('satinalma', x.Durum), rota: 'siparisler/sa.' + x.Id
     })))
   }
 };
 /** Firmaya bağlı toplantılar firma sayfasının geçmişinde görünür */
 const ajandaToplantilari = (m, tur) => (VERI.ajanda || []).filter(x => x.FirmaId === m.Id && x.FirmaTur === tur && x.Tur === 'Toplantı').map(x => ({
-  tarih: x.Tarih, tur: 'Toplantı', baslik: x.Baslik, aciklama: [x.TumGun ? 'Tüm gün' : x.Baslangic, x.Yer].filter(Boolean).join(', '),
+  grup: 'toplanti', tarih: x.Tarih, tur: 'Toplantı', baslik: x.Baslik, aciklama: [x.TumGun ? 'Tüm gün' : x.Baslangic, x.Yer, x.Katilimcilar].filter(Boolean).join(', '), not: x.Notlar || '',
   durum: x.Tarih > bugun() ? 'Planlandı' : x.Tarih === bugun() ? 'Bugün' : 'Yapıldı',
   durumSinif: x.Tarih > bugun() ? '' : x.Tarih === bugun() ? 'uyari' : 'ok', rota: 'ajanda/' + x.Id
 }));
@@ -4509,8 +4516,9 @@ function firmaDetay(v, ic, s, y, id) {
         <h3 class="panel-bas">${c.islemBaslik}</h3>
         ${!(c.kaynaklar || []).some(([, sy]) => yetki(sy) !== 'yok')
           ? '<div class="bos kucuk-bos"><div class="b-ikon">🔒</div><p>Bu kayıtları görme yetkiniz yok.</p></div>'
-          : islemlerHTML(c.islemler(m).sort((a, b) => String(b.tarih).localeCompare(String(a.tarih))), c.islemBos)}
+          : '<div id="fdIslem"></div>'}
       </section>`;
+    firmaIslemCiz(v, id);
   };
 
   const onbellek = VERI[v] || ls.al('locus_c_' + v);
@@ -4522,6 +4530,21 @@ function firmaDetay(v, ic, s, y, id) {
   Promise.all([veriYukle(v), ...kaynaklar.map(kv => veriYukle(kv).catch(() => null))])
     .then(() => { if (D.aktif === v && D.param === id && $('modal').hidden) ciz(); })
     .catch(e => { if (!onbellek) ic.innerHTML = `<div class="kart bos"><h3>Bilgiler alınamadı</h3><p>${esc(e.message)}</p></div>`; });
+}
+
+/** Firma geçmişi: Tümü / Teklifler / Siparişler / Toplantılar / Bakımlar sekmeleri (seçim sayfa boyunca hatırlanır) */
+function firmaIslemCiz(v, id, sekme) {
+  const el = $('fdIslem'), m = firmaBul(v, id); if (!el || !m) return;
+  const c = FIRMA[v], st = fDurum(v);
+  if (sekme) st.sekme = sekme;
+  const hepsi = c.islemler(m).sort((a, b) => String(b.tarih).localeCompare(String(a.tarih)));
+  const sekmeler = (c.sekmeler || []).filter(([, , sy]) => yetki(sy) !== 'yok');
+  if (!sekmeler.some(([k]) => k === st.sekme)) st.sekme = 'tumu';
+  const liste = st.sekme === 'tumu' ? hepsi : hepsi.filter(x => x.grup === st.sekme);
+  const ad = (sekmeler.find(([k]) => k === st.sekme) || [])[1];
+  el.innerHTML = (sekmeler.length > 1 ? `<div class="fd-sekme"><div class="cips">${[['tumu', 'Tümü']].concat(sekmeler).map(([k, a]) =>
+    `<button type="button" class="${k === st.sekme ? 'on' : ''}" onclick="firmaIslemCiz('${v}','${id}','${k}')">${a} <span class="say">${k === 'tumu' ? hepsi.length : hepsi.filter(x => x.grup === k).length}</span></button>`).join('')}</div></div>` : '')
+    + islemlerHTML(liste, st.sekme === 'tumu' ? c.islemBos : `Bu ${c.kucuk} için "${ad}" kaydı yok.`);
 }
 
 /** Firma sayfasında para birimine göre cari bakiye */
@@ -4554,6 +4577,7 @@ function islemlerHTML(liste, bosMetin) {
       <span class="z-ic">
         <span class="z-ust"><b>${esc(x.baslik)}</b><span class="rozet">${esc(x.tur)}</span></span>
         ${x.aciklama ? `<span class="z-alt">${esc(x.aciklama)}</span>` : ''}
+        ${x.not ? `<span class="z-not">${esc(x.not)}</span>` : ''}
       </span>
       ${x.tutar ? `<span class="z-tutar">${esc(x.tutar)}</span>` : ''}
       ${x.durum ? `<span class="rozet ${x.durumSinif || ''} z-durum">${esc(x.durum)}</span>` : ''}
