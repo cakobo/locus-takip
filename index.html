@@ -483,6 +483,8 @@ a.btn{text-decoration:none}
 .tk-kalem{display:grid;grid-template-columns:minmax(0,1fr) 72px 84px 110px 66px 112px 32px;gap:8px;align-items:center;margin-bottom:8px}
 .tk-kalem .girdi{margin:0;height:40px;padding:0 10px}
 .tk-kalem textarea.girdi{height:40px;min-height:40px;padding:9px 10px;resize:vertical;line-height:1.4}
+.tk-kalem textarea.k-detay{grid-column:1/-1;height:36px;min-height:36px;padding:7px 10px;font-size:13px;color:var(--mute);resize:none;overflow:hidden;margin-top:-2px}
+.k-detay-g{margin-top:3px;font-size:12.5px;color:var(--mute);white-space:pre-wrap}
 .tk-bas{font-size:12px;color:var(--mute);margin-bottom:6px}
 .rozet.link{cursor:pointer}
 @media print{
@@ -524,6 +526,7 @@ a.btn{text-decoration:none}
   .tk-tablo tbody tr:nth-child(even) td{background:#f5f7fa;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .tk-tablo tr{page-break-inside:avoid}
   .tk-tablo .o{text-align:center}
+  .tk-tablo .tk-detay{margin-top:2px;font-size:8pt;line-height:1.3;color:#555}
   .tk-tablo .s{text-align:right}
   .tk-toplam{margin:6px 0 8px auto;border-collapse:collapse;min-width:300px;page-break-inside:avoid}
   .tk-toplam td{padding:2px 10px;font-size:10pt;text-align:right}
@@ -5809,7 +5812,7 @@ function teklifDetay(ic, s, y, id) {
         <h4 class="panel-alt">Kalemler</h4>
         <div class="tablo-kap"><table class="tablo">
           <thead><tr><th style="width:36px">#</th><th>Açıklama</th><th class="sag">Miktar</th><th class="sag">Birim fiyat</th>${iskVar ? '<th class="sag">İsk.</th>' : ''}<th class="sag">Tutar</th></tr></thead>
-          <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="soluk">${i + 1}</td><td style="white-space:pre-wrap">${esc(k.aciklama)}</td>
+          <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="soluk">${i + 1}</td><td style="white-space:pre-wrap">${esc(k.aciklama)}${k.detay ? `<div class="k-detay-g">${esc(k.detay)}</div>` : ''}</td>
             <td class="sag">${sayiGoster(k.miktar)} ${esc(k.birim)}</td><td class="sag">${para(k.birimFiyat, t.ParaBirimi)}</td>
             ${iskVar ? `<td class="sag">${Number(k.iskonto) ? '%' + sayiGoster(k.iskonto) : '—'}</td>` : ''}
             <td class="sag">${para(k.tutar, t.ParaBirimi)}</td></tr>`).join('')}</tbody>
@@ -5910,7 +5913,7 @@ async function teklifForm(id, kopyaId) {
     : (GECERLILIK.find(g => g[1] === varsayilanGun) || GECERLILIK[3])[0];
   TF = {
     Id: t ? t.Id : null, pb: kaynak ? kaynak.ParaBirimi : 'EUR',
-    kalemler: kaynak ? kaynak.Kalemler.map(k => ({ aciklama: k.aciklama, miktar: sayiYaz(k.miktar), birim: k.birim, birimFiyat: sayiYaz(k.birimFiyat), iskonto: k.iskonto ? sayiYaz(k.iskonto) : '' }))
+    kalemler: kaynak ? kaynak.Kalemler.map(k => ({ aciklama: k.aciklama, detay: k.detay || '', miktar: sayiYaz(k.miktar), birim: k.birim, birimFiyat: sayiYaz(k.birimFiyat), iskonto: k.iskonto ? sayiYaz(k.iskonto) : '' }))
       : [{ aciklama: '', miktar: '1', birim: 'adet', birimFiyat: '', iskonto: '' }]
   };
   modalAc(t ? `${t.No} Düzenle` : kopyaId ? `Yeni Teklif (${kaynak.No} kopyası)` : 'Yeni Teklif', `
@@ -5944,7 +5947,7 @@ async function teklifForm(id, kopyaId) {
     </div>
     <p class="bilgi-not" id="tfGecBilgi" style="margin-top:-8px"></p>
     ${t ? `<label class="et" for="tfDurum">Durum</label><select class="girdi" id="tfDurum">${TEKLIF_SECILEBILIR.map(d => `<option ${d === t.Durum ? 'selected' : ''}>${d}</option>`).join('')}</select>` : ''}
-    <div class="bolum-et">Kalemler<button class="btn ikincil kucuk" type="button" onclick="TF.kalemler.push({aciklama:'',miktar:'1',birim:'adet',birimFiyat:'',iskonto:''});tfKalemCiz()">+ Kalem Ekle</button></div>
+    <div class="bolum-et">Kalemler<button class="btn ikincil kucuk" type="button" onclick="TF.kalemler.push({aciklama:'',detay:'',miktar:'1',birim:'adet',birimFiyat:'',iskonto:''});tfKalemCiz()">+ Kalem Ekle</button></div>
     <div class="tk-kalem tk-bas"><span>Ürün kodu / açıklama</span><span>Adet</span><span>Birim</span><span>Liste fiyatı</span><span>İsk. %</span><span style="text-align:right">Toplam</span><span></span></div>
     <div id="tfKalemler"></div>
     <div class="toplamlar" id="tfToplam"></div>
@@ -5987,9 +5990,13 @@ function tfKalemCiz() {
       <input class="girdi" inputmode="decimal" placeholder="İsk. %" value="${esc(k.iskonto)}" oninput="TF.kalemler[${i}].iskonto=this.value;tfHesapla()">
       <span class="k-tutar" id="tft${i}"></span>
       <button class="k-sil" type="button" aria-label="Kalemi kaldır" ${TF.kalemler.length === 1 ? 'disabled' : ''} onclick="TF.kalemler.splice(${i},1);tfKalemCiz()">×</button>
+      <textarea class="girdi k-detay" rows="1" placeholder="Açıklama (opsiyonel): teknik özellik, kapsam, marka/model, teslim notu…" oninput="TF.kalemler[${i}].detay=this.value;tfDetayBoy(this)">${esc(k.detay || '')}</textarea>
     </div>`).join('');
+  document.querySelectorAll('#tfKalemler .k-detay').forEach(tfDetayBoy);
   tfHesapla();
 }
+/** Açıklama kutusu yazdıkça uzar */
+function tfDetayBoy(el) { el.style.height = 'auto'; el.style.height = Math.max(36, el.scrollHeight + 2) + 'px'; }
 function tfHesapla() {
   if (!$('tfToplam')) return;
   const yuv = n => Math.round((n + Number.EPSILON) * 100) / 100;
@@ -6010,7 +6017,7 @@ function tfHesapla() {
 async function teklifKaydet() {
   const hata = m => ($('mHata').textContent = m);
   const kalemler = TF.kalemler.filter(k => k.aciklama.trim() || String(k.birimFiyat).trim())
-    .map(k => ({ aciklama: k.aciklama.trim(), miktar: sayiOku(k.miktar), birim: k.birim || 'adet', birimFiyat: sayiOku(k.birimFiyat),
+    .map(k => ({ aciklama: k.aciklama.trim(), detay: String(k.detay || '').trim(), miktar: sayiOku(k.miktar), birim: k.birim || 'adet', birimFiyat: sayiOku(k.birimFiyat),
                  iskonto: String(k.iskonto).trim() ? sayiOku(k.iskonto) : 0 }));
   const tarih = $('tfTarih').value;
   const kayit = {
@@ -6192,6 +6199,7 @@ async function teklifExcel(id) {
       const n = ilk + i, row = ws.getRow(n);
       const birim = k.birim && k.birim !== 'adet' ? ` ${k.birim}` : '';
       row.values = [i + 1, k.aciklama, Number(k.miktar), Number(k.birimFiyat), (Number(k.iskonto) || 0) / 100];
+      const detayli = !!k.detay;
       ws.getCell(`F${n}`).value = { formula: `ROUND(D${n}*(1-E${n}),2)`, result: Number(k.birimFiyat) * (1 - (Number(k.iskonto) || 0) / 100) };
       ws.getCell(`G${n}`).value = { formula: `ROUND(C${n}*D${n}*(1-E${n}),2)`, result: Number(k.tutar) };
       for (let c = 1; c <= 7; c++) {
@@ -6202,7 +6210,9 @@ async function teklifExcel(id) {
       }
       ws.getCell(`C${n}`).numFmt = `#,##0.###"${birim}"`; ws.getCell(`D${n}`).numFmt = PB; ws.getCell(`E${n}`).numFmt = '0%';
       ws.getCell(`F${n}`).numFmt = PB; ws.getCell(`G${n}`).numFmt = PB;
-      satirYuk(n, k.aciklama, 40); if (row.height < 20) row.height = 20; else row.height += 4;
+      // Kalem açıklaması aynı hücrede, alt satırda küçük ve gri
+      if (detayli) ws.getCell(`B${n}`).value = { richText: [{ text: k.aciklama, font: F({}) }, { text: '\n' + k.detay, font: F({ size: 9, color: { argb: SOLUK } }) }] };
+      satirYuk(n, detayli ? k.aciklama + '\n' + k.detay : k.aciklama, 40); if (row.height < 20) row.height = 20; else row.height += 4;
     });
     const son = ilk + (t.Kalemler || []).length - 1;
 
@@ -6288,7 +6298,7 @@ async function teklifYazdir(id) {
       <td><span>Sevk biçimi</span>${esc(t.SevkBicimi || '—')}</td><td><span>Para birimi</span>${PARA[t.ParaBirimi]}</td></tr></table>
     <table class="tk-tablo"><thead><tr><th class="o">Sıra</th><th>Ürün Kodu / Açıklama</th><th class="o">Adet</th><th class="s">Liste Fiyatı</th>
       ${iskVar ? '<th class="o">İsk.</th><th class="s">İskontolu Fiyat</th>' : ''}<th class="s">Toplam</th></tr></thead>
-      <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="o">${i + 1}</td><td>${esc(k.aciklama).replace(/\n/g, '<br>')}</td>
+      <tbody>${(t.Kalemler || []).map((k, i) => `<tr><td class="o">${i + 1}</td><td>${esc(k.aciklama).replace(/\n/g, '<br>')}${k.detay ? `<div class="tk-detay">${esc(k.detay).replace(/\n/g, '<br>')}</div>` : ''}</td>
         <td class="o y-nw">${sayiGoster(k.miktar)}${k.birim && k.birim !== 'adet' ? ' ' + esc(k.birim) : ''}</td><td class="s y-nw">${para(k.birimFiyat, t.ParaBirimi)}</td>
         ${iskVar ? `<td class="o">${Number(k.iskonto) ? '%' + sayiGoster(k.iskonto) : '—'}</td><td class="s y-nw">${para(k.birimFiyat * (1 - (Number(k.iskonto) || 0) / 100), t.ParaBirimi)}</td>` : ''}
         <td class="s y-nw"><b>${para(k.tutar, t.ParaBirimi)}</b></td></tr>`).join('')}</tbody></table>
