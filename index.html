@@ -912,9 +912,9 @@ a.btn{text-decoration:none}
   <div class="daha-ic"><div class="tutamac"></div><div class="daha-grid" id="dahaGrid"></div></div>
 </div>
 
-<div class="modal" id="modal" hidden onclick="if(event.target===this)modalKapat()">
+<div class="modal" id="modal" hidden onmousedown="MODAL_BAS=event.target===this" onclick="if(event.target===this&&MODAL_BAS)modalKapatIstek()">
   <div class="modal-ic" role="dialog" aria-modal="true">
-    <div class="modal-bas"><h3 id="modalBaslik"></h3><button type="button" onclick="modalKapat()" aria-label="Kapat">×</button></div>
+    <div class="modal-bas"><h3 id="modalBaslik"></h3><button type="button" onclick="modalKapatIstek()" aria-label="Kapat">×</button></div>
     <div class="modal-govde" id="modalGovde"></div>
     <div class="modal-alt" id="modalAlt"></div>
   </div>
@@ -6355,9 +6355,22 @@ function modalAc(baslik, govde, alt, genis) {
   $('modalGovde').innerHTML = govde;
   $('modalAlt').innerHTML = alt || '';
   $('modal').hidden = false;
+  MODAL_KIRLI = false;
 }
-function modalKapat() { $('modal').hidden = true; }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { modalKapat(); dahaKapat(); $('kulMenuKutu').hidden = true; } });
+function modalKapat() { $('modal').hidden = true; MODAL_KIRLI = false; }
+// Pencerede bir şey yazıldıysa dışarı tıklama, × ve Esc yazılanları sormadan silmez.
+// (Yazı seçerken fare pencere dışında bırakılınca da kapanmaz: tıklama dışarıda başlamış olmalı.)
+let MODAL_KIRLI = false, MODAL_BAS = false;
+function modalKapatIstek() {
+  if ($('modal').hidden) return;
+  if (MODAL_KIRLI && !confirm('Yaptığınız değişiklikler kaydedilmedi. Pencere kapatılsın mı?')) return;
+  modalKapat();
+}
+document.addEventListener('input', e => { if (e.target.closest && e.target.closest('#modal')) MODAL_KIRLI = true; }, true);
+document.addEventListener('change', e => { if (e.target.closest && e.target.closest('#modal')) MODAL_KIRLI = true; }, true);
+// Yazılmış bir form açıkken sayfa kapatılır ya da yenilenirse tarayıcı uyarır
+window.addEventListener('beforeunload', e => { if (MODAL_KIRLI && !$('modal').hidden) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { modalKapatIstek(); dahaKapat(); $('kulMenuKutu').hidden = true; } });
 
 let toastZaman;
 function toast(mesaj, hata) {
